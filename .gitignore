@@ -5,6 +5,7 @@
 !**/*.cpp
 !**/*.hpp
 !**/*.ipp
+!**/*.conf
 !**/Makefile
 !**/README.md
 !/Makefile
@@ -17,3 +18,4 @@
 !/include
 !/src
 !/src/*
+!/conf

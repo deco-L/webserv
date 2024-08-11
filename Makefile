@@ -6,7 +6,7 @@
 #    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2024/08/11 13:06:19 by csakamot         ###   ########.fr        #
+#    Updated: 2024/08/11 14:34:34 by csakamot         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,7 @@ NAME		= webserv
 ##-----Directory Location------##
 SRCDIR	= ./src/
 
-INCDIR	= ./include/
+INCDIR	= ./src/
 
 OBJDIR	= objs/
 ##-----------------------------##
@@ -27,13 +27,17 @@ CORESRC	=	main.cpp
 
 CONFSRC = 
 
+EVENSRC = 
+
 HTTPSRC = 
 
 ERROSRC = 
 
 UTILSRC = 
 
-SRCS		= $(addprefix $(SRCDIR)core/, ${CORESRC}) $(addprefix $(SRCDIR)config/, $(CONFSRC)) $(addprefix $(SRCDIR)http/, $(HTTPSRC)) $(addprefix $(SRCDIR)utils/, $(UTILSRC)) $(addprefix $(SRCDIR)error/, $(ERROSRC))
+SRCS		= $(addprefix $(SRCDIR)core/, ${CORESRC}) $(addprefix $(SRCDIR)config/, $(CONFSRC)) \
+					$(addprefix $(SRCDIR)event/, $(EVENSRC)) $(addprefix $(SRCDIR)http/, $(HTTPSRC)) \
+					$(addprefix $(SRCDIR)utils/, $(UTILSRC)) $(addprefix $(SRCDIR)error/, $(ERROSRC)) 
 ##-----------------------------##
 
 ##-----------Object------------##
@@ -98,7 +102,7 @@ $(OBJDIR)%.o:$(SRCDIR)%.cpp
 					fi; \
 				done
 				@printf "]"
-				@mkdir -p $(OBJDIR)core $(OBJDIR)config $(OBJDIR)http $(OBJDIR)error $(OBJDIR)utils
+				@mkdir -p $(OBJDIR)core $(OBJDIR)config $(OBJDIR)event $(OBJDIR)http $(OBJDIR)error $(OBJDIR)utils
 				@$(CC) $(CFLAGS) -I $(INCDIR) -c $< -o $@
 
 clean:
