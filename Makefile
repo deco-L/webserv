@@ -6,7 +6,7 @@
 #    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2024/08/11 14:34:34 by csakamot         ###   ########.fr        #
+#    Updated: 2024/08/11 17:32:18 by csakamot         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,7 @@ NAME		= webserv
 ##-----Directory Location------##
 SRCDIR	= ./src/
 
-INCDIR	= ./src/
+INCDIR	= ./include/
 
 OBJDIR	= objs/
 ##-----------------------------##
