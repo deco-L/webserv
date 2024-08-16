@@ -58,4 +58,11 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
+#define WSV_OK    0
+#define WSV_ERROR -1
+
+#define LF    (u_char) '\n'
+#define CR    (u_char) '\r'
+#define CRLF  "\r\n"
+
 #endif
