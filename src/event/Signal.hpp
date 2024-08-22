@@ -1,22 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   Signal.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/22 13:15:38 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/22 14:06:06 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "webserv.hpp"
+#ifndef SIGNAL_HPP
+#define SIGNAL_HPP
 
-int main(int argc, char **argv, char **envp)
-{
-  (void)argc;
-  (void)argv;
-  (void)envp;
+#include <errno.h>
+#include <csignal>
 
-  return (EXIT_SUCCESS);
-}
+class Signal {
+private:
+  volatile sig_atomic_t _signal;
+  void                  signal_handler(int signal, siginfo_t *info, void *ucontext);
+
+public:
+  Signal(volatile sig_atomic_t status);
+  ~Signal();
+
+  volatile sig_atomic_t getStatus(void) const;
+  void                  addSignal(volatile sig_atomic_t signal);
+};
+
+#endif
