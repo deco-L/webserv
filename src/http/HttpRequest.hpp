@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   HttpRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/11 17:31:43 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/22 14:15:38 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@
 #define HTTP_NOT_IMPLEMENTED                501
 #define HTTP_BAD_GATEWAY                    502
 #define HTTP_SERVIICE_UNAVAILABLE           503
-#define GATEWAY_TIME_OUT                    504
+#define HTTP_GATEWAY_TIME_OUT               504
 #define HTTP_VERSION_NOT_SUPPORTED          505
 
 #endif
