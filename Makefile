@@ -6,7 +6,7 @@
 #    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2024/08/11 17:32:18 by csakamot         ###   ########.fr        #
+#    Updated: 2024/08/23 14:09:04 by csakamot         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,19 +19,21 @@ SRCDIR	= ./src/
 
 INCDIR	= ./include/
 
+SRCINC	= $(addprefix -I, $(shell find $(SRCDIR) -type d))
+
 OBJDIR	= objs/
 ##-----------------------------##
 
 ##------------Srcs-------------##
 CORESRC	=	main.cpp
 
-CONFSRC = 
+CONFSRC = configMain.cpp Config.cpp
 
 EVENSRC = 
 
 HTTPSRC = 
 
-ERROSRC = 
+ERROSRC = Error.cpp
 
 UTILSRC = 
 
@@ -103,7 +105,7 @@ $(OBJDIR)%.o:$(SRCDIR)%.cpp
 				done
 				@printf "]"
 				@mkdir -p $(OBJDIR)core $(OBJDIR)config $(OBJDIR)event $(OBJDIR)http $(OBJDIR)error $(OBJDIR)utils
-				@$(CC) $(CFLAGS) -I $(INCDIR) -c $< -o $@
+				@$(CC) $(CFLAGS) -I $(INCDIR) -I $(SRCINC) -c $< -o $@
 
 clean:
 				@${RM} -rf ${OBJDIR}

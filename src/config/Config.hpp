@@ -1,24 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   Config.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/23 14:11:09 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/23 13:48:50 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "webserv.hpp"
-#include "Config.hpp"
+#ifndef CONFIG_HPP
+#define CONFIG_HPP
 
-static t_root<Config> root;
+#include <string>
 
-int main(int argc, char **argv, char **envp)
-{
-  (void)envp;
+class Config {
+private:
+  const int         _argc;
+  const std::string _file_path;
 
-  configMain(root.config, argc, argv);
-  return (EXIT_SUCCESS);
-}
+public:
+  Config(void);
+  Config(int argc, char** argv);
+  ~Config();
+
+  void    check_nbr_arg(void) const;
+
+  Config& operator=(const Config& obj);
+};
+
+#endif

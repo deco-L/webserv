@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/11 18:10:02 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/23 14:11:00 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 /* c++ std library */
 #include <cstdlib>
+#include <iostream>
 
 /* c library for communication */
 #include <sys/types.h>
@@ -64,5 +65,16 @@
 #define LF    (u_char) '\n'
 #define CR    (u_char) '\r'
 #define CRLF  "\r\n"
+
+template <typename ConfigClass>
+struct t_root {
+    ConfigClass config;
+
+    t_root() : config() {}
+};
+
+class Config;
+
+void  configMain(Config config, int argc, char** argv);
 
 #endif
