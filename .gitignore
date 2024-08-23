@@ -5,6 +5,7 @@
 !**/*.cpp
 !**/*.hpp
 !**/*.ipp
+!**/*.html
 !**/*.conf
 !**/Makefile
 !**/README.md
@@ -19,3 +20,5 @@
 !/src
 !/src/*
 !/conf
+!/wbv
+!/wbv/*
