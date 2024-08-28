@@ -6,7 +6,7 @@
 #    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2024/08/23 14:09:04 by csakamot         ###   ########.fr        #
+#    Updated: 2024/08/28 14:18:07 by csakamot         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,7 +25,7 @@ OBJDIR	= objs/
 ##-----------------------------##
 
 ##------------Srcs-------------##
-CORESRC	=	main.cpp
+CORESRC	=	main.cpp socketMain.cpp Socket.cpp
 
 CONFSRC = configMain.cpp Config.cpp
 

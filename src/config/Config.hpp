@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/28 14:08:28 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/28 14:11:05 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ public:
 
   int         getArgc(void) const;
   std::string getFileName(void) const;
-  void        check_nbr_arg(void) const;
+  void        checkNbrArg(void) const;
 
   Config&      operator=(const Config& obj);
 };

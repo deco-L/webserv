@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/28 14:06:14 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/28 14:15:39 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,13 +66,16 @@
 #define CR    (u_char) '\r'
 #define CRLF  "\r\n"
 
-template <typename ConfigClass>
+template <typename ConfigClass, typename SocketClass>
 struct t_root {
   ConfigClass config;
+  SocketClass socket;
 };
 
 class Config;
+class Socket;
 
 void  configMain(Config config, int argc, char** argv);
+void  socketMain(Socket socket);
 
 #endif
