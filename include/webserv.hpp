@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/23 14:11:00 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/28 14:06:14 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,9 +68,7 @@
 
 template <typename ConfigClass>
 struct t_root {
-    ConfigClass config;
-
-    t_root() : config() {}
+  ConfigClass config;
 };
 
 class Config;

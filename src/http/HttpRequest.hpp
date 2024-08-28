@@ -6,12 +6,12 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/23 17:33:12 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/26 18:36:48 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef _HTTPREQUEST_HPP
-#define _HTTPREQUEST_HPP
+#ifndef HTTPREQUEST_HPP
+#define HTTPREQUEST_HPP
 
 #define HTTP_CONTINUE                       100
 #define HTTP_SWITCHING_PROTOCOlS            101

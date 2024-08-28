@@ -1,19 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   configMain.cpp                                     :+:      :+:    :+:   */
+/*   Socket.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/28 14:09:22 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/28 13:12:49 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "webserv.hpp"
-#include "Config.hpp"
+#ifndef SOCKET_HPP
+#define SOCKET_HPP
 
-void  configMain(Config config, int argc, char**argv) {
-  config = Config(argc, argv);
-  config.check_nbr_arg();
-}
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+
+class Socket {
+public:
+  Socket(void);
+  ~Socket(void);
+};
+
+#endif

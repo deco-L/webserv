@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/23 14:13:40 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/28 14:09:05 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,14 @@ Config::Config(int argc, char** argv)
 
 Config::~Config() {}
 
+int Config::getArgc(void) const {
+  return (this->_argc);
+}
+
+std::string Config::getFileName(void) const {
+  return (this->_file_path);
+}
+
 void Config::check_nbr_arg(void) const {
   if (this->_argc != 2)
     return (
@@ -33,7 +41,8 @@ void Config::check_nbr_arg(void) const {
 
 Config& Config::operator=(const Config& obj) {
   if (this != &obj) {
-    ;
+    this->_argc = obj.getArgc();
+    this->_file_path = obj.getFileName();
   }
   else
   {
