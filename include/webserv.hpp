@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/29 18:39:06 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/29 23:23:36 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,9 @@
 /* c++ std library */
 #include <cstdlib>
 #include <iostream>
+#include <thread>
+#include <chrono>
+#include <vector>
 
 /* c library for communication */
 #include <sys/types.h>
@@ -77,5 +80,6 @@ class Socket;
 
 void  configMain(Config config, int argc, char** argv);
 void  socketMain(Socket socketData);
+void  spinnerOut(void)
 
 #endif
