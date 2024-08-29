@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/28 14:15:39 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/29 18:39:06 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@
 #include <netdb.h>
 
 #define WSV_OK    0
-#define WSV_ERROR -1
+#define WSV_ERROR 1
 
 #define LF    (u_char) '\n'
 #define CR    (u_char) '\r'
@@ -69,13 +69,13 @@
 template <typename ConfigClass, typename SocketClass>
 struct t_root {
   ConfigClass config;
-  SocketClass socket;
+  SocketClass socketData;
 };
 
 class Config;
 class Socket;
 
 void  configMain(Config config, int argc, char** argv);
-void  socketMain(Socket socket);
+void  socketMain(Socket socketData);
 
 #endif

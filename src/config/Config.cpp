@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/28 14:11:18 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/29 18:53:10 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,8 @@ std::string Config::getFileName(void) const {
 void Config::checkNbrArg(void) const {
   if (this->_argc != 2)
     return (
-      outputError("\033[0;38;5;200mError: Invalid number of arguments.\033[0m"),
-      std::exit(INV_NBR_ARG)
+      outputError("Error: Invalid number of arguments."),
+      std::exit(EXIT_FAILURE)
       );
   return ;
 }
