@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/29 18:53:41 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/30 17:38:14 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,76 @@
 #include "Socket.hpp"
 #include "Error.hpp"
 
+#define SIZE (5*1024)
+
+int recvRequestMessage(int sock, char *request_message, unsigned int buf_size) {
+  int recv_size;
+
+  recv_size = recv(sock, request_message, buf_size, 0);
+  return (recv_size);
+}
+
+int parseRequestMessage(char* method, char* target, char* request_message) {
+  char* line;
+  char* tmp_method;
+  char* tmp_target;
+
+  line = strtok(request_message, "\n");
+
+  tmp_method = strtok(line, " ");
+  if (tmp_method == NULL) {
+    std::cout << ERROR_COLOR << "get method error" << COLOR_RESET << std::endl;
+    return (-1);
+  }
+  strcpy(method, tmp_method);
+
+  tmp_target = strtok(NULL, " ");
+  if (tmp_target == NULL) {
+    std::cout << ERROR_COLOR << "get target error" << COLOR_RESET << std::endl;
+    return (-1);
+  }
+  strcpy(target, tmp_target);
+  return (WSV_OK);
+}
+
 int httpServer(int sock) {
+  int request_size, response_size;
+  char  request_message[SIZE];
+  char  response_message[SIZE];
+  char  method[SIZE];
+  char  target[SIZE];
+  char  header_field[SIZE];
+  char  body[SIZE];
+  int status;
+  unsigned int  file_size;
+
+  while (true)
+  {
+    request_size = recvRequestMessage(sock, request_message, SIZE);
+    if (request_size = -1) {
+      std::cout << ERROR_COLOR << "recvRequestMessage error" << COLOR_RESET << std::endl;
+      break ;
+    } else if (request_size == 0) {
+      std::cout << "connection endes" << std::endl;
+      break ;
+    }
+
+    std::cout << request_message << std::endl;
+
+    if (parseRequestMessage(method, target, request_message) == -1) {
+      std::cout << ERROR_COLOR << "parseRequestMessage error" << COLOR_RESET << std::endl;
+      break;
+    }
+  }
+
+  if (strcmp(method, "GET") == 0) {
+    if (strcmp(target, "/") == 0) {
+      strcpy(target, "/index.html");
+    }
+  }
+
+  status = getProcessing(body, &target[1]);
+
   return (WSV_OK);
 }
 
@@ -55,6 +124,7 @@ void  socketMain(Socket socketData) {
       std::exit(EXIT_FAILURE);
     }
     std::cout << "Connected!" << std::endl;
+    httpServer(c_sock);
     close(c_sock);
   }
   close(w_addr);
