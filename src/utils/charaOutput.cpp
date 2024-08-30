@@ -6,20 +6,24 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/29 23:22:33 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/31 04:53:16 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
 
 void  spinnerOut(void) {
-  const std::vector<std::string>  spinnerChara = {"|", "¥", "-", "\\", " "};
+  const std::string spinnerArray[] = {"|", "¥", "-", "\\", " "};
+  const std::vector<std::string> spinnerChara(spinnerArray, spinnerArray + sizeof(spinnerArray) / sizeof(spinnerArray[0]));
   std::vector<std::string>::const_iterator  it;
 
   for (it = spinnerChara.begin(); it != spinnerChara.end(); it++) {
     std::cout << '\b' << *it;
     std::cout.flush();
-    std::this_thread::sleep_for(std::chrono::milliseconds(120));
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 120000;
+    select(0, NULL, NULL, NULL, &tv);
   }
   return ;
 }
