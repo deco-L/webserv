@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/31 04:51:36 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/31 17:46:44 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,12 @@
 
 #define SIZE (5*1024)
 
-unsigned int  getFilesize(const char* path) {
+unsigned int  getFilesize(char* path) {
   int size, read_size;
   char  read_buf[SIZE];
   FILE* f;
 
+  sprintf(path, "./wsv/html/index.html");
   f = fopen(path, "rb");
   if (f == NULL) {
     return (0);
@@ -131,7 +132,7 @@ int httpServer(int sock) {
       break ;
     }
 
-    std::cout << request_message << std::endl;
+    std::cout << "request_message\n" << request_message << std::endl;
 
     if (parseRequestMessage(method, target, request_message) == -1) {
       std::cout << ERROR_COLOR << "parseRequestMessage error" << COLOR_RESET << std::endl;
@@ -175,12 +176,19 @@ void  socketMain(Socket socketData) {
     std::cerr << ERROR_COLOR << "socket error." << COLOR_RESET << std::endl;
     std::exit(EXIT_FAILURE);
   }
+
+  int opt = 1;
+  if (setsockopt(w_addr, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+      perror("setsockopt failed");
+      exit(EXIT_FAILURE);
+  }
+
   std::memset(&a_addr, 0, sizeof(struct sockaddr_in));
   a_addr.sin_family = AF_INET;
   a_addr.sin_port = htons((unsigned int)8080);
   a_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-  if (bind(w_addr, (const struct sockaddr*)&a_addr, sizeof(a_addr) == -1)) {
+  if (bind(w_addr, (const struct sockaddr*)&a_addr, sizeof(a_addr)) == -1) {
     std::cerr << ERROR_COLOR << "bind error." << COLOR_RESET << std::endl;
     close(w_addr);
     std::exit(EXIT_FAILURE);
