@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/31 17:46:44 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/02 16:41:56 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,7 +132,7 @@ int httpServer(int sock) {
       break ;
     }
 
-    std::cout << "request_message\n" << request_message << std::endl;
+    std::cout << "---request_message---\n" << request_message << "------------------" << std::endl;
 
     if (parseRequestMessage(method, target, request_message) == -1) {
       std::cout << ERROR_COLOR << "parseRequestMessage error" << COLOR_RESET << std::endl;
@@ -157,7 +157,7 @@ int httpServer(int sock) {
       break ;
     }
 
-    std::cout << response_message << std::endl;
+    std::cout << "---response_message---\n" << response_message << "------------------" << std::endl;
 
     sendResponseMessage(sock, response_message, response_size);
   }
