@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/02 16:41:56 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/04 12:59:31 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,7 +194,7 @@ void  socketMain(Socket socketData) {
     std::exit(EXIT_FAILURE);
   }
 
-  if (listen(w_addr, WSV_LISTEN_BACKLOG) == -1) {
+  if (listen(w_addr, SOMAXCONN) == -1) {
     std::cout << ERROR_COLOR << "listen error." << COLOR_RESET << std::endl;
     close(w_addr);
     std::exit(EXIT_FAILURE);
