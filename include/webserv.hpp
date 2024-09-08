@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/31 04:46:42 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/08 20:10:42 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,10 @@ class Socket;
 
 void  configMain(Config config, int argc, char** argv);
 void  socketMain(Socket socketData);
-void  spinnerOut(void);
+
+namespace mylib {
+  void  spinnerOut(void);
+  void	bzero(void *s, size_t n);
+}
 
 #endif

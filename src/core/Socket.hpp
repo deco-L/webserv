@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/04 15:49:28 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/08 19:48:18 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -25,28 +26,37 @@
 
 class Socket {
 protected:
-  struct sockaddr_in  siUs;
-  struct sockaddr_in  siThem;
-  short int sPortUs;
-  short int sPortThem;
-  int iLen;
-  int iBuf;
-  std::string szBuf1, szBuf2;
-  int iBeg1, iEnd1, iBeg2, iEnd2;
+  struct sockaddr_in  _sSockAddr;
+  struct sockaddr_in  _cSockAddr;
+  short int _sPort;
+  short int _cPort;
+  int _addrLen;
+  int _bufFlag;
+  std::string _buf1, _buf2;
+  int _beg1, _beg2, _end1, _end2;
 
 public:
-  int iSock;
-  int iErr;
-  std::string szOutBuf;
-  std::string szPeerName;
-  std::string szPeerIp;
-  unsigned long ulTimeout;
+  int _socket;
+  int _error;
+  std::string _outBuf;
+  std::string _ipAddressName;
+  std::string _ipAddress;
+  unsigned long _timeOut;
 
   Socket(void);
   ~Socket();
 
-  int create(void);
-  int passive(short int port, int opt);
+  class SocketError : public std::exception {
+  private:
+    std::string _error_message;
+  
+  public:
+    SocketError(std::string error);
+    virtual const char* what(void) const throw();
+  };
+
+  void create(void);
+  void passive(short int port, bool opt);
   Socket  accept(void);
   int connect(std::string buf, short int port);
   int recv(int bytes);
