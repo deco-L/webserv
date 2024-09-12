@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/08 19:48:18 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/12 16:38:25 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,11 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
-#define MAX_SOCK_BUFFER 16384
+#define MAX_SOCK_BUFFER 1048576
+#define SENDFILE_MAX_CHUNK 2097152
+#define GETLINE_BUFFER 4096
 #define NO_EOL 1
-#define REUSE_PORT 1
+#define REUSE_PORT -1
 
 class Socket {
 protected:
@@ -39,8 +41,8 @@ public:
   int _socket;
   int _error;
   std::string _outBuf;
-  std::string _ipAddressName;
-  std::string _ipAddress;
+  std::string _peerIpName;
+  std::string _peerIp;
   unsigned long _timeOut;
 
   Socket(void);
@@ -52,20 +54,20 @@ public:
   
   public:
     SocketError(std::string error);
+    virtual ~SocketError() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW;
     virtual const char* what(void) const throw();
   };
 
   void create(void);
   void passive(short int port, bool opt);
-  Socket  accept(void);
-  int connect(std::string buf, short int port);
-  int recv(int bytes);
+  void accept(Socket& cSocket);
+  void recv(int bytes);
   int recvTeol(bool remove);
-  int send(std::string buf);
-  int sendText(std::string fileName);
-  int sendBinary(std::string fileName);
-  int resolveName(void);
-  int close(void);
+  void send(std::string buf, size_t len);
+  void sendText(std::string fileName);
+  void sendBinary(std::string fileName);
+  void resolveName(void);
+  void close(void);
 };
 
 #endif

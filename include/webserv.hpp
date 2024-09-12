@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/08 20:10:42 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/12 17:01:54 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 /* c++ std library */
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
+#include <cstring>
 #include <vector>
 #include <cstdio>
 
@@ -83,6 +85,12 @@ void  socketMain(Socket socketData);
 namespace mylib {
   void  spinnerOut(void);
   void	bzero(void *s, size_t n);
+  size_t	strlen(const char *str);
+  template <typename T>
+  std::string to_string(const T& n);
+  char* inet_ntoa(struct in_addr in);
 }
+
+#include "string.tpp"
 
 #endif
