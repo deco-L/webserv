@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/14 19:44:48 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/15 17:53:21 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,9 +174,10 @@ void socketMain(Socket socket) {
     socket.passive(8080, REUSE_PORT);
   } catch (const std::exception& e) {
     std::cerr << ERROR_COLOR << e.what() << COLOR_RESET << std::endl;
-    socket.close();
     std::exit(WSV_ERROR);
   }
+  eventLoop(socket);
+  return ;
   while (true) {
     socket.accept(cSocket);
     httpServerMain();

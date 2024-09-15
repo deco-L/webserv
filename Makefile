@@ -6,9 +6,11 @@
 #    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2024/09/15 14:56:52 by csakamot         ###   ########.fr        #
+#    Updated: 2024/09/15 16:54:42 by csakamot         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
+
+SHELL = bash
 
 ##----Executable File Name-----##
 NAME		= webserv
@@ -29,9 +31,9 @@ CORESRC	=	main.cpp socketMain.cpp Socket.cpp
 
 CONFSRC = configMain.cpp Config.cpp
 
-EVENSRC = 
+EVENSRC = eventLoop.cpp
 
-HTTPSRC = httpServerMain.cpp
+HTTPSRC = httpServerMain.cpp Http.cpp
 
 ERROSRC = Error.cpp
 
