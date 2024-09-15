@@ -6,13 +6,13 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/12 16:56:31 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/15 17:54:07 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
 #include "Socket.hpp"
-#include <fstream>
+#include "Error.hpp"
 
 Socket::Socket(void) :
 _sSockAddr(),
@@ -34,6 +34,27 @@ _peerIpName(""),
 _peerIp(""),
 _timeOut(60) {
   return ;
+}
+
+Socket::Socket(const Socket& obj) : 
+  _sSockAddr(obj._sSockAddr),
+  _cSockAddr(obj._cSockAddr),
+  _sPort(obj._sPort),
+  _cPort(obj._cPort),
+  _addrLen(obj._addrLen),
+  _bufFlag(obj._bufFlag),
+  _buf1(obj._buf1),
+  _buf2(obj._buf2),
+  _beg1(obj._beg1),
+  _beg2(obj._beg2),
+  _end1(obj._end1),
+  _end2(obj._end2),
+  _socket(obj._socket),
+  _error(obj._error),
+  _outBuf(obj._outBuf),
+  _peerIpName(obj._peerIpName),
+  _peerIp(obj._peerIp),
+  _timeOut(obj._timeOut) {
 }
 
 Socket::~Socket() {
@@ -64,15 +85,16 @@ void Socket::passive(short int port, bool opt) {
   int optval = 1;
 
   if (opt) {
-    setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, (char *) &optval, sizeof(optval));
+    this->_error = setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, (char *) &optval, sizeof(optval));
+    if (this->_error < 0)
+      throw Socket::SocketError("setsockopt errro");
   }
-
   this->_sPort = port;
-  mylib::bzero((void *)&this->_socket, this->_addrLen);
+  std::memset(&this->_sSockAddr, 0, sizeof(struct sockaddr_in));
   this->_sSockAddr.sin_family = AF_INET;
-  this->_sSockAddr.sin_port = htons(this->_sPort);
-  this->_sSockAddr.sin_addr.s_addr = INADDR_ANY;
-  this->_error = bind(this->_socket, (struct sockaddr *) &this->_sSockAddr, this->_addrLen);
+  this->_sSockAddr.sin_port = htons(static_cast<unsigned int>(this->_sPort));
+  this->_sSockAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+  this->_error = bind(this->_socket, (const struct sockaddr *) &this->_sSockAddr, sizeof(this->_sSockAddr));
   if (this->_error < 0)
     throw Socket::SocketError("bind failed");
   this->_error = listen(this->_socket, SOMAXCONN);
@@ -294,4 +316,34 @@ void Socket::close(void) {
   this->_error = -1;
   ::close(this->_socket);
   return ;
+}
+
+Socket& Socket::operator=(const Socket& obj) {
+  if (this != &obj) {
+    this->_sSockAddr = obj._sSockAddr;
+    this->_cSockAddr = obj._cSockAddr;
+    this->_sPort = obj._sPort;
+    this->_cPort = obj._cPort;
+    this->_addrLen = obj._addrLen;
+    this->_bufFlag = obj._bufFlag;
+    this->_buf1 = obj._buf1;
+    this->_buf2 = obj._buf2;
+    this->_beg1 = obj._beg1;
+    this->_beg2 = obj._beg2;
+    this->_end1 = obj._end1;
+    this->_end2 = obj._end2;
+    this->_socket = obj._socket;
+    this->_error = obj._error;
+    this->_outBuf = obj._outBuf;
+    this->_peerIpName = obj._peerIpName;
+    this->_peerIp = obj._peerIp;
+    this->_timeOut = obj._timeOut;
+  }
+  else
+  {
+    std::cout << ERROR_COLOR
+              << "Attempted self-assignment in copy assignment operator.\e[0m"
+              << COLOR_RESET << std::endl;
+  }
+  return (*this);
 }

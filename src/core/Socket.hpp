@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/12 16:38:25 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/15 17:30:02 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <fstream>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -46,6 +47,7 @@ public:
   unsigned long _timeOut;
 
   Socket(void);
+  Socket(const Socket& obj);
   ~Socket();
 
   class SocketError : public std::exception {
@@ -68,6 +70,8 @@ public:
   void sendBinary(std::string fileName);
   void resolveName(void);
   void close(void);
+
+  Socket& operator=(const Socket& obj);
 };
 
 #endif

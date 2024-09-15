@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/14 19:36:09 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/15 15:35:47 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,8 +79,9 @@ struct t_root {
 class Config;
 class Socket;
 
-void  configMain(Config config, int argc, char** argv);
-void  socketMain(Socket socketData);
+void configMain(Config config, int argc, char** argv);
+void socketMain(Socket socketData);
+void eventLoop(Socket socket);
 void httpServerMain(void);
 
 namespace mylib {
