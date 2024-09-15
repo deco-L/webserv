@@ -6,7 +6,7 @@
 #    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2024/09/14 18:13:02 by csakamot         ###   ########.fr        #
+#    Updated: 2024/09/15 14:56:52 by csakamot         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,7 +31,7 @@ CONFSRC = configMain.cpp Config.cpp
 
 EVENSRC = 
 
-HTTPSRC = 
+HTTPSRC = httpServerMain.cpp
 
 ERROSRC = Error.cpp
 
