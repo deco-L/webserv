@@ -4,7 +4,9 @@
 # 特定のファイルを無視から除外
 !**/*.cpp
 !**/*.hpp
+!**/*.tpp
 !**/*.ipp
+!**/*.html
 !**/*.conf
 !**/Makefile
 !**/README.md
@@ -19,3 +21,5 @@
 !/src
 !/src/*
 !/conf
+!/wsv
+!/wsv/*

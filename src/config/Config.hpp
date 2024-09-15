@@ -1,26 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   Config.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/31 04:54:07 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/28 14:11:05 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "webserv.hpp"
-#include "Config.hpp"
-#include "Socket.hpp"
+#ifndef CONFIG_HPP
+#define CONFIG_HPP
 
-static t_root<Config, Socket> root;
+#include <string>
 
-int main(int argc, char **argv, char **envp)
-{
-  (void)envp;
+class Config {
+private:
+  int         _argc;
+  std::string _file_path;
 
-  configMain(root.config, argc, argv);
-  socketMain(root.socketData);
-  return (EXIT_SUCCESS);
-}
+public:
+  Config(void);
+  Config(int argc, char** argv);
+  ~Config();
+
+  int         getArgc(void) const;
+  std::string getFileName(void) const;
+  void        checkNbrArg(void) const;
+
+  Config&      operator=(const Config& obj);
+};
+
+#endif

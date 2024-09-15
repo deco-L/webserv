@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   HttpRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/11 17:31:43 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/08/26 18:36:48 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef _HTTPREQUEST_HPP
-#define _HTTPREQUEST_HPP
+#ifndef HTTPREQUEST_HPP
+#define HTTPREQUEST_HPP
 
 #define HTTP_CONTINUE                       100
 #define HTTP_SWITCHING_PROTOCOlS            101
@@ -59,8 +59,7 @@
 #define HTTP_NOT_IMPLEMENTED                501
 #define HTTP_BAD_GATEWAY                    502
 #define HTTP_SERVIICE_UNAVAILABLE           503
-#define GATEWAY_TIME_OUT                    504
+#define HTTP_GATEWAY_TIME_OUT               504
 #define HTTP_VERSION_NOT_SUPPORTED          505
 
 #endif
-

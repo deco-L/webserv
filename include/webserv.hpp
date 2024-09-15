@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/11 18:10:02 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/14 19:36:09 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,11 @@
 
 /* c++ std library */
 #include <cstdlib>
+#include <iostream>
+#include <sstream>
+#include <cstring>
+#include <vector>
+#include <cstdio>
 
 /* c library for communication */
 #include <sys/types.h>
@@ -59,10 +64,34 @@
 #include <netdb.h>
 
 #define WSV_OK    0
-#define WSV_ERROR -1
+#define WSV_ERROR 1
 
 #define LF    (u_char) '\n'
 #define CR    (u_char) '\r'
 #define CRLF  "\r\n"
+
+template <typename ConfigClass, typename SocketClass>
+struct t_root {
+  ConfigClass config;
+  SocketClass socketData;
+};
+
+class Config;
+class Socket;
+
+void  configMain(Config config, int argc, char** argv);
+void  socketMain(Socket socketData);
+void httpServerMain(void);
+
+namespace mylib {
+  void  spinnerOut(void);
+  void	bzero(void *s, size_t n);
+  size_t	strlen(const char *str);
+  template <typename T>
+  std::string to_string(const T& n);
+  char* inet_ntoa(struct in_addr in);
+}
+
+#include "string.tpp"
 
 #endif
