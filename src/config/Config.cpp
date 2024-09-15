@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/29 18:53:10 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/15 20:03:30 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,11 @@
 #include "Config.hpp"
 #include "Error.hpp"
 
-Config::Config(void): _argc(0), _file_path("") {}
+Config::Config(void): _argc(0), _file_path(std::string(DEFOULT_CONF)) {}
 
-Config::Config(int argc, char** argv)
+Config::Config(int argc, std::string file_path)
 : _argc(argc),
-  _file_path((argc >= 2) ? std::string(argv[1]) : std::string("")) {}
+  _file_path(file_path) {}
 
 Config::~Config() {}
 
@@ -28,6 +28,10 @@ int Config::getArgc(void) const {
 
 std::string Config::getFileName(void) const {
   return (this->_file_path);
+}
+
+std::vector<ConfigServer> Config::getServers(void) const {
+  return (this->_servers);
 }
 
 void Config::checkNbrArg(void) const {
@@ -43,12 +47,13 @@ Config& Config::operator=(const Config& obj) {
   if (this != &obj) {
     this->_argc = obj.getArgc();
     this->_file_path = obj.getFileName();
+    this->_servers = obj.getServers();
   }
   else
   {
-    std::cout << "\e[1;31mError: "
-              << "Attempted self-assignment in copy assignment operator.\e[0m"
-              << std::endl;
+    std::cout << ERROR_COLOR << "Error: "
+              << "Attempted self-assignment in copy assignment operator."
+              << COLOR_RESET << std::endl;
   }
   return (*this);
 }

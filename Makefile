@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
+#    By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2024/09/15 16:54:42 by csakamot         ###   ########.fr        #
+#    Updated: 2024/09/15 22:48:36 by miyazawa.ka      ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,7 +29,7 @@ OBJDIR	= objs/
 ##------------Srcs-------------##
 CORESRC	=	main.cpp socketMain.cpp Socket.cpp
 
-CONFSRC = configMain.cpp Config.cpp
+CONFSRC = configMain.cpp Config.cpp parseConfig.cpp isValidConfig.cpp
 
 EVENSRC = eventLoop.cpp
 
@@ -41,7 +41,7 @@ UTILSRC = charaOutput.cpp memory.cpp string.cpp net.cpp
 
 SRCS		= $(addprefix $(SRCDIR)core/, ${CORESRC}) $(addprefix $(SRCDIR)config/, $(CONFSRC)) \
 					$(addprefix $(SRCDIR)event/, $(EVENSRC)) $(addprefix $(SRCDIR)http/, $(HTTPSRC)) \
-					$(addprefix $(SRCDIR)utils/, $(UTILSRC)) $(addprefix $(SRCDIR)error/, $(ERROSRC)) 
+					$(addprefix $(SRCDIR)utils/, $(UTILSRC)) $(addprefix $(SRCDIR)error/, $(ERROSRC))
 ##-----------------------------##
 
 ##-----------Object------------##
