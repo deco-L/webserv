@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/12 14:10:04 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/14 19:44:48 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,53 +165,74 @@ int httpServer(int sock) {
   return (WSV_OK);
 }
 
-void  socketMain(Socket socketData) {
-  socketData = Socket();
+void socketMain(Socket socket) {
+  socket = Socket();
+  Socket cSocket;
 
-  int w_addr, c_sock;
-  struct sockaddr_in a_addr;
-
-  w_addr = socket(AF_INET, SOCK_STREAM, 0);
-  if (w_addr == -1) {
-    std::cerr << ERROR_COLOR << "socket error." << COLOR_RESET << std::endl;
-    std::exit(EXIT_FAILURE);
+  try {
+    socket.create();
+    socket.passive(8080, REUSE_PORT);
+  } catch (const std::exception& e) {
+    std::cerr << ERROR_COLOR << e.what() << COLOR_RESET << std::endl;
+    socket.close();
+    std::exit(WSV_ERROR);
   }
-
-  int opt = 1;
-  if (setsockopt(w_addr, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-      perror("setsockopt failed");
-      exit(EXIT_FAILURE);
-  }
-
-  std::memset(&a_addr, 0, sizeof(struct sockaddr_in));
-  a_addr.sin_family = AF_INET;
-  a_addr.sin_port = htons((unsigned int)8080);
-  a_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-
-  if (bind(w_addr, (const struct sockaddr*)&a_addr, sizeof(a_addr)) == -1) {
-    std::cerr << ERROR_COLOR << "bind error." << COLOR_RESET << std::endl;
-    close(w_addr);
-    std::exit(EXIT_FAILURE);
-  }
-
-  if (listen(w_addr, SOMAXCONN) == -1) {
-    std::cout << ERROR_COLOR << "listen error." << COLOR_RESET << std::endl;
-    close(w_addr);
-    std::exit(EXIT_FAILURE);
-  }
-
   while (true) {
-    std::cout << "Waiting connect..." << std::endl;
-    c_sock = accept(w_addr, NULL, NULL);
-    if (c_sock == -1) {
-      std::cerr << ERROR_COLOR << "accept error." << COLOR_RESET << std::endl;
-      close(w_addr);
-      std::exit(EXIT_FAILURE);
-    }
-    std::cout << "Connected!" << std::endl;
-    httpServer(c_sock);
-    close(c_sock);
+    socket.accept(cSocket);
+    httpServerMain();
+    cSocket.close();
   }
-  close(w_addr);
+  socket.close();
   return ;
 }
+
+// void  socketMain(Socket socketData) {
+//   socketData = Socket();
+
+//   int w_addr, c_sock;
+//   struct sockaddr_in a_addr;
+
+//   w_addr = socket(AF_INET, SOCK_STREAM, 0);
+//   if (w_addr == -1) {
+//     std::cerr << ERROR_COLOR << "socket error." << COLOR_RESET << std::endl;
+//     std::exit(EXIT_FAILURE);
+//   }
+
+//   int opt = 1;
+//   if (setsockopt(w_addr, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+//       perror("setsockopt failed");
+//       exit(EXIT_FAILURE);
+//   }
+
+//   std::memset(&a_addr, 0, sizeof(struct sockaddr_in));
+//   a_addr.sin_family = AF_INET;
+//   a_addr.sin_port = htons((unsigned int)8080);
+//   a_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+//   if (bind(w_addr, (const struct sockaddr*)&a_addr, sizeof(a_addr)) == -1) {
+//     std::cerr << ERROR_COLOR << "bind error." << COLOR_RESET << std::endl;
+//     close(w_addr);
+//     std::exit(EXIT_FAILURE);
+//   }
+
+//   if (listen(w_addr, SOMAXCONN) == -1) {
+//     std::cout << ERROR_COLOR << "listen error." << COLOR_RESET << std::endl;
+//     close(w_addr);
+//     std::exit(EXIT_FAILURE);
+//   }
+
+//   while (true) {
+//     std::cout << "Waiting connect..." << std::endl;
+//     c_sock = accept(w_addr, NULL, NULL);
+//     if (c_sock == -1) {
+//       std::cerr << ERROR_COLOR << "accept error." << COLOR_RESET << std::endl;
+//       close(w_addr);
+//       std::exit(EXIT_FAILURE);
+//     }
+//     std::cout << "Connected!" << std::endl;
+//     httpServer(c_sock);
+//     close(c_sock);
+//   }
+//   close(w_addr);
+//   return ;
+// }
