@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/15 17:54:07 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/20 18:54:52 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,25 +36,9 @@ _timeOut(60) {
   return ;
 }
 
-Socket::Socket(const Socket& obj) : 
-  _sSockAddr(obj._sSockAddr),
-  _cSockAddr(obj._cSockAddr),
-  _sPort(obj._sPort),
-  _cPort(obj._cPort),
-  _addrLen(obj._addrLen),
-  _bufFlag(obj._bufFlag),
-  _buf1(obj._buf1),
-  _buf2(obj._buf2),
-  _beg1(obj._beg1),
-  _beg2(obj._beg2),
-  _end1(obj._end1),
-  _end2(obj._end2),
-  _socket(obj._socket),
-  _error(obj._error),
-  _outBuf(obj._outBuf),
-  _peerIpName(obj._peerIpName),
-  _peerIp(obj._peerIp),
-  _timeOut(obj._timeOut) {
+Socket::Socket(const Socket& obj) {
+  *this = obj;
+  return ;
 }
 
 Socket::~Socket() {
@@ -87,29 +71,33 @@ void Socket::passive(short int port, bool opt) {
   if (opt) {
     this->_error = setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, (char *) &optval, sizeof(optval));
     if (this->_error < 0)
-      throw Socket::SocketError("setsockopt errro");
+      throw Socket::SocketError("setsockopt error");
   }
   this->_sPort = port;
   std::memset(&this->_sSockAddr, 0, sizeof(struct sockaddr_in));
   this->_sSockAddr.sin_family = AF_INET;
   this->_sSockAddr.sin_port = htons(static_cast<unsigned int>(this->_sPort));
-  this->_sSockAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+  this->_sSockAddr.sin_addr.s_addr = INADDR_ANY;
   this->_error = bind(this->_socket, (const struct sockaddr *) &this->_sSockAddr, sizeof(this->_sSockAddr));
   if (this->_error < 0)
     throw Socket::SocketError("bind failed");
   this->_error = listen(this->_socket, SOMAXCONN);
   if (this->_error < 0)
     throw Socket::SocketError("listen error");
+  if (mylib::nonBlocking(this->_socket) < 0)
+    throw Socket::SocketError("fcntl error");
   return ;
 }
 
 void Socket::accept(Socket& cSocket) {
-  mylib::bzero (&this->_cSockAddr, this->_addrLen);
+  mylib::bzero(&this->_cSockAddr, this->_addrLen);
   cSocket._socket = ::accept(this->_socket, (struct sockaddr *) &cSocket._cSockAddr, (unsigned int *) &cSocket._addrLen);
   if (cSocket._socket < 0) {
     this->_error = cSocket._socket;
     throw Socket::SocketError("accept error");
   }
+  if (mylib::nonBlocking(cSocket._socket) < 0)
+    throw Socket::SocketError("fcntl error");
   cSocket._peerIp = mylib::to_string(ntohs(cSocket._cSockAddr.sin_port));
   return ;
 }

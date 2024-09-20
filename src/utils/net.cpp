@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/12 16:47:16 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/20 17:07:04 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,5 +30,16 @@ namespace mylib {
     buffer[sizeof(buffer) - 1] = '\0';
 
     return buffer;
+  }
+
+  int nonBlocking(int fd) {
+    int flag;
+
+    flag = fcntl(fd, F_GETFL, 0);
+    if (flag < 0)
+      return (-1);
+    if (fcntl(fd, F_SETFL, flag | O_NONBLOCK) < 0)
+      return (-1);
+    return (0);
   }
 }

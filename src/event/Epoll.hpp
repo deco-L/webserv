@@ -1,29 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   Epoll.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/20 18:59:27 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/20 17:56:23 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "webserv.hpp"
-#include "Config.hpp"
-#include "Socket.hpp"
+#ifndef EPOLL_HPP
+#define EPOLL_HPP
 
-static t_root<Config, Socket> root;
+#include <iostream>
 
-int main(int argc, char **argv, char **envp)
-{
-  (void)envp;
+class Epoll {
+private:
+  Epoll(const Epoll& ovj);
+  Epoll& operator=(const Epoll& obj);
 
-  configMain(root.config, argc, argv);
-  socketMain(root.socket);
-  eventLoop(root.socket);
-  socketEnd(root.socket);
-  std::cout << "finish" << std::endl;
-  return (EXIT_SUCCESS);
-}
+public:
+  Epoll(void);
+  ~Epoll(void);
+};
+
+#endif

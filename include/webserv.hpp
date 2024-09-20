@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/15 15:35:47 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/20 17:34:15 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <limits>
 
 #define WSV_OK    0
 #define WSV_ERROR 1
@@ -73,16 +74,17 @@
 template <typename ConfigClass, typename SocketClass>
 struct t_root {
   ConfigClass config;
-  SocketClass socketData;
+  SocketClass socket;
 };
 
 class Config;
 class Socket;
 
-void configMain(Config config, int argc, char** argv);
-void socketMain(Socket socketData);
-void eventLoop(Socket socket);
-void httpServerMain(void);
+void configMain(Config& config, int argc, char** argv);
+void socketMain(Socket& socketData);
+void socketEnd(Socket& sSocket);
+void eventLoop(Socket& sSocket);
+void httpServer(Socket& cSocket);
 
 namespace mylib {
   void  spinnerOut(void);
@@ -91,6 +93,7 @@ namespace mylib {
   template <typename T>
   std::string to_string(const T& n);
   char* inet_ntoa(struct in_addr in);
+  int nonBlocking(int fd);
 }
 
 #include "string.tpp"

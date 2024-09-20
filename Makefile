@@ -6,7 +6,7 @@
 #    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2024/09/15 16:54:42 by csakamot         ###   ########.fr        #
+#    Updated: 2024/09/20 18:08:21 by csakamot         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,9 +31,9 @@ CORESRC	=	main.cpp socketMain.cpp Socket.cpp
 
 CONFSRC = configMain.cpp Config.cpp
 
-EVENSRC = eventLoop.cpp
+EVENSRC = eventLoop.cpp Epoll.cpp
 
-HTTPSRC = httpServerMain.cpp Http.cpp
+HTTPSRC = httpServer.cpp Http.cpp
 
 ERROSRC = Error.cpp
 
