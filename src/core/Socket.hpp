@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/15 17:30:02 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/25 15:25:31 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,6 @@ protected:
   short int _cPort;
   int _addrLen;
   int _bufFlag;
-  std::string _buf1, _buf2;
-  int _beg1, _beg2, _end1, _end2;
 
 public:
   int _socket;
