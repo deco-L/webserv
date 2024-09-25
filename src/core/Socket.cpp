@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/25 14:53:22 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/25 15:23:40 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,13 @@ _cSockAddr(),
 _sPort(0),
 _cPort(0),
 _addrLen(sizeof(_sSockAddr)),
+_bufFlag(1),
+_buf1(std::string(MAX_SOCK_BUFFER / 2, 0)),
+_buf2(std::string(MAX_SOCK_BUFFER / 2, 0)),
+_beg1(0),
+_beg2(0),
+_end1(0),
+_end2(0),
 _socket(-1),
 _error(0),
 _outBuf(std::string(MAX_SOCK_BUFFER, 0)),
@@ -95,147 +102,143 @@ void Socket::accept(Socket& cSocket) {
   return ;
 }
 
-void Socket::recv(void) {
+void Socket::recv(int bytes) {
+  if ((this->_bufFlag == 1) && this->_end1 != 0) {
+    if (bytes >= (this->_end1 - this->_beg1)) {
+      this->_outBuf.append(this->_buf1.substr(this->_beg1), this->_end1 - this->_beg1);
+      this->_error = this->_end1 - this->_beg1;
+      this->_beg1 = this->_end1 = 0;
+      this->_bufFlag = 2;
+    } else {
+      this->_outBuf.append(this->_buf1.substr(this->_beg1), bytes);
+      this->_error = bytes;
+      this->_beg1 += bytes;
+    }
+  } else if ((this->_bufFlag == 2) && (this->_end2 != 0)) {
+    if (bytes >= (this->_end2 - this->_beg2)) {
+      this->_outBuf.append(this->_buf2.substr(this->_beg2), this->_end2 - this->_beg2);
+      this->_bufFlag = 1;
+    } else {
+      this->_outBuf.append(this->_buf2.substr(this->_beg2), bytes);
+      this->_error = bytes;
+      this->_beg1 += bytes;
+    }
+  }
   return ;
 }
 
-// void Socket::recv(int bytes) {
-//   if ((this->_bufFlag == 1) && this->_end1 != 0) {
-//     if (bytes >= (this->_end1 - this->_beg1)) {
-//       this->_outBuf.append(this->_buf1.substr(this->_beg1), this->_end1 - this->_beg1);
-//       this->_error = this->_end1 - this->_beg1;
-//       this->_beg1 = this->_end1 = 0;
-//       this->_bufFlag = 2;
-//     } else {
-//       this->_outBuf.append(this->_buf1.substr(this->_beg1), bytes);
-//       this->_error = bytes;
-//       this->_beg1 += bytes;
-//     }
-//   } else if ((this->_bufFlag == 2) && (this->_end2 != 0)) {
-//     if (bytes >= (this->_end2 - this->_beg2)) {
-//       this->_outBuf.append(this->_buf2.substr(this->_beg2), this->_end2 - this->_beg2);
-//       this->_bufFlag = 1;
-//     } else {
-//       this->_outBuf.append(this->_buf2.substr(this->_beg2), bytes);
-//       this->_error = bytes;
-//       this->_beg1 += bytes;
-//     }
-//   }
-//   return ;
-// }
+int Socket::recvTeol(bool remove) {
+  int state, idx;
 
-// int Socket::recvTeol(bool remove) {
-//   int state, idx;
-
-//   state = 1;
-//   idx = 0;
-//   while (state != 0) {
-//     switch (state) {
-//       case (1): {
-//         if ((this->_end1 == 0) && (this->_end2 == 0))
-//           state = 2;
-//         else
-//           state = 3;
-//         break ;
-//       }
-//       case (2): {
-//         const char* tmp = this->_buf1.c_str();
-//         this->_error = ::recv(this->_socket, (char *)tmp, MAX_SOCK_BUFFER / 2, 0);
-//         if (this->_error == -1) {
-//           state = 0;
-//           break ;
-//         }
-//         this->_beg1 = 0;
-//         this->_end1 = this->_error;
-//         if (this->_error == MAX_SOCK_BUFFER / 2) {
-//           const char* tmp2 = this->_buf2.c_str();
-//           this->_error = ::recv(this->_socket, (char *)tmp2, MAX_SOCK_BUFFER / 2, 0);
-//           if (this->_error == -1) {
-//             state = 0;
-//             break ;
-//           }
-//           this->_beg2 = 0;
-//           this->_end2 = this->_error;
-//         }
-//         this->_bufFlag = 1;
-//         state = 3;
-//         break ;
-//       }
-//       case (3): {
-//         if ((this->_bufFlag == 1) && (this->_end1 != 0)) {
-//           for (; this->_beg1 < this->_end1; this->_beg1++) {
-//             this->_outBuf[idx] = this->_buf1[this->_beg1];
-//             if ((this->_outBuf[idx] == '\n') || (this->_outBuf[idx] == 'r')) {
-//               this->_beg1++;
-//               if ((this->_outBuf[idx] == '\r') && (this->_buf1[this->_beg1] == '\n')) {
-//                 idx++;
-//                 this->_outBuf[idx] = this->_buf1[this->_beg1];
-//                 this->_beg1++;
-//               }
-//               this->_outBuf[idx + 1] = '\0';
-//               state = 4;
-//               break ;
-//             }
-//             idx++;
-//             if ((idx + 1) == MAX_SOCK_BUFFER) {
-//               this->_outBuf[MAX_SOCK_BUFFER] = '\0';
-//               state = 4;
-//               break ;
-//             }
-//           }
-//           if (this->_beg1 == this->_end1)
-//             this->_beg1 = this->_end1 = 0;
-//           if (state == 3)
-//             this->_bufFlag = 2;
-//           else if ((this->_bufFlag == 2) && (this->_end2 != 0)) {
-//             for (; this->_beg2 < this->_end2; this->_beg2++) {
-//               this->_outBuf[idx] = this->_buf2[this->_beg2];
-//               if ((this->_outBuf[idx] == '\n') || (this->_outBuf[idx] == '\r')) {
-//                 this->_beg2++;
-//                 if ((this->_outBuf[idx] == '\r') && (this->_buf2[this->_beg2] == '\n')) {
-//                   idx++;
-//                   this->_outBuf[idx] = this->_buf2[this->_beg2];
-//                   this->_beg2++;
-//                 }
-//                 this->_outBuf[idx + 1] = '\0';
-//                 state = 4;
-//                 break ;
-//               }
-//               idx++;
-//               if ((idx + 1) == MAX_SOCK_BUFFER) {
-//                 this->_outBuf[MAX_SOCK_BUFFER] = '\0';
-//                 state = 4;
-//                 break ;
-//               }
-//             }
-//             if (this->_beg2 == this->_end2)
-//               this->_beg2 = this->_end2 = 0;
-//             if (state == 3)
-//               this->_bufFlag = 1;
-//           }
-//           else {
-//             if (idx < MAX_SOCK_BUFFER)
-//               state = 2;
-//             else
-//               state = 4;
-//           }
-//         }
-//         break ;
-//       }
-//       case (4): {
-//         state = 0;
-//         break ;
-//       }
-//     }
-//   }
-//   if (remove > 0) {
-//     while ((this->_outBuf[idx] == '\r') || (this->_outBuf[idx] == '\n')) {
-//       this->_outBuf[idx] = '\0';
-//       idx--;
-//     }
-//   }
-//   return (idx + 1);
-// }
+  state = 1;
+  idx = 0;
+  while (state != 0) {
+    switch (state) {
+      case (1): {
+        if ((this->_end1 == 0) && (this->_end2 == 0))
+          state = 2;
+        else
+          state = 3;
+        break ;
+      }
+      case (2): {
+        const char* tmp = this->_buf1.c_str();
+        this->_error = ::recv(this->_socket, (char *)tmp, MAX_SOCK_BUFFER / 2, 0);
+        if (this->_error == -1) {
+          state = 0;
+          break ;
+        }
+        this->_beg1 = 0;
+        this->_end1 = this->_error;
+        if (this->_error == MAX_SOCK_BUFFER / 2) {
+          const char* tmp2 = this->_buf2.c_str();
+          this->_error = ::recv(this->_socket, (char *)tmp2, MAX_SOCK_BUFFER / 2, 0);
+          if (this->_error == -1) {
+            state = 0;
+            break ;
+          }
+          this->_beg2 = 0;
+          this->_end2 = this->_error;
+        }
+        this->_bufFlag = 1;
+        state = 3;
+        break ;
+      }
+      case (3): {
+        if ((this->_bufFlag == 1) && (this->_end1 != 0)) {
+          for (; this->_beg1 < this->_end1; this->_beg1++) {
+            this->_outBuf[idx] = this->_buf1[this->_beg1];
+            if ((this->_outBuf[idx] == '\n') || (this->_outBuf[idx] == 'r')) {
+              this->_beg1++;
+              if ((this->_outBuf[idx] == '\r') && (this->_buf1[this->_beg1] == '\n')) {
+                idx++;
+                this->_outBuf[idx] = this->_buf1[this->_beg1];
+                this->_beg1++;
+              }
+              this->_outBuf[idx + 1] = '\0';
+              state = 4;
+              break ;
+            }
+            idx++;
+            if ((idx + 1) == MAX_SOCK_BUFFER) {
+              this->_outBuf[MAX_SOCK_BUFFER] = '\0';
+              state = 4;
+              break ;
+            }
+          }
+          if (this->_beg1 == this->_end1)
+            this->_beg1 = this->_end1 = 0;
+          if (state == 3)
+            this->_bufFlag = 2;
+          else if ((this->_bufFlag == 2) && (this->_end2 != 0)) {
+            for (; this->_beg2 < this->_end2; this->_beg2++) {
+              this->_outBuf[idx] = this->_buf2[this->_beg2];
+              if ((this->_outBuf[idx] == '\n') || (this->_outBuf[idx] == '\r')) {
+                this->_beg2++;
+                if ((this->_outBuf[idx] == '\r') && (this->_buf2[this->_beg2] == '\n')) {
+                  idx++;
+                  this->_outBuf[idx] = this->_buf2[this->_beg2];
+                  this->_beg2++;
+                }
+                this->_outBuf[idx + 1] = '\0';
+                state = 4;
+                break ;
+              }
+              idx++;
+              if ((idx + 1) == MAX_SOCK_BUFFER) {
+                this->_outBuf[MAX_SOCK_BUFFER] = '\0';
+                state = 4;
+                break ;
+              }
+            }
+            if (this->_beg2 == this->_end2)
+              this->_beg2 = this->_end2 = 0;
+            if (state == 3)
+              this->_bufFlag = 1;
+          }
+          else {
+            if (idx < MAX_SOCK_BUFFER)
+              state = 2;
+            else
+              state = 4;
+          }
+        }
+        break ;
+      }
+      case (4): {
+        state = 0;
+        break ;
+      }
+    }
+  }
+  if (remove > 0) {
+    while ((this->_outBuf[idx] == '\r') || (this->_outBuf[idx] == '\n')) {
+      this->_outBuf[idx] = '\0';
+      idx--;
+    }
+  }
+  return (idx + 1);
+}
 
 void Socket::send(std::string buf, size_t len) {
   const char* tmp = buf.c_str();
@@ -297,6 +300,7 @@ void Socket::resolveName(void) {
 }
 
 void Socket::close(void) {
+  this->_beg1 = this->_beg2 = this->_end1 = this->_end2 = 0;
   this->_error = -1;
   ::close(this->_socket);
   return ;
@@ -309,6 +313,13 @@ Socket& Socket::operator=(const Socket& obj) {
     this->_sPort = obj._sPort;
     this->_cPort = obj._cPort;
     this->_addrLen = obj._addrLen;
+    this->_bufFlag = obj._bufFlag;
+    this->_buf1 = obj._buf1;
+    this->_buf2 = obj._buf2;
+    this->_beg1 = obj._beg1;
+    this->_beg2 = obj._beg2;
+    this->_end1 = obj._end1;
+    this->_end2 = obj._end2;
     this->_socket = obj._socket;
     this->_error = obj._error;
     this->_outBuf = obj._outBuf;
