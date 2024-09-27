@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/20 17:34:15 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/27 14:21:11 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,7 @@ void configMain(Config& config, int argc, char** argv);
 void socketMain(Socket& socketData);
 void socketEnd(Socket& sSocket);
 void eventLoop(Socket& sSocket);
-void httpServer(Socket& cSocket);
+void httpServer(Socket& cSocket, int& epollfd, struct epoll_event& ev, struct epoll_event *events);
 
 namespace mylib {
   void  spinnerOut(void);

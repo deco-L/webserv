@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/25 15:25:31 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/27 12:44:54 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,8 +61,7 @@ public:
   void create(void);
   void passive(short int port, bool opt);
   void accept(Socket& cSocket);
-  void recv(int bytes);
-  int recvTeol(bool remove);
+  int recv(void);
   void send(std::string buf, size_t len);
   void sendText(std::string fileName);
   void sendBinary(std::string fileName);
