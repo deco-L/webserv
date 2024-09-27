@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/15 22:40:46 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2024/09/15 22:40:46 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/09/27 16:15:09 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ bool getFileContent(std::string file_path, std::string &file_content)
 
 	if (!input.is_open())
 	{
+		outputError("Error: Cannot open the configuration file.");
 		return false;
 	}
 	std::string	line;
@@ -42,8 +43,21 @@ bool is_string_from_set(const std::string& str, const std::string& allowed_chars
     return true; // 全ての文字が許可されたセット内
 }
 
+// 先頭から指定された文字セットに含まれる文字を削除する関数
+std::string trim_head_chars(const std::string& str, const std::string& charSet) {
+	// strの先頭から、charSetに含まれる文字が現れなくなる場所を見つける
+	std::string::size_type pos = str.find_first_not_of(charSet);
+
+	// その場所からの部分文字列を返す
+	if (pos == std::string::npos) {
+		return "";  // 全ての文字が削除対象だった場合、空文字列を返す
+	} else {
+		return str.substr(pos);  // 必要な部分を返す
+	}
+}
+
 // 末尾から指定された文字セットに含まれる文字を削除する関数
-std::string trim_trailing_chars(const std::string& str, const std::string& charSet) {
+std::string trim_tail_chars(const std::string& str, const std::string& charSet) {
     // strの末尾から、charSetに含まれる文字が現れなくなる場所を見つける
     std::string::size_type pos = str.find_last_not_of(charSet);
 
@@ -55,6 +69,8 @@ std::string trim_trailing_chars(const std::string& str, const std::string& charS
     }
 }
 
+// コメント行や空行を削除する関数
+// 行末の空白文字やセミコロンも削除する
 std::string removeUnnecessaryLines(std::string file_content)
 {
 	std::string		new_file_content;
@@ -71,7 +87,8 @@ std::string removeUnnecessaryLines(std::string file_content)
 			continue;
 		if (is_string_from_set(line, " \t"))
 			continue;
-		line = trim_trailing_chars(line, " \t;");
+		line = trim_head_chars(line, " \t");
+		line = trim_tail_chars(line, " \t;");
 		new_file_content += line + "\n";
 	}
 	return new_file_content;
@@ -83,16 +100,18 @@ void Config::parseConfig(void)
 
   if (getFileContent(this->_file_path, file_content) == false)
 	std::exit(0);
+  // 空白行やコメント行を削除する
   file_content = removeUnnecessaryLines(file_content);
 
-  std::cout << "File content: ======================="
-  << std::endl << file_content
-  << "===============================" << std::endl;
-
-  if (isValidConfig(file_content) == false)
+  if (DEBUG)
   {
-	outputError("Error: Invalid config file.");
-	std::exit(0);
+    std::cout << "File content: ======================="
+    << std::endl << file_content
+    << "===============================" << std::endl;
   }
+
+  // ファイルの内容が正しいかどうかを確認する
+  if (isValidConfig(file_content) == false)
+	std::exit(0);
 
 }

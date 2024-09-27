@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/15 21:51:00 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/09/27 16:51:41 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 #include <vector>
 #include <cstdio>
 #include <fstream>
+#include <stack>
+#include <map>
 
 /* c library for communication */
 #include <sys/types.h>
@@ -67,6 +69,8 @@
 #define WSV_OK    0
 #define WSV_ERROR 1
 
+#define DEBUG 1
+
 #define LF    (u_char) '\n'
 #define CR    (u_char) '\r'
 #define CRLF  "\r\n"
@@ -88,9 +92,11 @@ void eventLoop(Socket socket);
 void httpServerMain(void);
 
 namespace mylib {
+  int check_access(const char *path);
   void  spinnerOut(void);
   void	bzero(void *s, size_t n);
   size_t	strlen(const char *str);
+  std::vector<std::string> split(const std::string& s, const std::string& del);
   template <typename T>
   std::string to_string(const T& n);
   char* inet_ntoa(struct in_addr in);

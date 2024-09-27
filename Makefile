@@ -6,7 +6,7 @@
 #    By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2024/09/15 22:48:36 by miyazawa.ka      ###   ########.fr        #
+#    Updated: 2024/09/27 16:50:21 by miyazawa.ka      ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -37,7 +37,7 @@ HTTPSRC = httpServerMain.cpp Http.cpp
 
 ERROSRC = Error.cpp
 
-UTILSRC = charaOutput.cpp memory.cpp string.cpp net.cpp
+UTILSRC = access.cpp charaOutput.cpp memory.cpp string.cpp net.cpp
 
 SRCS		= $(addprefix $(SRCDIR)core/, ${CORESRC}) $(addprefix $(SRCDIR)config/, $(CONFSRC)) \
 					$(addprefix $(SRCDIR)event/, $(EVENSRC)) $(addprefix $(SRCDIR)http/, $(HTTPSRC)) \
