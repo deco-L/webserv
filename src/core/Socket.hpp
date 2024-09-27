@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/25 15:23:47 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/27 22:54:55 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,6 @@ protected:
   short int _cPort;
   int _addrLen;
   int _bufFlag;
-  std::string _buf1, _buf2;
-  int _beg1, _beg2, _end1, _end2;
 
 public:
   int _socket;
@@ -63,8 +61,7 @@ public:
   void create(void);
   void passive(short int port, bool opt);
   void accept(Socket& cSocket);
-  void recv(int bytes);
-  int recvTeol(bool remove);
+  int recv(void);
   void send(std::string buf, size_t len);
   void sendText(std::string fileName);
   void sendBinary(std::string fileName);

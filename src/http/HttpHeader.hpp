@@ -1,25 +1,36 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Error.hpp                                          :+:      :+:    :+:   */
+/*   HttpHeader.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/27 15:38:24 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/27 17:56:42 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef ERROR_HPP
-#define ERROR_HPP
+#ifndef HTTPHEADER_HPP
+#define HTTPHEADER_HPP
 
 #include <iostream>
-#include <cstdlib>
+#include <sstream>
+#include <map>
+#include <vector>
 
-#define NORMA_COLOR "\033[0;38;5;119m"
-#define ERROR_COLOR "\033[0;38;5;200m"
-#define COLOR_RESET "\033[0m"
+class HttpHeader {
+private:
+  std::map<std::string, std::string> _headers;
 
-void  outputError(std::string error);
+  HttpHeader(const HttpHeader& obj);
+  HttpHeader& operator=(const HttpHeader& obj);
+
+public:
+  HttpHeader(void);
+  ~HttpHeader();
+
+  void setHeaders(std::vector<std::string>& headers);
+  void showHeaders(void) const;
+};
 
 #endif
