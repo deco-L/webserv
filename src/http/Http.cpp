@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/29 19:49:43 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/30 16:03:04 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,9 +130,8 @@ void Http::recvRequestMessage(Socket& socket) {
     throw Http::HttpError("recvRequestMessage error");
   else if (this->_requestSize > MAX_SOCK_BUFFER)
     this->_httpResponse = new HttpResponse(413);
-  else if (this->_requestSize == 0) {
+  else if (this->_requestSize == 0)
     std::cout << NORMA_COLOR << "connection end." << COLOR_RESET << std::endl;
-  }
   socket._error = this->_requestSize;
   return ;
 }

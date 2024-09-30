@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/27 22:54:42 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/30 15:30:55 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ Socket::SocketError::SocketError(std::string error) : _error_message(error) {
 }
 
 Socket::SocketError::~SocketError() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW {
+  return ;
 }
 
 const char* Socket::SocketError::what(void) const throw() {

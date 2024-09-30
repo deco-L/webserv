@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/27 14:21:11 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/30 15:58:36 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,12 +79,13 @@ struct t_root {
 
 class Config;
 class Socket;
+class Epoll;
 
 void configMain(Config& config, int argc, char** argv);
 void socketMain(Socket& socketData);
 void socketEnd(Socket& sSocket);
 void eventLoop(Socket& sSocket);
-void httpServer(Socket& cSocket, int& epollfd, struct epoll_event& ev, struct epoll_event *events);
+void httpServer(Socket& cSocket, Epoll& epoll);
 
 namespace mylib {
   void  spinnerOut(void);
@@ -94,6 +95,7 @@ namespace mylib {
   std::string to_string(const T& n);
   char* inet_ntoa(struct in_addr in);
   int nonBlocking(int fd);
+  bool ifFdValid(int fd);
 }
 
 #include "string.tpp"
