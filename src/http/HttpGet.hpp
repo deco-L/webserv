@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/28 15:32:25 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/29 19:46:34 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ public:
   HttpGet(void);
   ~HttpGet();
 
-  void execute(void);
+  void execute(Socket& socket, HttpHeader& header, HttpResponse& response);
 };
 
 #endif

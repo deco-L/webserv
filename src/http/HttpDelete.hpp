@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/28 15:32:33 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/29 19:46:43 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,14 @@
 
 class HttpDelete : public AHttpMethod {
 private:
-  HttpDelete(const HttpHeader& obj);
-  HttpHeader& operator=(const HttpHeader& obj);
+  HttpDelete(const HttpDelete& obj);
+  HttpDelete& operator=(const HttpDelete& obj);
 
 public:
   HttpDelete(void);
   ~HttpDelete();
 
-  void execute(void);
+  void execute(Socket& socket, HttpHeader& header, HttpResponse& response);
 };
 
 #endif

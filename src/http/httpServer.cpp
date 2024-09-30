@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/27 18:00:41 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/29 19:49:19 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,13 +34,23 @@ void httpServer(Socket& cSocket, int& epollfd, struct epoll_event& ev, struct ep
       http.recvRequestMessage(cSocket);
       if (cSocket._error == 0)
         break ;
+      if (http.getRequestSize() > MAX_SOCK_BUFFER) {
+        http.sendResponse(cSocket);
+        break ;
+      }
       http.parseRequestMessage(cSocket);
       std::cout << "-----request line-----" << std::endl;
       http.showRequestLine();
       std::cout << "-----headers-----" << std::endl;
       http.showHttpHeaders();
       std::cout << "----------" << std::endl;
-      cSocket._outBuf = std::string(MAX_SOCK_BUFFER, 0);
+      std::memset((void* )cSocket._outBuf.c_str(), 0, cSocket._outBuf.length());
+      if (!http.createMethod()) {
+        http.sendResponse(cSocket);
+        break ;
+      }
+      http.executeMethod(cSocket);
+      http.sendResponse(cSocket);
     }
     catch(const std::exception& e) {
       std::cerr << ERROR_COLOR << e.what() << COLOR_RESET << '\n';

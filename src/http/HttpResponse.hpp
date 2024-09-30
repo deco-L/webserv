@@ -6,12 +6,14 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/27 18:04:39 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/29 19:50:04 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTPRESPONSE_HPP
 #define HTTPRESPONSE_HPP
+
+#include <iostream>
 
 #define HTTP_CONTINUE                       100
 #define HTTP_SWITCHING_PROTOCOlS            101
@@ -61,5 +63,23 @@
 #define HTTP_SERVIICE_UNAVAILABLE           503
 #define HTTP_GATEWAY_TIME_OUT               504
 #define HTTP_VERSION_NOT_SUPPORTED          505
+
+class Socket;
+
+class HttpResponse {
+private:
+  const unsigned int _status;
+
+  HttpResponse(void);
+  HttpResponse(const HttpResponse& obj);
+  HttpResponse& operator=(const HttpResponse& obj);
+
+public:
+  HttpResponse(unsigned int status);
+  ~HttpResponse();
+
+  unsigned int getStatus(void) const;
+  void execute(Socket& socket);
+};
 
 #endif

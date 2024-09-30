@@ -1,39 +1,44 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   AHttpMethod.cpp                                    :+:      :+:    :+:   */
+/*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/29 18:08:11 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/29 19:50:35 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "AHttpMethod.hpp"
+#include "HttpResponse.hpp"
+#include "Socket.hpp"
 
-AHttpMethod::AHttpMethod(void) : _method("default") {
+HttpResponse::HttpResponse(void): _status(0) {
   return ;
 }
 
-AHttpMethod::AHttpMethod(std::string method) : _method(method) {
+HttpResponse::HttpResponse(unsigned int status): _status(status) {
   return ;
 }
 
-AHttpMethod::AHttpMethod(const AHttpMethod& obj) : _method(obj.getMethod()) {
+HttpResponse::HttpResponse(const HttpResponse& obj): _status(obj.getStatus()) {
   *this = obj;
   return ;
 }
 
-AHttpMethod::~AHttpMethod() {
+HttpResponse::~HttpResponse() {
   return ;
 }
 
-const std::string& AHttpMethod::getMethod(void) const {
-  return (this->_method);
+unsigned int HttpResponse::getStatus(void) const {
+  return (this->_status);
 }
 
-AHttpMethod& AHttpMethod::operator=(const AHttpMethod& obj) {
+void HttpResponse::execute(Socket& socket) {
+  return ;
+}
+
+HttpResponse& HttpResponse::operator=(const HttpResponse& obj) {
   if (this != &obj) {
   }
   else
@@ -42,5 +47,4 @@ AHttpMethod& AHttpMethod::operator=(const AHttpMethod& obj) {
               << "Attempted self-assignment in copy assignment operator.\e[0m"
               << std::endl;
   }
-  return *this;
 }

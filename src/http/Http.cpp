@@ -6,13 +6,16 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/27 17:43:57 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/29 19:49:43 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Http.hpp"
 #include "Socket.hpp"
 #include "Error.hpp"
+#include "HttpGet.hpp"
+#include "HttpPost.hpp"
+#include "HttpDelete.hpp"
 
 
 Http::Http(void): _method(""), _uri(""), _version(""), _requestSize(0), _httpHeader() {
@@ -25,6 +28,8 @@ Http::Http(const Http& obj) {
 }
 
 Http::~Http() {
+  delete this->_httpResponse;
+  delete this->_httpMethod;
   return ;
 }
 
@@ -37,6 +42,30 @@ Http::HttpError::~HttpError() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW {
 
 const char* Http::HttpError::what(void) const throw() {
   return (this->_error_message.c_str());
+}
+
+void Http::executeMethod(Socket& socket) {
+  this->_httpMethod->execute(socket, this->_httpHeader, *this->_httpResponse);
+  return ;
+}
+
+bool Http::createMethod(void) {
+  if (this->_method == "GET")
+    this->_httpMethod = new HttpGet;
+  else if (this->_method == "DELETE")
+    this->_httpMethod = new HttpDelete;
+  else if (this->_method == "POST")
+    this->_httpMethod = new HttpPost;
+  else {
+    this->_httpMethod = NULL;
+    this->_httpResponse = new HttpResponse(400);
+  }
+  return (this->_httpMethod != NULL);
+}
+
+void Http::sendResponse(Socket& socket) {
+  this->_httpResponse->execute(socket);
+  return ;
 }
 
 std::string Http::getMethod(void) const {
@@ -100,16 +129,11 @@ void Http::recvRequestMessage(Socket& socket) {
   if (this->_requestSize < 0)
     throw Http::HttpError("recvRequestMessage error");
   else if (this->_requestSize > MAX_SOCK_BUFFER)
-    this->sendErrorMessage(socket);
+    this->_httpResponse = new HttpResponse(413);
   else if (this->_requestSize == 0) {
     std::cout << NORMA_COLOR << "connection end." << COLOR_RESET << std::endl;
   }
   socket._error = this->_requestSize;
-  return ;
-}
-
-void Http::sendErrorMessage(Socket& socket) {
-  (void) socket;
   return ;
 }
 
