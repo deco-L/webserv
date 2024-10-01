@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/29 18:08:11 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/01 21:41:59 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,18 @@ AHttpMethod::AHttpMethod(const AHttpMethod& obj) : _method(obj.getMethod()) {
 
 AHttpMethod::~AHttpMethod() {
   return ;
+}
+
+AHttpMethod::MethodError::MethodError(std::string error) : _error_message(error) {
+  return ;
+}
+
+AHttpMethod::MethodError::~MethodError() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW {
+  return ;
+}
+
+const char* AHttpMethod::MethodError::what(void) const throw() {
+  return (this->_error_message.c_str());
 }
 
 const std::string& AHttpMethod::getMethod(void) const {

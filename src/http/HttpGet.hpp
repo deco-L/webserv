@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/29 19:46:34 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/01 21:29:22 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,22 @@
 
 class HttpGet : public AHttpMethod {
 private:
+  std::string _uri;
+  std::string _version;
+
+  HttpGet(void);
   HttpGet(const HttpGet& obj);
   HttpGet& operator=(const HttpGet& obj);
 
 public:
-  HttpGet(void);
+  HttpGet(std::string uri, std::string version);
   ~HttpGet();
 
-  void execute(Socket& socket, HttpHeader& header, HttpResponse& response);
+  const std::string& getUri(void) const;
+  const std::string& getVersion(void) const;
+  HttpResponse* setResponseStatus(void);
+  void setResponseMessage(HttpResponse& response) const;
+  void execute(Socket& socket, HttpHeader& header, HttpResponse* response);
 };
 
 #endif

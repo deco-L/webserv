@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/30 16:03:04 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/01 21:10:36 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,13 +45,13 @@ const char* Http::HttpError::what(void) const throw() {
 }
 
 void Http::executeMethod(Socket& socket) {
-  this->_httpMethod->execute(socket, this->_httpHeader, *this->_httpResponse);
+  this->_httpMethod->execute(socket, this->_httpHeader, this->_httpResponse);
   return ;
 }
 
 bool Http::createMethod(void) {
   if (this->_method == "GET")
-    this->_httpMethod = new HttpGet;
+    this->_httpMethod = new HttpGet(this->_uri, this->_version);
   else if (this->_method == "DELETE")
     this->_httpMethod = new HttpDelete;
   else if (this->_method == "POST")

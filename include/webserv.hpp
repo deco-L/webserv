@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/30 15:58:36 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/01 21:23:32 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,13 +89,19 @@ void httpServer(Socket& cSocket, Epoll& epoll);
 
 namespace mylib {
   void  spinnerOut(void);
+
+  bool ifFdValid(int fd);
+  bool isPathValid(std::string path);
+  bool isModeValid(std::string path);
+  int nonBlocking(int fd);
+
   void	bzero(void *s, size_t n);
+
+  char* inet_ntoa(struct in_addr in);
+
   size_t	strlen(const char *str);
   template <typename T>
   std::string to_string(const T& n);
-  char* inet_ntoa(struct in_addr in);
-  int nonBlocking(int fd);
-  bool ifFdValid(int fd);
 }
 
 #include "string.tpp"

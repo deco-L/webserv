@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/29 19:47:06 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/01 21:09:48 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ HttpPost::~HttpPost() {
   return ;
 }
 
-void HttpPost::execute(Socket& socket, HttpHeader& header, HttpResponse& response) {
+void HttpPost::execute(Socket& socket, HttpHeader& header, HttpResponse* response) {
   return ;
 }
 

@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/30 13:31:41 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/01 21:38:08 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,14 @@
 namespace mylib {
   bool ifFdValid(int fd) {
     return (fcntl(fd, F_GETFD) != -1 || errno != EBADF);
+  }
+
+  bool isPathValid(std::string root) {
+    return (false);
+  }
+
+  bool isModeValid(std::string root) {
+    return (false);
   }
 
   int nonBlocking(int fd) {
