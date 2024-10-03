@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/02 16:20:05 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 16:03:57 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,6 +105,8 @@ namespace mylib {
   size_t	strlen(const char *str);
   template <typename T>
   std::string to_string(const T& n);
+  template <typename T>
+  std::string nbrToS(T nbr);
 }
 
 #include "string.tpp"

@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/03 13:56:22 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 16:57:22 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,12 +35,17 @@ void httpServer(Socket& cSocket, Epoll& epoll) {
         http.sendResponse(cSocket, http.getVersion());
         break ;
       }
+      std::cout << NORMA_COLOR << "request message" << COLOR_RESET << std::endl;
+      http.showRequestLine();
+      http.showHttpHeaders();
       std::memset((void* )cSocket._outBuf.c_str(), 0, cSocket._outBuf.length());
       if (!http.createMethod()) {
         http.sendResponse(cSocket, http.getVersion());
         break ;
       }
       http.executeMethod();
+      std::cout << NORMA_COLOR << "response message" << COLOR_RESET << std::endl;
+      http.showResponseMessage();
       http.sendResponse(cSocket, http.getVersion());
     }
     catch(const std::exception& e) {

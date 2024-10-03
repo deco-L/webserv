@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/03 13:56:03 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 16:19:21 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@ public:
   int getRequestSize(void) const;
   void showRequestLine(void) const;
   void showHttpHeaders(void) const;
+  void showResponseMessage(void) const;
   bool checkSemantics(Socket& socket);
   void parseRequestMessage(Socket& socket);
   void recvRequestMessage(Socket& socket);

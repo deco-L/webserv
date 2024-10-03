@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/03 13:55:56 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 16:37:48 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ void Http::_parseRequestLine(std::string line) {
     else if (this->_uri.empty())
       this->_uri = element;
     else if (this->_version.empty())
-      this->_version = element;
+      this->_version = element.substr(0, element.length() - 1);
   }
   return ;
 }
@@ -148,6 +148,11 @@ void Http::showRequestLine(void) const {
 
 void Http::showHttpHeaders(void) const {
   this->_httpHeader.showHeaders();
+  return ;
+}
+
+void Http::showResponseMessage(void) const {
+  std::cout << this->_httpResponse->getResponse() << std::endl;
   return ;
 }
 

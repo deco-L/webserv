@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/30 15:59:39 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 16:54:28 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ void eventLoop(Socket& sSocket) {
     }
     try {
       sSocket.accept(cSocket);
+      std::cout << "accept" << std::endl;
       httpServer(cSocket, epoll);
     }
     catch(const std::exception& e) {

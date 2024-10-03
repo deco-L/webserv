@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/03 14:01:19 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 15:27:29 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ namespace mylib {
     std::string line;
     while (std::getline(file, line)) {
       buf.append(line);
+      buf.append("\n");
       size += line.length();
     }
     file.close();

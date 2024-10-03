@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/03 14:01:24 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 16:33:08 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ void HttpGet::setResponseMessage(HttpHeader& header, HttpResponse& response) con
   return ;
 }
 
-void HttpGet::execute(HttpHeader& header, HttpResponse* response) {
+void HttpGet::execute(HttpHeader& header, HttpResponse*& response) {
   response = this->setResponseStatus();
   if (400 <= response->getStatus() && response->getStatus() <= 600)
     return ;

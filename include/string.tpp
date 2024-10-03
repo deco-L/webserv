@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/12 16:58:19 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 16:07:40 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,5 +18,15 @@ namespace mylib{
     std::ostringstream stm ;
     stm << n ;
     return stm.str() ;
+  }
+
+  template <typename T>
+  std::string nbrToS(T nbr) {
+    std::stringstream nbrToS;
+
+    nbrToS << nbr;
+    if (nbrToS.fail())
+      return ("");
+    return (nbrToS.str());
   }
 }

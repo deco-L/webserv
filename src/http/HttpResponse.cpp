@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/03 13:57:40 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 16:12:41 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,11 +36,9 @@ HttpResponse::~HttpResponse() {
 int HttpResponse::_createStatusLine(std::string version) {
   this->_response.append(version);
   this->_response.append(" ");
-
-  std::stringstream itos;
-
-  itos << this->_status;
-  this->_response.append(itos.str());
+  this->_response.append(mylib::nbrToS(this->_status));
+  if (this->_status == HTTP_OK)
+    this->_response.append(" OK");
   this->_response.append(CRLF);
   return (this->_response.length());
 }
@@ -55,7 +53,6 @@ int HttpResponse::_createHeaderLine(HttpHeader& header) {
     this->_response.append(it->second);
     this->_response.append(CRLF);
   }
-  this->_response.append(CRLF);
   size = this->_response.length() - size;
   return (size);
 }
