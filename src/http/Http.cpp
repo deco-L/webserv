@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/01 21:10:36 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 13:55:56 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,8 @@ const char* Http::HttpError::what(void) const throw() {
   return (this->_error_message.c_str());
 }
 
-void Http::executeMethod(Socket& socket) {
-  this->_httpMethod->execute(socket, this->_httpHeader, this->_httpResponse);
+void Http::executeMethod(void) {
+  this->_httpMethod->execute(this->_httpHeader, this->_httpResponse);
   return ;
 }
 
@@ -63,8 +63,8 @@ bool Http::createMethod(void) {
   return (this->_httpMethod != NULL);
 }
 
-void Http::sendResponse(Socket& socket) {
-  this->_httpResponse->execute(socket);
+void Http::sendResponse(Socket& socket, const std::string& version) {
+  this->_httpResponse->execute(socket, this->_httpHeader, version);
   return ;
 }
 
@@ -82,6 +82,11 @@ std::string Http::getVersion(void) const {
 
 int Http::getRequestSize(void) const {
   return (this->_requestSize);
+}
+
+bool Http::checkSemantics(Socket& socket) {
+  (void)socket;
+  return (false);
 }
 
 void Http::_parseRequestLine(std::string line) {

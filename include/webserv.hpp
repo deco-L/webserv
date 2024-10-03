@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/01 21:23:32 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/02 16:20:05 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <cstring>
 #include <vector>
 #include <cstdio>
+#include <fstream>
 
 /* c library for communication */
 #include <sys/types.h>
@@ -91,8 +92,10 @@ namespace mylib {
   void  spinnerOut(void);
 
   bool ifFdValid(int fd);
+  bool isDirectory(std::string path);
   bool isPathValid(std::string path);
-  bool isModeValid(std::string path);
+  bool isModeValid(std::string path, int mode);
+  int readFile(std::string path, std::string& buf);
   int nonBlocking(int fd);
 
   void	bzero(void *s, size_t n);

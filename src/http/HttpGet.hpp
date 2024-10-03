@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/01 21:29:22 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 13:54:06 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,8 @@ public:
   const std::string& getUri(void) const;
   const std::string& getVersion(void) const;
   HttpResponse* setResponseStatus(void);
-  void setResponseMessage(HttpResponse& response) const;
-  void execute(Socket& socket, HttpHeader& header, HttpResponse* response);
+  void setResponseMessage(HttpHeader& header, HttpResponse& response) const;
+  void execute(HttpHeader& header, HttpResponse* response);
 };
 
 #endif

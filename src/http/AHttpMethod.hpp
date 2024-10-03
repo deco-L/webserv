@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/01 21:39:52 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 13:54:14 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ public:
   virtual ~AHttpMethod();
 
   const std::string& getMethod(void) const;
-  virtual void execute(Socket& socket, HttpHeader& header, HttpResponse* response) = 0;
+  virtual void execute(HttpHeader& header, HttpResponse* response) = 0;
 };
 
 #endif

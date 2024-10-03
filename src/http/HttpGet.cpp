@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/01 21:54:30 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 14:01:24 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,15 @@
 #include "webserv.hpp"
 #include "HttpResponse.hpp"
 
-HttpGet::HttpGet() : AHttpMethod("GET") {
+HttpGet::HttpGet(): AHttpMethod("GET") {
   return ;
 }
 
-HttpGet::HttpGet(std::string uri, std::string version) : AHttpMethod("GET"), _uri((uri == "/") ?  "/index.html" : uri), _version(version) {
+HttpGet::HttpGet(std::string uri, std::string version): AHttpMethod("GET"), _uri((uri == "/") ?  "/index.html" : uri), _version(version) {
   return ;
 }
 
-HttpGet::HttpGet(const HttpGet& obj) {
+HttpGet::HttpGet(const HttpGet& obj): AHttpMethod("GET") {
   *this = obj;
   return ;
 }
@@ -40,26 +40,32 @@ const std::string& HttpGet::getVersion(void) const {
 }
 
 HttpResponse* HttpGet::setResponseStatus(void) {
-  int fileSize;
   std::string root = "./wsv/html";
 
-  if (mylib::isPathValid(root))
+  if (mylib::isPathValid(root) || mylib::isDirectory(root))
     return (new HttpResponse(HTTP_NOT_FOUND));
-  if (mylib::isPathValid(root.append(this->_uri)) || mylib::isModeValid(root.append(this->_uri)))
+  if (mylib::isPathValid(root.append(this->_uri)) || mylib::isModeValid(root.append(this->_uri), S_IRUSR | S_IXUSR))
     return (new HttpResponse(HTTP_FORBIDDEN));
   return (new HttpResponse(HTTP_OK));
 }
 
-void HttpGet::setResponseMessage(HttpResponse& response) const {
+void HttpGet::setResponseMessage(HttpHeader& header, HttpResponse& response) const {
   int responseSize;
+  std::string root = "./wsv/html";
 
-  responseSize = response.createResponseMessage();
+  responseSize = response.createResponseMessage(root.append(this->_uri), header, this->_version);
+  if (responseSize < 0) {
+    response.setStatus(HTTP_INTERNAL_SERVER_ERROR);
+    return ;
+  }
   return ;
 }
 
-void HttpGet::execute(Socket& socket, HttpHeader& header, HttpResponse* response) {
+void HttpGet::execute(HttpHeader& header, HttpResponse* response) {
   response = this->setResponseStatus();
-  this->setResponseMessage(*response);
+  if (400 <= response->getStatus() && response->getStatus() <= 600)
+    return ;
+  this->setResponseMessage(header, *response);
   return ;
 }
 

@@ -6,17 +6,17 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/01 21:09:48 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 13:55:11 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpPost.hpp"
 
-HttpPost::HttpPost(void) : AHttpMethod("POST") {
+HttpPost::HttpPost(void): AHttpMethod("POST") {
   return ;
 }
 
-HttpPost::HttpPost(const HttpPost& obj) {
+HttpPost::HttpPost(const HttpPost& obj): AHttpMethod("POST") {
   *this = obj;
   return ;
 }
@@ -25,7 +25,9 @@ HttpPost::~HttpPost() {
   return ;
 }
 
-void HttpPost::execute(Socket& socket, HttpHeader& header, HttpResponse* response) {
+void HttpPost::execute(HttpHeader& header, HttpResponse* response) {
+  (void)header;
+  (void)response;
   return ;
 }
 

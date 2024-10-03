@@ -6,12 +6,15 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/01 21:53:57 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 13:57:40 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpResponse.hpp"
+#include "HttpHeader.hpp"
 #include "Socket.hpp"
+#include "webserv.hpp"
+#include <map>
 
 HttpResponse::HttpResponse(void): _status(0), _response("") {
   return ;
@@ -30,6 +33,33 @@ HttpResponse::~HttpResponse() {
   return ;
 }
 
+int HttpResponse::_createStatusLine(std::string version) {
+  this->_response.append(version);
+  this->_response.append(" ");
+
+  std::stringstream itos;
+
+  itos << this->_status;
+  this->_response.append(itos.str());
+  this->_response.append(CRLF);
+  return (this->_response.length());
+}
+
+int HttpResponse::_createHeaderLine(HttpHeader& header) {
+  int size = this->_response.length();
+  std::map<std::string, std::string> headers = header.getHeader();
+
+  for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); it++) {
+    this->_response.append(it->first);
+    this->_response.append(": ");
+    this->_response.append(it->second);
+    this->_response.append(CRLF);
+  }
+  this->_response.append(CRLF);
+  size = this->_response.length() - size;
+  return (size);
+}
+
 unsigned int HttpResponse::getStatus(void) const {
   return (this->_status);
 }
@@ -43,12 +73,26 @@ void HttpResponse::setStatus(unsigned int status) {
   return ;
 }
 
-int HttpResponse::createResponseMessage(void) {
+int HttpResponse::createResponseMessage(std::string path, HttpHeader& header, std::string version) {
   int responseSize;
+  int readSize;
+
+  if (400 <= this->_status && this->_status <= 600)
+    return (0);
+  responseSize = this->_createStatusLine(version);
+  responseSize = this->_createHeaderLine(header);
+  this->_response.append(CRLF);
+  readSize = mylib::readFile(path, this->_response);
+  if (readSize == -1)
+    return (-1);
+  responseSize += readSize;
   return (responseSize);
 }
 
-void HttpResponse::execute(Socket& socket) {
+void HttpResponse::execute(Socket& socket, HttpHeader& header, std::string version) {
+  if (400 <= this->_status && this->_status <= 600)
+    this->createResponseMessage("", header, version);
+  socket.send(this->_response, this->_response.length());
   return ;
 }
 
@@ -63,4 +107,5 @@ HttpResponse& HttpResponse::operator=(const HttpResponse& obj) {
               << "Attempted self-assignment in copy assignment operator.\e[0m"
               << std::endl;
   }
+  return (*this);
 }

@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/29 19:48:09 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 13:56:03 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,17 +53,18 @@ public:
     virtual const char* what(void) const throw();
   };
 
-  bool createMethod(void);
-  void sendResponse(Socket& socket);
-  void executeMethod(Socket& socket);
   std::string getMethod(void) const;
   std::string getUri(void) const;
   std::string getVersion(void) const;
   int getRequestSize(void) const;
-  void parseRequestMessage(Socket& socket);
-  void recvRequestMessage(Socket& socket);
   void showRequestLine(void) const;
   void showHttpHeaders(void) const;
+  bool checkSemantics(Socket& socket);
+  void parseRequestMessage(Socket& socket);
+  void recvRequestMessage(Socket& socket);
+  bool createMethod(void);
+  void sendResponse(Socket& socket, const std::string& version);
+  void executeMethod(void);
 };
 
 #endif

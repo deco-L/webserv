@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/30 15:54:14 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 13:48:45 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,8 @@ public:
   };
 
 
-  const int getEpollFd(void) const;
-  const int getWait(void) const;
+  int getEpollFd(void) const;
+  int getWait(void) const;
   const struct epoll_event getEv(void) const;
   const struct epoll_event* getEvents(void) const;
   void epollCreate(void);

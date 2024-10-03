@@ -6,17 +6,17 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/01 21:10:01 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 13:54:38 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpDelete.hpp"
 
-HttpDelete::HttpDelete() : AHttpMethod("Delete") {
+HttpDelete::HttpDelete(): AHttpMethod("DELETE") {
   return ;
 }
 
-HttpDelete::HttpDelete(const HttpDelete& obj) {
+HttpDelete::HttpDelete(const HttpDelete& obj): AHttpMethod("DELETE") {
   *this = obj;
   return ;
 }
@@ -25,7 +25,9 @@ HttpDelete::~HttpDelete() {
   return ;
 }
 
-void HttpDelete::execute(Socket& socket, HttpHeader& header, HttpResponse* response) {
+void HttpDelete::execute(HttpHeader& header, HttpResponse* response) {
+  (void)header;
+  (void)response;
   return ;
 }
 

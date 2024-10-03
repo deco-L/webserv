@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/01 21:53:26 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 13:25:59 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define HTTPRESPONSE_HPP
 
 #include <iostream>
+#include <fstream>
 
 #define HTTP_CONTINUE                       100
 #define HTTP_SWITCHING_PROTOCOlS            101
@@ -66,6 +67,7 @@
 
 class Socket;
 class HttpHeader;
+class AHttpMethod;
 
 class HttpResponse {
 private:
@@ -73,6 +75,9 @@ private:
   std::string _response;
 
   HttpResponse(void);
+
+  int _createStatusLine(std::string version);
+  int _createHeaderLine(HttpHeader& header);
 
 public:
   HttpResponse(unsigned int status);
@@ -82,8 +87,8 @@ public:
   unsigned int getStatus(void) const;
   const std::string& getResponse(void) const;
   void setStatus(unsigned int status);
-  int createResponseMessage(void);
-  void execute(Socket& socket);
+  int createResponseMessage(std::string path, HttpHeader& header, std::string version);
+  void execute(Socket& socket, HttpHeader& header, std::string version);
 
   HttpResponse& operator=(const HttpResponse& obj);
 };

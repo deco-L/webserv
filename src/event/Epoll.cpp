@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/30 15:52:52 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 13:48:59 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,11 @@ const char* Epoll::EpollError::what(void) const throw() {
   return (this->_error_message.c_str());
 }
 
-const int Epoll::getEpollFd(void) const {
+int Epoll::getEpollFd(void) const {
   return (this->_epollFd);
 }
 
-const int Epoll::getWait(void) const {
+int Epoll::getWait(void) const {
   return (this->_wait);
 }
 

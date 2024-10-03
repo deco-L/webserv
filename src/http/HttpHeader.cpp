@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/27 17:57:10 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/03 13:28:06 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,10 @@ HttpHeader::HttpHeader(const HttpHeader& obj) {
 
 HttpHeader::~HttpHeader() {
   return ;
+}
+
+std::map<std::string, std::string> HttpHeader::getHeader(void) const {
+  return (this->_headers);
 }
 
 void HttpHeader::setHeaders(std::vector<std::string>& headers) {
