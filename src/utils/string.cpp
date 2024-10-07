@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/27 21:09:53 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/10/06 16:27:08 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,5 +48,45 @@ namespace mylib{
 
       return tokens;
   }
+
+  bool isNumeric(const std::string &str) {
+    if (str.empty())
+      return false;
+    for (size_t i = 0; i < str.length(); ++i) {
+      if (!std::isdigit(static_cast<unsigned char>(str[i])))
+        return false;
+    }
+    return true;
+  }
+
+  int stringToInt(const std::string &str) {
+    std::istringstream iss(str);
+    int number = 0;
+    iss >> number;
+    if (iss.fail())
+      return -1; // 変換エラーを示す
+    return number;
+  }
+
+  PathType getPathType(const std::string& path) {
+    struct stat pathStat;
+    // stat 関数はファイルの情報を取得します。成功すると 0 を返します。
+    if (stat(path.c_str(), &pathStat) != 0) {
+        // パスが存在しない、またはアクセスできない場合
+        return NOT_EXIST;
+    }
+
+    if (S_ISREG(pathStat.st_mode)) {
+        // 通常のファイル
+        return IS_FILE;
+    } else if (S_ISDIR(pathStat.st_mode)) {
+        // ディレクトリ
+        return IS_DIRECTORY;
+    } else {
+        // その他のタイプ（例: シンボリックリンク、デバイスファイルなど）
+        return OTHER;
+    }
+  }
+
 
 }

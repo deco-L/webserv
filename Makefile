@@ -6,7 +6,7 @@
 #    By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2024/09/27 16:50:21 by miyazawa.ka      ###   ########.fr        #
+#    Updated: 2024/10/07 13:50:19 by miyazawa.ka      ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,7 +29,7 @@ OBJDIR	= objs/
 ##------------Srcs-------------##
 CORESRC	=	main.cpp socketMain.cpp Socket.cpp
 
-CONFSRC = configMain.cpp Config.cpp parseConfig.cpp isValidConfig.cpp
+CONFSRC = configMain.cpp Config.cpp checkConfig.cpp isValidConfig.cpp
 
 EVENSRC = eventLoop.cpp
 

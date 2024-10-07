@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/27 16:51:41 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/10/06 16:27:02 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 #include <fstream>
 #include <stack>
 #include <map>
+#include <algorithm>
 
 /* c library for communication */
 #include <sys/types.h>
@@ -66,6 +67,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
+
 #define WSV_OK    0
 #define WSV_ERROR 1
 
@@ -83,6 +85,13 @@ struct t_root {
   SocketClass socketData;
 };
 
+enum PathType {
+  NOT_EXIST,    // パスが存在しない
+  IS_FILE,      // パスがファイル
+  IS_DIRECTORY, // パスがディレクトリ
+  OTHER         // その他（シンボリックリンクなど）
+};
+
 class Config;
 class Socket;
 
@@ -97,6 +106,9 @@ namespace mylib {
   void	bzero(void *s, size_t n);
   size_t	strlen(const char *str);
   std::vector<std::string> split(const std::string& s, const std::string& del);
+  bool isNumeric(const std::string &str);
+  int stringToInt(const std::string &str);
+  PathType getPathType(const std::string& path);
   template <typename T>
   std::string to_string(const T& n);
   char* inet_ntoa(struct in_addr in);
