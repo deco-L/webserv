@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/15 22:47:46 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2024/10/07 15:17:30 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/10/11 21:23:51 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1414,30 +1414,29 @@ static bool hasValidPaths(const std::vector<std::string>& lines)
 				return false;
 		}
 
-		// 相対パスの検証:
-			//先頭スラッシュの有無:
-			//相対パスは通常、スラッシュ / で始まる絶対パスとして解釈されます。相対パス（例: newpage）も許容する場合がありますが、NGINXのreturnディレクティブではスラッシュ始まりのパスが一般的です。
-
-			//有効なURIエンコーディング:
-			//パス内に不正な文字（スペースや制御文字）が含まれていないこと。
-			//必要な文字が正しくエンコードされていること。
-
-			//パスの相対性:
-			//親ディレクトリへの遡り（例: ../）が不正に使用されていないこと。
-
-			//特殊文字の使用制限:
-			//セキュリティ上問題となる文字（例: NULL文字）が含まれていないこと。
-		if (directive == "return" && tokens.size() == 3)
-		{
-			if (tokens[2][0] != '/')
-				return false;
-			std::string return_path(location_root_path + tokens[2]);
-			//std::cout << return_path << std::endl;
-			if (mylib::getPathType(return_path) != IS_FILE)
-				return false;
-			if (access(return_path.c_str(), R_OK) != 0)
-				return false;
-		}
+		// return code [URL]
+			// URLの定義
+			// 単純なtextも含む "not found" とか
+			// 相対パス含む /new-page
+			// URL含む http://example.com/new-page
+			/*
+			```
+			location /old-page {
+				return 301 /new-page;
+			}
+			*/
+			// こんな感じのリダイレクトとしても使われる。
+		//if (directive == "return" && tokens.size() == 3)
+		//{
+		//	if (tokens[2][0] != '/')
+		//		return false;
+		//	std::string return_path(location_root_path + tokens[2]);
+		//	//std::cout << return_path << std::endl;
+		//	if (mylib::getPathType(return_path) != IS_FILE)
+		//		return false;
+		//	if (access(return_path.c_str(), R_OK) != 0)
+		//		return false;
+		//}
 
 		// cgi_extension extension path_to_cgi_executable
 		// 重複NGだけど、すでにチェック済みなので無視
