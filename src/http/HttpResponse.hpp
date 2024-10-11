@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/03 16:02:42 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/11 19:41:45 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ private:
   HttpResponse(void);
 
   int _createStatusLine(std::string version);
-  int _createHeaderLine(HttpHeader& header);
+  int _createHeaderLine(HttpHeader& header, int bodySize);
 
 public:
   HttpResponse(unsigned int status);

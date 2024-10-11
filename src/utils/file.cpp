@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/03 15:27:29 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/11 19:50:20 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,21 +43,34 @@ namespace mylib {
     return (false);
   }
 
-  int readFile(std::string path, std::string& buf) {
-    int size;
+  int countFileSize(const std::string& path) {
+    int fileSize;
+    std::ifstream file(path.c_str(), std::ios::binary);
+    
+    if (!file) {
+        std::cerr << "Failed to open the file." << std::endl;
+        return (-1);
+    }
+
+    file.seekg(0, std::ios::end);
+    fileSize = file.tellg();
+    file.close();
+    return (fileSize);
+}
+
+  bool readFile(const std::string path, std::string& buf) {
     std::ifstream file(path.c_str());
 
     if (!file.is_open())
-      return (-1);
+      return (false);
 
     std::string line;
     while (std::getline(file, line)) {
       buf.append(line);
       buf.append("\n");
-      size += line.length();
     }
     file.close();
-    return (size);
+    return (true);
   }
 
   int nonBlocking(int fd) {

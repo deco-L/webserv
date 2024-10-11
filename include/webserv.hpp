@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/03 16:03:57 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/11 19:39:56 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,8 @@ namespace mylib {
   bool isDirectory(std::string path);
   bool isPathValid(std::string path);
   bool isModeValid(std::string path, int mode);
-  int readFile(std::string path, std::string& buf);
+  int countFileSize(const std::string& path);
+  bool readFile(const std::string path, std::string& buf);
   int nonBlocking(int fd);
 
   void	bzero(void *s, size_t n);

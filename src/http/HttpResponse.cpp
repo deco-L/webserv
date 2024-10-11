@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/03 16:12:41 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/11 19:49:11 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,19 +43,31 @@ int HttpResponse::_createStatusLine(std::string version) {
   return (this->_response.length());
 }
 
-int HttpResponse::_createHeaderLine(HttpHeader& header) {
-  int size = this->_response.length();
-  std::map<std::string, std::string> headers = header.getHeader();
+int HttpResponse::_createHeaderLine(HttpHeader& header, int bodySIze) {
+  (void)header;
+  int size;
 
-  for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); it++) {
-    this->_response.append(it->first);
-    this->_response.append(": ");
-    this->_response.append(it->second);
-    this->_response.append(CRLF);
-  }
-  size = this->_response.length() - size;
+  std::string tmp = "Content-Length: ";
+  tmp.append(mylib::nbrToS(bodySIze));
+  tmp.append(CRLF);
+  size = tmp.length();
+  this->_response.append(tmp);
   return (size);
 }
+
+// int HttpResponse::_createHeaderLine(HttpHeader& header) {
+//   int size = this->_response.length();
+//   std::map<std::string, std::string> headers = header.getHeader();
+
+//   for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); it++) {
+//     this->_response.append(it->first);
+//     this->_response.append(": ");
+//     this->_response.append(it->second);
+//     this->_response.append(CRLF);
+//   }
+//   size = this->_response.length() - size;
+//   return (size);
+// }
 
 unsigned int HttpResponse::getStatus(void) const {
   return (this->_status);
@@ -72,17 +84,16 @@ void HttpResponse::setStatus(unsigned int status) {
 
 int HttpResponse::createResponseMessage(std::string path, HttpHeader& header, std::string version) {
   int responseSize;
-  int readSize;
+  int bodySize;
 
   if (400 <= this->_status && this->_status <= 600)
     return (0);
   responseSize = this->_createStatusLine(version);
-  responseSize = this->_createHeaderLine(header);
+  bodySize = mylib::countFileSize(path);
+  responseSize = this->_createHeaderLine(header, bodySize);
   this->_response.append(CRLF);
-  readSize = mylib::readFile(path, this->_response);
-  if (readSize == -1)
+  if (!mylib::readFile(path, this->_response))
     return (-1);
-  responseSize += readSize;
   return (responseSize);
 }
 
