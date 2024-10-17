@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/03 16:30:34 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/17 17:49:02 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ HttpDelete::~HttpDelete() {
   return ;
 }
 
-void HttpDelete::execute(HttpHeader& header, HttpResponse*& response) {
+void HttpDelete::execute(HttpRequest& header, HttpResponse*& response) {
   (void)header;
   (void)response;
   return ;

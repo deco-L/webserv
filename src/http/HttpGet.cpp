@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/03 16:33:08 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/17 17:49:26 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ HttpResponse* HttpGet::setResponseStatus(void) {
   return (new HttpResponse(HTTP_OK));
 }
 
-void HttpGet::setResponseMessage(HttpHeader& header, HttpResponse& response) const {
+void HttpGet::setResponseMessage(HttpRequest& header, HttpResponse& response) const {
   int responseSize;
   std::string root = "./wsv/html";
 
@@ -61,7 +61,7 @@ void HttpGet::setResponseMessage(HttpHeader& header, HttpResponse& response) con
   return ;
 }
 
-void HttpGet::execute(HttpHeader& header, HttpResponse*& response) {
+void HttpGet::execute(HttpRequest& header, HttpResponse*& response) {
   response = this->setResponseStatus();
   if (400 <= response->getStatus() && response->getStatus() <= 600)
     return ;

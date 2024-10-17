@@ -1,42 +1,47 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HttpHeader.cpp                                     :+:      :+:    :+:   */
+/*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/03 13:28:06 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/18 00:27:51 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "HttpHeader.hpp"
+#include "HttpRequest.hpp"
 #include "Error.hpp"
+#include "webserv.hpp"
 
-HttpHeader::HttpHeader(void) {
+HttpRequest::HttpRequest(void): _body("") {
   return ;
 }
 
-HttpHeader::HttpHeader(const HttpHeader& obj) {
+HttpRequest::HttpRequest(const HttpRequest& obj): _body("") {
   *this = obj;
   return ;
 }
 
-HttpHeader::~HttpHeader() {
+HttpRequest::~HttpRequest() {
   return ;
 }
 
-std::map<std::string, std::string> HttpHeader::getHeader(void) const {
+std::map<std::string, std::string> HttpRequest::getHeader(void) const {
   return (this->_headers);
 }
 
-void HttpHeader::setHeaders(std::vector<std::string>& headers) {
-  std::vector<std::string>::iterator it = headers.begin();
+void HttpRequest::setHeaders(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end) {
 
-  while (it != headers.end()) {
+  while (it != end) {
     std::string header;
     std::string element;
     std::istringstream stream(*it);
+
+    if (!stream.str().compare(CRLF)) {
+      it++;
+      break ;
+    }
     std::getline(stream, header, ':');
     std::getline(stream, element);
     if (!element.length())
@@ -47,7 +52,20 @@ void HttpHeader::setHeaders(std::vector<std::string>& headers) {
   return ;
 }
 
-void HttpHeader::showHeaders(void) const {
+void HttpRequest::setBody(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end) {
+  while (it != end) {
+    std::istringstream stream(*it);
+    this->_body.append(stream.str());
+    it++;
+  }
+  return ;
+}
+
+std::string HttpRequest::getBody(void) const {
+  return this->_body;
+}
+
+void HttpRequest::showHeaders(void) const {
   std::map<std::string, std::string>::const_iterator it = this->_headers.begin();
 
   while (it != this->_headers.end()) {
@@ -57,7 +75,7 @@ void HttpHeader::showHeaders(void) const {
   return ;
 }
 
-HttpHeader& HttpHeader::operator=(const HttpHeader& obj) {
+HttpRequest& HttpRequest::operator=(const HttpRequest& obj) {
   if (this != &obj) {
     ;
   }

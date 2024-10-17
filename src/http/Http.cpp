@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/03 16:37:48 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/18 00:58:19 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #include "HttpDelete.hpp"
 
 
-Http::Http(void): _method(""), _uri(""), _version(""), _requestSize(0), _httpHeader() {
+Http::Http(void): _method(""), _uri(""), _version(""), _requestSize(0), _httpRequest() {
   return ;
 }
 
@@ -45,7 +45,7 @@ const char* Http::HttpError::what(void) const throw() {
 }
 
 void Http::executeMethod(void) {
-  this->_httpMethod->execute(this->_httpHeader, this->_httpResponse);
+  this->_httpMethod->execute(this->_httpRequest, this->_httpResponse);
   return ;
 }
 
@@ -64,7 +64,7 @@ bool Http::createMethod(void) {
 }
 
 void Http::sendResponse(Socket& socket, const std::string& version) {
-  this->_httpResponse->execute(socket, this->_httpHeader, version);
+  this->_httpResponse->execute(socket, this->_httpRequest, version);
   return ;
 }
 
@@ -106,26 +106,23 @@ void Http::_parseRequestLine(std::string line) {
 
 void Http::parseRequestMessage(Socket& socket) {
   std::string line;
-  std::string tmp;
   std::vector<std::string> crline;
   std::istringstream stream(socket._outBuf);
 
   while (std::getline(stream, line)) {
     this->_requestSize -= line.length();
-    if (this->_requestSize < 0)
-      break ;
-    if (!line.empty() && line[line.length() - 1] == '\r') {
+    if (!line.empty()) {
       line.substr(0, line.length() - 1);
-      tmp.append(line);
       crline.push_back(line);
     }
-    tmp.append(line);
   }
 
   std::vector<std::string>::iterator it = crline.begin();
+  std::vector<std::string>::iterator end = crline.end();
   this->_parseRequestLine(*it);
-  std::vector<std::string> headers(crline.begin() + 1, crline.end());
-  this->_httpHeader.setHeaders(headers);
+  it++;
+  this->_httpRequest.setHeaders(it, end);
+  this->_httpRequest.setBody(it, end);
   return ;
 }
 
@@ -146,8 +143,13 @@ void Http::showRequestLine(void) const {
   return ;
 }
 
-void Http::showHttpHeaders(void) const {
-  this->_httpHeader.showHeaders();
+void Http::showRequestHeaders(void) const {
+  this->_httpRequest.showHeaders();
+  return ;
+}
+
+void Http::showRequestBody(void) const {
+  std::cout << this->_httpRequest.getBody() << std::endl;
   return ;
 }
 

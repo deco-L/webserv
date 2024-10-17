@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/03 16:19:21 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/17 22:40:41 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #include <vector>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include "HttpHeader.hpp"
+#include "HttpRequest.hpp"
 #include "AHttpMethod.hpp"
 #include "HttpResponse.hpp"
 
@@ -30,7 +30,7 @@ private:
   std::string _uri;
   std::string _version;
   int _requestSize;
-  HttpHeader _httpHeader;
+  HttpRequest _httpRequest;
   AHttpMethod* _httpMethod;
   HttpResponse* _httpResponse;
 
@@ -58,7 +58,8 @@ public:
   std::string getVersion(void) const;
   int getRequestSize(void) const;
   void showRequestLine(void) const;
-  void showHttpHeaders(void) const;
+  void showRequestHeaders(void) const;
+  void showRequestBody(void) const;
   void showResponseMessage(void) const;
   bool checkSemantics(Socket& socket);
   void parseRequestMessage(Socket& socket);

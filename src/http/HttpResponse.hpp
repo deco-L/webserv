@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/11 19:41:45 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/17 17:50:59 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@
 #define HTTP_VERSION_NOT_SUPPORTED          505
 
 class Socket;
-class HttpHeader;
+class HttpRequest;
 class AHttpMethod;
 
 class HttpResponse {
@@ -77,7 +77,7 @@ private:
   HttpResponse(void);
 
   int _createStatusLine(std::string version);
-  int _createHeaderLine(HttpHeader& header, int bodySize);
+  int _createHeaderLine(HttpRequest& header, int bodySize);
 
 public:
   HttpResponse(unsigned int status);
@@ -87,8 +87,8 @@ public:
   unsigned int getStatus(void) const;
   const std::string& getResponse(void) const;
   void setStatus(unsigned int status);
-  int createResponseMessage(std::string path, HttpHeader& header, std::string version);
-  void execute(Socket& socket, HttpHeader& header, std::string version);
+  int createResponseMessage(std::string path, HttpRequest& header, std::string version);
+  void execute(Socket& socket, HttpRequest& header, std::string version);
 
   HttpResponse& operator=(const HttpResponse& obj);
 };

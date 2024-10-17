@@ -6,12 +6,12 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/11 19:49:11 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/17 17:50:29 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpResponse.hpp"
-#include "HttpHeader.hpp"
+#include "HttpRequest.hpp"
 #include "Socket.hpp"
 #include "webserv.hpp"
 #include <map>
@@ -43,7 +43,7 @@ int HttpResponse::_createStatusLine(std::string version) {
   return (this->_response.length());
 }
 
-int HttpResponse::_createHeaderLine(HttpHeader& header, int bodySIze) {
+int HttpResponse::_createHeaderLine(HttpRequest& header, int bodySIze) {
   (void)header;
   int size;
 
@@ -55,7 +55,7 @@ int HttpResponse::_createHeaderLine(HttpHeader& header, int bodySIze) {
   return (size);
 }
 
-// int HttpResponse::_createHeaderLine(HttpHeader& header) {
+// int HttpResponse::_createHeaderLine(HttpRequest& header) {
 //   int size = this->_response.length();
 //   std::map<std::string, std::string> headers = header.getHeader();
 
@@ -82,7 +82,7 @@ void HttpResponse::setStatus(unsigned int status) {
   return ;
 }
 
-int HttpResponse::createResponseMessage(std::string path, HttpHeader& header, std::string version) {
+int HttpResponse::createResponseMessage(std::string path, HttpRequest& header, std::string version) {
   int responseSize;
   int bodySize;
 
@@ -97,7 +97,7 @@ int HttpResponse::createResponseMessage(std::string path, HttpHeader& header, st
   return (responseSize);
 }
 
-void HttpResponse::execute(Socket& socket, HttpHeader& header, std::string version) {
+void HttpResponse::execute(Socket& socket, HttpRequest& header, std::string version) {
   if (400 <= this->_status && this->_status <= 600)
     this->createResponseMessage("", header, version);
   socket.send(this->_response, this->_response.length());
