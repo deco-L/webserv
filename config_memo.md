@@ -6,27 +6,27 @@ config.checkConfigは内部で、config.isValidConfigメソッドを呼び出し
 config.isValidConfigメソッドで、設定ファイルが正しいかどうかを確認します。
 config.isValidConfigはたくさん分割されているので、以下にその構造を示します。
 
-isValidConfig
-│
-├── isValidBracketFormat
-│   └── isValidOpeningBracePosition
-├── isValidNest
-│   └── findBlockRanges
-├── isValidDirective
-├── hasRequiredDirectives
-├── isValidDirectiveArguments
-│   ├── hasArguments
-│   ├── hasCorrectNumberOfArguments
-│   ├── hasValidArguments
-│   │   ├── isValidIpAddress
-│   │   ├── isValidPort
-│   │   └── getPathType
-│   ├── hasValidPaths
-│   │   ├── getRoot
-│   │   ├── access (system call)
-│   │   └── getPathType
-│   └── outputError
-└── outputError
+isValidConfig  
+│  
+├── isValidBracketFormat  
+│   └── isValidOpeningBracePosition  
+├── isValidNest  
+│   └── findBlockRanges  
+├── isValidDirective  
+├── hasRequiredDirectives  
+├── isValidDirectiveArguments  
+│   ├── hasArguments  
+│   ├── hasCorrectNumberOfArguments  
+│   ├── hasValidArguments  
+│   │   ├── isValidIpAddress  
+│   │   ├── isValidPort  
+│   │   └── getPathType  
+│   ├── hasValidPaths  
+│   │   ├── getRoot  
+│   │   ├── access (system call)  
+│   │   └── getPathType  
+│   └── outputError  
+└── outputError  
 
 
 **ディレクティブの一覧:**
