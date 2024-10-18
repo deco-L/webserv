@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/17 23:56:32 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/18 10:34:27 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ void httpServer(Socket& cSocket, Epoll& epoll) {
   while (true) {
     try {
       Http http;
+
       epoll.epollWait(-1);
       http.recvRequestMessage(cSocket);
       if (cSocket._error == 0)
@@ -38,6 +39,7 @@ void httpServer(Socket& cSocket, Epoll& epoll) {
       std::cout << NORMA_COLOR << "request message" << COLOR_RESET << std::endl;
       http.showRequestLine();
       http.showRequestHeaders();
+      std::cout << "\r\n";
       http.showRequestBody();
       std::memset((void* )cSocket._outBuf.c_str(), 0, cSocket._outBuf.length());
       if (!http.createMethod()) {

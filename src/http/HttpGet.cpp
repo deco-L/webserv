@@ -6,15 +6,16 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/17 17:49:26 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/18 16:49:59 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpGet.hpp"
 #include "webserv.hpp"
 #include "HttpResponse.hpp"
+#include "HttpRequest.hpp"
 
-HttpGet::HttpGet(): AHttpMethod("GET") {
+HttpGet::HttpGet(): AHttpMethod("GET"), _uri(""), _version("") {
   return ;
 }
 
@@ -22,7 +23,7 @@ HttpGet::HttpGet(std::string uri, std::string version): AHttpMethod("GET"), _uri
   return ;
 }
 
-HttpGet::HttpGet(const HttpGet& obj): AHttpMethod("GET") {
+HttpGet::HttpGet(const HttpGet& obj): AHttpMethod("GET"), _uri(""), _version("") {
   *this = obj;
   return ;
 }
@@ -49,11 +50,11 @@ HttpResponse* HttpGet::setResponseStatus(void) {
   return (new HttpResponse(HTTP_OK));
 }
 
-void HttpGet::setResponseMessage(HttpRequest& header, HttpResponse& response) const {
+void HttpGet::setResponseMessage(HttpRequest& request, HttpResponse& response) const {
   int responseSize;
   std::string root = "./wsv/html";
 
-  responseSize = response.createResponseMessage(root.append(this->_uri), header, this->_version);
+  responseSize = response.createResponseMessage(this->getMethod(), root.append(this->_uri), request, this->_version);
   if (responseSize < 0) {
     response.setStatus(HTTP_INTERNAL_SERVER_ERROR);
     return ;
@@ -61,11 +62,11 @@ void HttpGet::setResponseMessage(HttpRequest& header, HttpResponse& response) co
   return ;
 }
 
-void HttpGet::execute(HttpRequest& header, HttpResponse*& response) {
+void HttpGet::execute(HttpRequest& request, HttpResponse*& response) {
   response = this->setResponseStatus();
   if (400 <= response->getStatus() && response->getStatus() <= 600)
     return ;
-  this->setResponseMessage(header, *response);
+  this->setResponseMessage(request, *response);
   return ;
 }
 

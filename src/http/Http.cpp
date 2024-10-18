@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/18 00:58:19 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/18 16:50:51 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #include "HttpDelete.hpp"
 
 
-Http::Http(void): _method(""), _uri(""), _version(""), _requestSize(0), _httpRequest() {
+Http::Http(void): _method(""), _uri(""), _version(""), _requestSize(0), _httpRequest(), _httpMethod(NULL), _httpResponse(NULL) {
   return ;
 }
 
@@ -28,8 +28,10 @@ Http::Http(const Http& obj) {
 }
 
 Http::~Http() {
-  delete this->_httpResponse;
-  delete this->_httpMethod;
+  if (this->_httpResponse != NULL)
+    delete this->_httpResponse;
+  if (this->_httpMethod != NULL)
+    delete this->_httpMethod;
   return ;
 }
 
@@ -53,9 +55,9 @@ bool Http::createMethod(void) {
   if (this->_method == "GET")
     this->_httpMethod = new HttpGet(this->_uri, this->_version);
   else if (this->_method == "DELETE")
-    this->_httpMethod = new HttpDelete;
+    this->_httpMethod = new HttpDelete(this->_uri, this->_version);
   else if (this->_method == "POST")
-    this->_httpMethod = new HttpPost;
+    this->_httpMethod = new HttpPost(this->_uri, this->_version);
   else {
     this->_httpMethod = NULL;
     this->_httpResponse = new HttpResponse(400);

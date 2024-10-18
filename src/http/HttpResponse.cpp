@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/17 17:50:29 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/18 16:49:22 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,25 +39,27 @@ int HttpResponse::_createStatusLine(std::string version) {
   this->_response.append(mylib::nbrToS(this->_status));
   if (this->_status == HTTP_OK)
     this->_response.append(" OK");
+  else if (this->_status == HTTP_CREATED)
+    this->_response.append(" Created");
   this->_response.append(CRLF);
   return (this->_response.length());
 }
 
-int HttpResponse::_createHeaderLine(HttpRequest& header, int bodySIze) {
-  (void)header;
-  int size;
+int HttpResponse::_createHeaderLine(HttpRequest& request, int bodySIze) {
+  (void)request;
+  int size = 0;
 
   std::string tmp = "Content-Length: ";
   tmp.append(mylib::nbrToS(bodySIze));
   tmp.append(CRLF);
-  size = tmp.length();
+  size += tmp.length();
   this->_response.append(tmp);
   return (size);
 }
 
-// int HttpResponse::_createHeaderLine(HttpRequest& header) {
+// int HttpResponse::_createHeaderLine(HttpRequest& request) {
 //   int size = this->_response.length();
-//   std::map<std::string, std::string> headers = header.getHeader();
+//   std::map<std::string, std::string> headers = request.getHeader();
 
 //   for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); it++) {
 //     this->_response.append(it->first);
@@ -82,24 +84,30 @@ void HttpResponse::setStatus(unsigned int status) {
   return ;
 }
 
-int HttpResponse::createResponseMessage(std::string path, HttpRequest& header, std::string version) {
+int HttpResponse::createResponseMessage(const std::string& method, std::string path, HttpRequest& request, std::string version) {
   int responseSize;
   int bodySize;
 
   if (400 <= this->_status && this->_status <= 600)
     return (0);
   responseSize = this->_createStatusLine(version);
-  bodySize = mylib::countFileSize(path);
-  responseSize = this->_createHeaderLine(header, bodySize);
-  this->_response.append(CRLF);
-  if (!mylib::readFile(path, this->_response))
-    return (-1);
+  if (!method.compare("GET")) {
+    bodySize = mylib::countFileSize(path);
+    responseSize = this->_createHeaderLine(request, bodySize);
+    this->_response.append(CRLF);
+    if (!mylib::readFile(path, this->_response))
+      return (-1);
+  } else if (!method.compare("POST")) {
+    this->_createHeaderLine(request, 0);
+  } else if (!method.compare("DELETE")) {
+    this->_response.append(CRLF);
+  }
   return (responseSize);
 }
 
-void HttpResponse::execute(Socket& socket, HttpRequest& header, std::string version) {
+void HttpResponse::execute(Socket& socket, HttpRequest& request, std::string version) {
   if (400 <= this->_status && this->_status <= 600)
-    this->createResponseMessage("", header, version);
+    this->createResponseMessage("NONE", "", request, version);
   socket.send(this->_response, this->_response.length());
   return ;
 }
