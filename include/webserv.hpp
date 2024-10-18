@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/06 16:27:02 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/10/18 12:25:41 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
-
 
 #define WSV_OK    0
 #define WSV_ERROR 1

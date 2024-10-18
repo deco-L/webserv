@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/15 22:40:46 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2024/10/07 14:17:43 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/10/18 13:01:25 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,14 @@
 #include "webserv.hpp"
 #include "Error.hpp"
 
+/* ====================
+ファイルの内容を取得する
+==================== */
+// MARK: getFileContent
+
 bool getFileContent(std::string file_path, std::string &file_content)
 {
-	std::ifstream		input(file_path.c_str());
+	std::ifstream	input(file_path.c_str());
 
 	if (!input.is_open())
 	{
@@ -33,7 +38,11 @@ bool getFileContent(std::string file_path, std::string &file_content)
 	return true;
 }
 
-//文字列strがallowed_charsに含まれる文字だけで構成されているかどうかを判定する
+/* ====================
+strがallowed_charsに含まれる文字だけで構成するか判定
+==================== */
+// MARK: is_string_from_set
+
 bool is_string_from_set(const std::string& str, const std::string& allowed_chars) {
 	for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
 		if (allowed_chars.find(*it) == std::string::npos) {
@@ -43,7 +52,11 @@ bool is_string_from_set(const std::string& str, const std::string& allowed_chars
 	return true; // 全ての文字が許可されたセット内
 }
 
-// 先頭から指定された文字セットに含まれる文字を削除する関数
+/* ====================
+先頭から指定された文字セットに含まれる文字を削除する関数
+==================== */
+// MARK: trim_head_chars
+
 std::string trim_head_chars(const std::string& str, const std::string& charSet) {
 	// strの先頭から、charSetに含まれる文字が現れなくなる場所を見つける
 	std::string::size_type pos = str.find_first_not_of(charSet);
@@ -56,7 +69,11 @@ std::string trim_head_chars(const std::string& str, const std::string& charSet) 
 	}
 }
 
-// 末尾から指定された文字セットに含まれる文字を削除する関数
+/* ====================
+末尾から指定された文字セットに含まれる文字を削除する関数
+==================== */
+// MARK: trim_tail_chars
+
 std::string trim_tail_chars(const std::string& str, const std::string& charSet) {
 	// strの末尾から、charSetに含まれる文字が現れなくなる場所を見つける
 	std::string::size_type pos = str.find_last_not_of(charSet);
@@ -69,8 +86,11 @@ std::string trim_tail_chars(const std::string& str, const std::string& charSet) 
 	}
 }
 
-// コメント行や空行を削除する関数
-// 行末の空白文字やセミコロンも削除する
+/* ====================
+コメント行や空行を削除する関数 行末の空白文字やセミコロンも削除する
+==================== */
+// MARK: removeUnnecessaryLines
+
 std::string removeUnnecessaryLines(std::string file_content)
 {
 	std::string		new_file_content;
@@ -94,10 +114,10 @@ std::string removeUnnecessaryLines(std::string file_content)
 	return new_file_content;
 }
 
-
-
-
-
+/* ====================
+設定ファイルが正しいかどうかを確認する
+==================== */
+// MARK: isValidConfig
 
 void Config::checkConfig(void)
 {
@@ -118,5 +138,4 @@ void Config::checkConfig(void)
 	// ファイルの内容が正しいかどうかを確認する
 	if (isValidConfig(file_content) == false)
 		std::exit(0);
-
 }

@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/07 15:36:16 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/10/18 13:26:44 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,9 +57,8 @@ struct ConfigLocation {
     std::string upload_store;
 };
 
-
 struct ConfigServer {
-    std::pair<std::string, std::string> listen; // IPアドレスとポート番号
+    std::vector<std::pair<std::string, std::string> > listen; // IPアドレスとポート番号
     std::vector<std::string> server_name;
     std::vector<std::pair<int, std::string> > error_page; // ステータスコードとパス
     unsigned long client_max_body_size; // 0~1024GB 0=無制限
@@ -85,7 +84,7 @@ public:
   std::vector<ConfigServer> getServers(void) const;
   void        checkNbrArg(void) const;
   void        checkConfig(void);
-  bool isValidConfig(std::string file_content);
+  bool        isValidConfig(std::string file_content);
 
   Config&      operator=(const Config& obj);
 };

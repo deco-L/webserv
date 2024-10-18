@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:49:30 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2024/09/27 16:53:24 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/10/18 12:25:30 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,4 +71,4 @@ namespace mylib {
 
         return ERROR;
     }
-}  // namespace mylib
+}
