@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/18 16:49:22 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/18 19:36:56 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,9 @@ int HttpResponse::createResponseMessage(const std::string& method, std::string p
       return (-1);
   } else if (!method.compare("POST")) {
     this->_createHeaderLine(request, 0);
+    this->_response.append(CRLF);
   } else if (!method.compare("DELETE")) {
+    this->_createHeaderLine(request, 0);
     this->_response.append(CRLF);
   }
   return (responseSize);
