@@ -6,31 +6,13 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/18 13:14:30 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2024/10/18 13:27:58 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/10/18 14:21:24 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
 #include "webserv.hpp"
 #include "Error.hpp"
-
-/* ====================
-ディレクティブの引数が正しいことを確認
-	- 適切な引数があることを確認
-
-	- 引数の数が正しいことを確認
-
-	- 有効な値が設定されていることを確認
-	- 引数がIPアドレスである場合、有効なIPアドレスであることを確認
-	- 引数がポート番号である場合、有効なポート番号であることを確認
-	- 引数が数値である場合、有効な数値であることを確認
-	- 引数がHTTPメソッドである場合、有効なHTTPメソッドであることを確認
-	- 引数が拡張子である場合、有効な拡張子であることを確認
-
-	- 引数がファイルパスである場合、ファイルが存在することを確認
-	- 引数がディレクトリパスである場合、ディレクトリが存在することを確認
-==================== */
-// MARK: isValidDirectiveArguments
 
 static bool hasArguments(const std::vector<std::string>& lines)
 {
@@ -40,47 +22,41 @@ static bool hasArguments(const std::vector<std::string>& lines)
 
 		if (line.find("server") != std::string::npos)
 			continue;
-
-		// location [path] {}
 		if (line.find("location") != std::string::npos)
 		{
-			// "location [path] {" を、"location [path]"にする
-			// '{'を消した後の空白も削除する
 			std::string location = line.substr(0, line.find('{'));
 			location.erase(location.find_last_not_of(" \t") + 1);
 
 			if (location.find(' ') == std::string::npos)
-				return false; // 引数がない
+				return false;
 			continue;
 		}
-
 		if (line == "}")
 			continue;
-
 		if (line.find(' ') == std::string::npos)
-			return false; // 引数がない
+			return false;
 	}
 	return true;
 }
 
+// ディレクティブの引数の数を確認
+//- server
+//  - listen				1~N
+//  - server_name			1~N
+//  - error_page			2~N
+//  - client_max_body_size	1
+//  - root					1
+//  - index					1~N
+//  - autoindex				1
+//  - location				1
+//  - methods				1~N
+//  - return				1~2
+//  - cgi_extension			2
+//  - upload_enable			1
+//  - upload_store			1
+// locationは特別扱い
 static bool hasCorrectNumberOfArguments(const std::vector<std::string>& lines)
 {
-	//- server
-	//  - listen				1~N
-	//  - server_name			1~N
-	//  - error_page			2~N
-	//  - client_max_body_size	1
-	//  - root					1
-	//  - index					1~N
-	//  - autoindex				1
-	//  - location				1
-	//  - methods				1~N
-	//  - return				1~2
-	//  - cgi_extension			2
-	//  - upload_enable			1
-	//  - upload_store			1
-	// locationは特別
-
 	// 1
     const char* directivesArray[] = {
         "client_max_body_size",
@@ -128,9 +104,8 @@ static bool hasCorrectNumberOfArguments(const std::vector<std::string>& lines)
 		const std::string& line = *it;
 		const std::vector<std::string> tokens = mylib::split(line, " ");
 		std::string directive = tokens[0];
-		//std::cout << directive << std::endl;
 
-		if (directive == "location") // "location" "[path]" "{"
+		if (directive == "location")
 		{
 			if (tokens[tokens.size() - 1] == "{" && tokens.size() == 3)
 				continue;
@@ -141,27 +116,19 @@ static bool hasCorrectNumberOfArguments(const std::vector<std::string>& lines)
 		if (directive == "}")
 			continue;
 
-		if (std::find(directives1.begin(), directives1.end(), directive) != directives1.end())
-		{
-			if (tokens.size() != 2)
-				return false;
-		}
-
+		if (std::find(directives1.begin(), directives1.end(), directive) != directives1.end() && tokens.size() != 2)
+			return false;
 		if (std::find(directives1N.begin(), directives1N.end(), directive) != directives1N.end() && tokens.size() < 2)
 			return false;
-
 		if (std::find(directives2N.begin(), directives2N.end(), directive) != directives2N.end() && tokens.size() < 3)
 			return false;
-
 		if (std::find(directives12.begin(), directives12.end(), directive) != directives12.end() && (tokens.size() != 2 && tokens.size() != 3))
 			return false;
-
 		if (std::find(directives2.begin(), directives2.end(), directive) != directives2.end() && tokens.size() != 3)
 			return false;
 	}
 	return true;
 }
-
 
 // only IPv4
 static bool isValidIpAddress(const std::string& ip)
@@ -193,7 +160,7 @@ static bool isValidPort(int port)
 // 引数が数値である場合、有効な数値であることを確認
 // 引数がHTTPメソッドである場合、有効なHTTPメソッドであることを確認
 // 引数が拡張子である場合、有効な拡張子であることを確認
-// 引数が正しい数であることは確認済みの入力を前提とする
+// 引数の数が正しいことは確認済みの入力を前提とする
 static bool hasValidArguments(const std::vector<std::string>& lines)
 {
 	std::vector<int> ports;
@@ -207,10 +174,8 @@ static bool hasValidArguments(const std::vector<std::string>& lines)
 		const std::string& line = *it;
 		const std::vector<std::string> tokens = mylib::split(line, " ");
 		std::string directive = tokens[0];
-		//std::cout << directive << std::endl;
 
 		// server
-		// serverに引数はない
 		// ports, domains, error_code, location_path, cgi_extensionsをクリア
 		if (directive == "server")
 		{
@@ -313,7 +278,7 @@ static bool hasValidArguments(const std::vector<std::string>& lines)
 		//サイズが正の数であること。
 		//少数は指定できないこと。
 		//　重複は上書き
-		if (directive == "client_max_body_size") // size
+		if (directive == "client_max_body_size") // client_max_body_size size
 		{
 			if (tokens[1][tokens[1].length() - 1] == 'k' || tokens[1][tokens[1].length() - 1] == 'm' || tokens[1][tokens[1].length() - 1] == 'g' ||
 				tokens[1][tokens[1].length() - 1] == 'K' || tokens[1][tokens[1].length() - 1] == 'M' || tokens[1][tokens[1].length() - 1] == 'G')
@@ -331,6 +296,8 @@ static bool hasValidArguments(const std::vector<std::string>& lines)
 		// root path
 		// pathは別の部分でチェックするのでここではチェックしない
 		// 重複は上書き
+		//if (directive == "root") // root path
+
 
 		// index file [file ...]
 		// '/'や'\'は含まれないか
@@ -339,7 +306,7 @@ static bool hasValidArguments(const std::vector<std::string>& lines)
 		//英数字（A-Z, a-z, 0-9）
 		//特殊文字：ドット（.）、ハイフン（-）、アンダースコア（_）
 		// 重複は上書き
-		if (directive == "index") // file [file ...]
+		if (directive == "index") // index file [file ...]
 		{
 			for (size_t i = 1; i < tokens.size(); ++i)
 			{
@@ -366,7 +333,7 @@ static bool hasValidArguments(const std::vector<std::string>& lines)
 		// pathは別の部分でチェックするのでここではチェックしない
 		// 重複は追加なので、重複がある場合はエラー
 		// pathが重複しているかどうかのみチェック
-		if (directive == "location") // [path] {}
+		if (directive == "location") // location [path] {}
 		{
 			if (std::find(location_path.begin(), location_path.end(), tokens[1]) != location_path.end())
 				return false;
@@ -395,7 +362,7 @@ static bool hasValidArguments(const std::vector<std::string>& lines)
 		// URLは省略可能
 		// URLがあった場合、別の部分でチェックするのでここではチェックしない
 		// 重複は上書き
-		if (directive == "return") // code [URL]
+		if (directive == "return") // return code [URL]
 		{
 			if (!mylib::isNumeric(tokens[1]) || tokens[1].length() != 3)
 				return false;
@@ -409,7 +376,7 @@ static bool hasValidArguments(const std::vector<std::string>& lines)
 		// ここではargumentsの重複だけチェック
 		// argumentsのどちらか片方だけでも、過去のものと重複していたらエラー
 		// 重複は追加なので、重複がある場合はエラー
-		if (directive == "cgi_extension") // extension path_to_cgi_executable
+		if (directive == "cgi_extension") // cgi_extention extension path_to_cgi_executable
 		{
 			if (cgi_extensions.size() > 0)
 			{
@@ -428,7 +395,7 @@ static bool hasValidArguments(const std::vector<std::string>& lines)
 		// upload_enable on | off
 		// 大文字小文字は区別しない
 		// 重複は上書き
-		if (directive == "upload_enable") // on | off
+		if (directive == "upload_enable") // upload_enable on | off
 		{
 			if (tokens[1] != "on" && tokens[1] != "off"
 				&& tokens[1] != "ON" && tokens[1] != "OFF")
@@ -438,6 +405,7 @@ static bool hasValidArguments(const std::vector<std::string>& lines)
 		// upload_store path
 		// pathは別の部分でチェックするのでここではチェックしない
 		// 重複は上書き
+
 	}
 	return true;
 }
@@ -460,23 +428,15 @@ static std::string getRoot(std::vector<std::string>::const_iterator& it, const s
         const std::string& line = *it2;
         ++it2;
 
-        // '{' を見つけたらスタックに積む
         if (line.find('{') != std::string::npos) {
             braceStack.push('{');
-
-            // 最初の '{' を見つけたときにフラグをセット
-            if (braceStack.size() == 1) {
+            if (braceStack.size() == 1)
                 inFirstBraceBlock = true;
-            }
         }
-        // '}' を見つけたらスタックから取り出す
         else if (line.find('}') != std::string::npos) {
             braceStack.pop();
-
-            // 最初の '{}' ブロックが閉じたら終了
-            if (braceStack.empty()) {
+            if (braceStack.empty())
                 break;
-            }
         }
 
         // 最初の '{' の直後のブロック内にいる場合のみ root をチェック
@@ -494,113 +454,10 @@ static std::string getRoot(std::vector<std::string>::const_iterator& it, const s
     return root;
 }
 
-// 引数がファイルパスである場合、ファイルが存在することを確認
-// 引数がディレクトリパスである場合、ディレクトリが存在することを確認
+// 引数が有効なパスであることを確認
 // error_pageのpath, rootのpath, locationのpath, returnのURL, cgi_extensionのextensionとpath_to_cgi_executable, upload_storeのpath
 static bool hasValidPaths(const std::vector<std::string>& lines)
 {
-	// serverごとに区切って処理
-	// serverブロック直下にrootがあることは確定済み。前提とする。
-	// locationブロック直下にrootがある場合は、locationブロックのrootが優先される
-	// locationブロック直下にrootがない場合は、serverブロックのrootが使われる
-	// locationブロック内のrootは、locationブロック内でのみ有効
-
-	// error_pageのpath
-		// error_pageは重複で追加の挙動だが、codeは重複でエラーになるので、pathの重複は問題ない
-		// 重複OK
-		// rootのpathがある場合は、root_path + error_page_path で検証
-		// '/'で始まるか
-		// ファイルが存在すること
-		// 相対パスNG
-		// 無効文字チェック
-
-	// rootのpath
-		// 重複OK
-		// 絶対パスか
-		// ディレクトリであること
-		// ディレクトリが存在すること
-		// 書き込み権限があること
-		// 無効文字チェック
-
-
-	// locationのpath
-		// 同一server内では重複NG
-		// '/'で始まるか
-		// rootのpathがある場合は、root_path + location_path で検証
-		// ディレクトリであること
-		// ディレクトリが存在すること
-		// 書き込み権限があること
-		// 無効文字チェック
-
-	// returnのURL
-		// 現状は、URL=相対パスのみで。
-		/*
-		// URLは、絶対URLか相対パス
-			//絶対URLと相対パスの定義
-			//絶対URL（Absolute URL）:
-			//スキーム（プロトコル）を含む完全なURL。
-			//例: http://example.com/page, https://www.example.com/path?query=123
-
-			//相対パス（Relative Path）:
-			//スキームを含まず、現在のドメインに対するパス。
-			//例: /newpage, /images/logo.png
-			//判定方法
-			//絶対URLか相対パスかを判定する主な方法は、URLの先頭にスキームが含まれているかどうかです。具体的には、URLが特定のスキーム（http://, https://）で始まる場合、絶対URLと見なされます。それ以外の場合、相対パスと見なされます。
-
-			//スキームの存在確認:
-			//URLが http:// または https:// で始まるかを確認します。
-			//大文字・小文字の区別はしない（例: HTTP://, https:// も有効）。
-			//スキーム以外の形式:
-			//スキームが存在しない場合、URLは相対パスと見なします。
-		// それぞれのvalid チェック
-		*/
-		/* 以下は、一旦無視。
-		//絶対URLの検証:
-			//スキームの正当性:
-			//スキームが http または https のいずれかであること。
-			//他のスキーム（例: ftp://, mailto:）は無効とする。
-
-			//ホスト名の形式:
-			//有効なドメイン名またはIPアドレスであること。
-			//ドメイン名の構造が正しい（例: example.com, sub.domain.example.com）。
-			//IPv6は無効とする。IPv4のみを許可する。
-
-			//パスの形式チェック
-
-			//全体のURL構造の検証:
-			//URLがRFC 3986に準拠していること。
-		*/
-		// 相対パスの検証:
-			//先頭スラッシュの有無:
-			//相対パスは通常、スラッシュ / で始まる絶対パスとして解釈されます。相対パス（例: newpage）も許容する場合がありますが、NGINXのreturnディレクティブではスラッシュ始まりのパスが一般的です。
-
-			//有効なURIエンコーディング:
-			//パス内に不正な文字（スペースや制御文字）が含まれていないこと。
-			//必要な文字が正しくエンコードされていること。
-
-			//パスの相対性:
-			//親ディレクトリへの遡り（例: ../）が不正に使用されていないこと。
-
-			//特殊文字の使用制限:
-			//セキュリティ上問題となる文字（例: NULL文字）が含まれていないこと。
-		// 重複OK
-
-	// cgi_extensionのextension
-		// 重複NGだけど、すでにチェック済みなので無視
-		// 許可する拡張子は, .cgi, .py, .pl, .rb, .sh (.php?)
-
-	// cgi_extensionのpath_to_cgi_executable
-		// 重複NGだけど、すでにチェック済みなので無視
-		// 絶対パスであること
-		// 実行可能ファイルであること
-			// ファイルの存在
-			// 実行権限があること
-			// パスがファイルであること
-
-	// upload_storeのpath
-		// 重複OK
-		// ディレクトリであること
-		// 書き込み権限があること
 
 	ParseMode mode = MODE_GLOBAL;
 	std::string server_root_path("");
@@ -612,8 +469,6 @@ static bool hasValidPaths(const std::vector<std::string>& lines)
 		const std::string& line = *it;
 		const std::vector<std::string> tokens = mylib::split(line, " ");
 		std::string directive = tokens[0];
-		//std::cout << directive << std::endl;
-		//std::cout << i++ << std::endl;
 
 		if (directive == "server")
 		{
@@ -621,6 +476,7 @@ static bool hasValidPaths(const std::vector<std::string>& lines)
 			server_root_path = "";
 			server_root_path = getRoot(it, lines);
 		}
+
 		if (directive == "location")
 		{
 			mode = MODE_LOCATION;
@@ -631,24 +487,21 @@ static bool hasValidPaths(const std::vector<std::string>& lines)
 			if (location_root_path.empty())
 				location_root_path = server_root_path;
 			std::string location_path(location_root_path + tokens[1]);
-			// 最後の'/'を削除
+
 			if (location_path[location_path.length() - 1] == '/')
 				location_path = location_path.substr(0, location_path.length() - 1);
-
-			//std::cout << location_path << std::endl;
-			//std::cout << location_root_path << std::endl;
 
 			if (std::find(location_paths.begin(), location_paths.end(), location_path) != location_paths.end())
 				return false;
 			location_paths.push_back(location_path);
 
-			//std::cout << location_path << std::endl;
 			if (mylib::getPathType(location_path) != IS_DIRECTORY)
 				return false;
-			//std::cout << "here" << std::endl;
+
 			if (access(location_path.c_str(), W_OK) != 0)
 				return false;
 		}
+
 		if (directive == "}")
 		{
 			if (mode == MODE_SERVER)
@@ -665,26 +518,20 @@ static bool hasValidPaths(const std::vector<std::string>& lines)
 		}
 
 		// error_pageのpath
-			// error_pageは重複で追加の挙動だが、codeは重複でエラーになるので、pathの重複は問題ない
-			// 重複OK
-			// rootのpathがある場合は、server_root_path + error_page_path で検証
-			// '/'で始まるか
-			// ファイルが存在すること
-			// 相対パスNG
-			// 無効文字チェック
 		if (directive == "error_page")
 		{
 			if (tokens[tokens.size() - 1][0] != '/')
 				return false;
 
 			std::string error_page_path(server_root_path + tokens[tokens.size() - 1]);
-			//std::cout << error_page_path << std::endl;
+
 			if (mylib::getPathType(error_page_path) != IS_FILE)
 				return false;
 			if (access(error_page_path.c_str(), R_OK) != 0)
 				return false;
 		}
 
+		// root path
 		if (directive == "root")
 		{
 			if (tokens[1][0] != '/')
@@ -708,17 +555,15 @@ static bool hasValidPaths(const std::vector<std::string>& lines)
 			*/
 			// こんな感じのリダイレクトとしても使われる。
 
+
 		// cgi_extension extension path_to_cgi_executable
 		// 重複NGだけど、すでにチェック済みなので無視
 		// 許可する拡張子は, .cgi, .py, .sh (.php?, .pl?, .rb?)
 		if (directive == "cgi_extension")
 		{
-			// extensionチェック
 			if (tokens[1] != ".cgi" && tokens[1] != ".py" && tokens[1] != ".sh")
 				return false;
 
-
-			// path_to_cgi_executableチェック
 			std::string path_to_cgi_executable(tokens[2]);
 			if (mylib::getPathType(path_to_cgi_executable) != IS_FILE)
 				return false;
@@ -727,16 +572,13 @@ static bool hasValidPaths(const std::vector<std::string>& lines)
 		}
 
 		// upload_storeのpath
-		// 重複OK
-		// ディレクトリであること
-		// 書き込み権限があること
 		if (directive == "upload_store")
 		{
 			if (tokens[1][0] != '/')
 				return false;
 
 			std::string upload_store_path(location_root_path + tokens[1]);
-			//std::cout << upload_store_path << std::endl;
+
 			if (mylib::getPathType(upload_store_path) != IS_DIRECTORY)
 				return false;
 			if (access(upload_store_path.c_str(), X_OK) != 0)
@@ -746,6 +588,11 @@ static bool hasValidPaths(const std::vector<std::string>& lines)
 	return true;
 }
 
+/* ====================
+ディレクティブの引数が有効かどうかを確認する関数
+==================== */
+// MARK: isValidDirectiveArguments
+
 bool isValidDirectiveArguments(const std::vector<std::string>& lines)
 {
 	// 適切な引数があることを確認
@@ -754,34 +601,25 @@ bool isValidDirectiveArguments(const std::vector<std::string>& lines)
 		outputError("ERROR: Invalid number of arguments!");
 		return false;
 	}
-
 	// 引数の数が正しいことを確認
 	if (hasCorrectNumberOfArguments(lines) == false)
 	{
 		outputError("ERROR: Invalid number of arguments!");
 		return false;
 	}
-
 	// 有効な値が設定されていることを確認
-	// 引数がIPアドレスである場合、有効なIPアドレスであることを確認
-	// 引数がポート番号である場合、有効なポート番号であることを確認
-	// 引数が数値である場合、有効な数値であることを確認
-	// 引数がHTTPメソッドである場合、有効なHTTPメソッドであることを確認
-	// 引数が拡張子である場合、有効な拡張子であることを確認
+	// IPアドレス、ポート番号、数値、HTTPメソッド、拡張子
 	if (hasValidArguments(lines) == false)
 	{
 		outputError("ERROR: Invalid argument value!");
 		return false;
 	}
-
-	// 引数がファイルパスである場合、ファイルが存在することを確認
-	// 引数がディレクトリパスである場合、ディレクトリが存在することを確認
+	// 引数がパスの場合、ファイルまたはディレクトリが存在することを確認
 	// error_pageのpath, rootのpath, locationのpath, returnのURL, cgi_extensionのextensionとpath_to_cgi_executable, upload_storeのpath
 	if (hasValidPaths(lines) == false)
 	{
 		outputError("ERROR: File or Directory is Invalid!");
 		return false;
 	}
-
 	return true;
 }
