@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/18 12:25:41 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/10/18 23:32:32 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ enum PathType {
 class Config;
 class Socket;
 
-void configMain(Config config, int argc, char** argv);
+void configMain(Config& config, int argc, char **argv);
 void socketMain(Socket socketData);
 void eventLoop(Socket socket);
 void httpServerMain(void);
@@ -107,6 +107,7 @@ namespace mylib {
   std::vector<std::string> split(const std::string& s, const std::string& del);
   bool isNumeric(const std::string &str);
   int stringToInt(const std::string &str);
+  unsigned long stringToULong(const std::string &str);
   PathType getPathType(const std::string& path);
   template <typename T>
   std::string to_string(const T& n);

@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/18 13:26:44 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/10/18 21:43:27 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,10 +41,6 @@ enum ParseMode {
 //    - upload_enable
 //    - upload_store
 
-
-
-
-
 struct ConfigLocation {
     std::string path;
     std::string root;
@@ -52,7 +48,7 @@ struct ConfigLocation {
     std::pair<int, std::string> return_;
     bool autoindex;
     std::vector<std::string> index;
-    std::vector<std::string> cgi_extension;
+    std::vector<std::pair<std::string, std::string> > cgi_extension; // 拡張子とパス
     bool upload_enable;
     std::string upload_store;
 };
@@ -72,6 +68,7 @@ class Config {
 private:
   int         _argc;
   std::string _file_path;
+  std::string _file_content;
   std::vector<ConfigServer> _servers;
 
 public:
@@ -85,6 +82,7 @@ public:
   void        checkNbrArg(void) const;
   void        checkConfig(void);
   bool        isValidConfig(std::string file_content);
+  void        parseConfig(void);
 
   Config&      operator=(const Config& obj);
 };

@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/15 22:40:46 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2024/10/18 13:52:31 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/10/18 20:54:39 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,6 +111,7 @@ void Config::checkConfig(void)
 		std::exit(0);
 	// 空白行やコメント行を削除する
 	file_content = removeUnnecessaryLines(file_content);
+	this->_file_content = file_content;
 
 	if (DEBUG)
 	{

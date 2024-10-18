@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/18 12:25:12 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/10/18 23:09:09 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,15 @@ namespace mylib{
   int stringToInt(const std::string &str) {
     std::istringstream iss(str);
     int number = 0;
+    iss >> number;
+    if (iss.fail())
+      return -1; // 変換エラーを示す
+    return number;
+  }
+
+  unsigned long stringToULong(const std::string &str) {
+    std::istringstream iss(str);
+    unsigned long number = 0;
     iss >> number;
     if (iss.fail())
       return -1; // 変換エラーを示す
