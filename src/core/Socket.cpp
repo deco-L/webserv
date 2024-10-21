@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/30 15:30:55 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/18 21:09:47 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,7 @@ int Socket::recv(void) {
     size = ::recv(this->_socket, (char *) tmp.c_str(), 1, 0);
     return (MAX_SOCK_BUFFER + size);
   }
+  this->_outBuf.substr(0, size);
   return (size);
 }
 

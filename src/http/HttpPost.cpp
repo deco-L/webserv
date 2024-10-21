@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/18 16:48:06 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/18 21:13:28 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,19 +32,28 @@ HttpPost::~HttpPost() {
   return ;
 }
 
+bool HttpPost::_uploadFile(HttpRequest& request) {
+  std::string root = "./wsv";
+  std::ofstream file(root.append(this->_uri).c_str());
+
+  if (!file.is_open())
+    return (false);
+  file << request.getBody();
+  file.close();
+  return (true);
+}
+
 HttpResponse* HttpPost::setResponseStatus(void) {
   std::string root = "./wsv";
 
-  if (mylib::isPathValid(root.append(this->_uri)))
-    return (new HttpResponse(HTTP_NOT_FOUND));
-  if (mylib::isModeValid(root.append(this->_uri), S_IRUSR | S_IXUSR))
+  if (mylib::isDirectory(root.append(this->_uri)) || mylib::isModeValid(root.append(this->_uri), S_IRUSR | S_IXUSR))
     return (new HttpResponse(HTTP_FORBIDDEN));
   return (new HttpResponse(HTTP_CREATED));
 }
 
 void HttpPost::setResponseMessage(HttpRequest& request, HttpResponse& response) const {
   int responseSize;
-  std::string root = "./wsv/html";
+  std::string root = "./wsv";
 
   responseSize = response.createResponseMessage(this->getMethod(), root.append(this->_uri), request, this->_version);
   if (responseSize < 0) {
@@ -58,6 +67,10 @@ void HttpPost::execute(HttpRequest& request, HttpResponse*& response) {
   response = this->setResponseStatus();
   if (400 <= response->getStatus() && response->getStatus() <= 600)
     return ;
+  if (!this->_uploadFile(request)) {
+    response->setStatus(HTTP_INTERNAL_SERVER_ERROR);
+    return ;
+  }
   this->setResponseMessage(request, *response);
   return ;
 }
