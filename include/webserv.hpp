@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/11 19:39:56 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/10/23 10:23:49 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,10 @@
 #include <cstring>
 #include <vector>
 #include <cstdio>
+#include <fstream>
+#include <stack>
+#include <map>
+#include <algorithm>
 #include <fstream>
 
 /* c library for communication */
@@ -68,27 +72,39 @@
 #define WSV_OK    0
 #define WSV_ERROR 1
 
+#define DEBUG 1
+
 #define LF    (u_char) '\n'
 #define CR    (u_char) '\r'
 #define CRLF  "\r\n"
 
+#define DEFOULT_CONF "conf/default.conf"
+
 template <typename ConfigClass, typename SocketClass>
 struct t_root {
   ConfigClass config;
-  SocketClass socket;
+  SocketClass socketData;
+};
+
+enum PathType {
+  NOT_EXIST,    // パスが存在しない
+  IS_FILE,      // パスがファイル
+  IS_DIRECTORY, // パスがディレクトリ
+  OTHER         // その他（シンボリックリンクなど）
 };
 
 class Config;
 class Socket;
 class Epoll;
 
-void configMain(Config& config, int argc, char** argv);
+void configMain(Config&& config, int argc, char **argv);
 void socketMain(Socket& socketData);
 void socketEnd(Socket& sSocket);
 void eventLoop(Socket& sSocket);
 void httpServer(Socket& cSocket, Epoll& epoll);
 
 namespace mylib {
+  int check_access(const char *path);
   void  spinnerOut(void);
 
   bool ifFdValid(int fd);
@@ -104,6 +120,11 @@ namespace mylib {
   char* inet_ntoa(struct in_addr in);
 
   size_t	strlen(const char *str);
+  std::vector<std::string> split(const std::string& s, const std::string& del);
+  bool isNumeric(const std::string &str);
+  int stringToInt(const std::string &str);
+  unsigned long stringToULong(const std::string &str);
+  PathType getPathType(const std::string& path);
   template <typename T>
   std::string to_string(const T& n);
   template <typename T>

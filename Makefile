@@ -6,7 +6,7 @@
 #    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2024/10/17 17:46:06 by csakamot         ###   ########.fr        #
+#    Updated: 2024/10/23 10:18:42 by csakamot         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,7 +29,7 @@ OBJDIR	= objs/
 ##------------Srcs-------------##
 CORESRC	=	main.cpp socketMain.cpp Socket.cpp
 
-CONFSRC = configMain.cpp Config.cpp
+CONFSRC = configMain.cpp Config.cpp checkConfig.cpp isValidConfig.cpp isValidBracketFormat.cpp isValidDirectiveArguments.cpp isValidNest.cpp parseConfig.cpp
 
 EVENSRC = eventLoop.cpp Epoll.cpp
 
@@ -37,11 +37,11 @@ HTTPSRC = httpServer.cpp Http.cpp HttpRequest.cpp AHttpMethod.cpp HttpDelete.cpp
 
 ERROSRC = Error.cpp
 
-UTILSRC = charaOutput.cpp memory.cpp string.cpp net.cpp file.cpp
+UTILSRC = access.cpp charaOutput.cpp memory.cpp string.cpp net.cpp file.cpp
 
 SRCS		= $(addprefix $(SRCDIR)core/, ${CORESRC}) $(addprefix $(SRCDIR)config/, $(CONFSRC)) \
 					$(addprefix $(SRCDIR)event/, $(EVENSRC)) $(addprefix $(SRCDIR)http/, $(HTTPSRC)) \
-					$(addprefix $(SRCDIR)utils/, $(UTILSRC)) $(addprefix $(SRCDIR)error/, $(ERROSRC)) 
+					$(addprefix $(SRCDIR)utils/, $(UTILSRC)) $(addprefix $(SRCDIR)error/, $(ERROSRC))
 ##-----------------------------##
 
 ##-----------Object------------##
