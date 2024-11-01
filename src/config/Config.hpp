@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/18 21:43:27 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/11/01 20:52:59 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,9 @@ enum ParseMode {
 //- server
 //  - listen
 //  - server_name
-//  - error_page
+//  - error_page // location直下の方がいい可能性あり
 //  - client_max_body_size
-//  - root
+//  - root // 
 //  - index
 //  - autoindex
 //  - location
@@ -51,6 +51,8 @@ struct ConfigLocation {
     std::vector<std::pair<std::string, std::string> > cgi_extension; // 拡張子とパス
     bool upload_enable;
     std::string upload_store;
+    
+    ConfigLocation(void) : return_(0, ""), autoindex(false), upload_enable(false) {}
 };
 
 struct ConfigServer {
@@ -62,6 +64,8 @@ struct ConfigServer {
     std::vector<std::string> index;
     bool autoindex;
     std::vector<ConfigLocation> locations;
+    
+    ConfigServer(void) : client_max_body_size(0), autoindex(false) {}
 };
 
 class Config {

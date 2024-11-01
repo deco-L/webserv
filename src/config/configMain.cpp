@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/18 23:42:05 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/11/01 20:37:15 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ void configMain(Config& config, int argc, char **argv)
           std::cout << *it << " ";
         }
         std::cout << std::endl;
-        std::cout << "Return: ";
+        std::cout << "Return: " << location.return_.first << " " << location.return_.second << std::endl;
 
         std::cout << std::endl;
         std::cout << "Autoindex: " << location.autoindex << std::endl;
