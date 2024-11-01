@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/23 10:23:49 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/01 21:20:54 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@
 template <typename ConfigClass, typename SocketClass>
 struct t_root {
   ConfigClass config;
-  SocketClass socketData;
+  std::vector<SocketClass> socket;
 };
 
 enum PathType {
@@ -96,12 +96,13 @@ enum PathType {
 class Config;
 class Socket;
 class Epoll;
+class ConfigServer;
 
-void configMain(Config&& config, int argc, char **argv);
-void socketMain(Socket& socketData);
-void socketEnd(Socket& sSocket);
-void eventLoop(Socket& sSocket);
-void httpServer(Socket& cSocket, Epoll& epoll);
+void configMain(Config& config, int argc, char **argv);
+void socketMain(std::vector<Socket>& sockets, const std::vector<ConfigServer>& config);
+void socketEnd(std::vector<Socket>& Sockets);
+void eventLoop(std::vector<Socket>& sSockets, const std::vector<ConfigServer>& config);
+void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll);
 
 namespace mylib {
   int check_access(const char *path);
@@ -122,6 +123,7 @@ namespace mylib {
   size_t	strlen(const char *str);
   std::vector<std::string> split(const std::string& s, const std::string& del);
   bool isNumeric(const std::string &str);
+  short stringToShort(const std::string &str);
   int stringToInt(const std::string &str);
   unsigned long stringToULong(const std::string &str);
   PathType getPathType(const std::string& path);

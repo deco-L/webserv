@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/18 21:09:47 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/01 22:29:04 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,8 +60,9 @@ void Socket::create(void) {
   return ;
 }
 
-void Socket::passive(short int port, bool opt) {
+void Socket::passive(std::string ipAddress, short int port, bool opt) {
   int optval = 1;
+  (void)ipAddress;
 
   if (opt) {
     this->_error = setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, (char *) &optval, sizeof(optval));

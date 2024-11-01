@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/23 10:25:18 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/01 17:19:45 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,15 @@ namespace mylib{
         return false;
     }
     return true;
+  }
+
+  short stringToShort(const std::string &str) {
+    std::istringstream iss(str);
+    short number = 0;
+    iss >> number;
+    if (iss.fail())
+      return (-1);
+    return (number);
   }
 
   int stringToInt(const std::string &str) {

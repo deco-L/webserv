@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/18 21:15:11 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/01 21:22:09 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,8 @@
 #include "Epoll.hpp"
 #include "Error.hpp"
 
-void httpServer(Socket& cSocket, Epoll& epoll) {
-
-  epoll.setEvent(cSocket, EPOLLIN | EPOLLET);
+void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll) {
+  (void)config;
   while (true) {
     try {
       Http http;

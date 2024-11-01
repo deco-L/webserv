@@ -6,26 +6,29 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/03 16:54:28 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/01 22:11:41 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
+#include "Config.hpp"
 #include "Socket.hpp"
 #include "Epoll.hpp"
 #include "Error.hpp"
 
-void eventLoop(Socket& sSocket) {
+void eventLoop(std::vector<Socket>& sockets, const std::vector<ConfigServer>& configs) {
   Socket cSocket;
   Epoll epoll;
 
   try {
     epoll.epollCreate();
-    epoll.setEvent(sSocket, EPOLLIN);
+    for (std::vector<Socket>::iterator it = sockets.begin(); it != sockets.end(); it++)
+      epoll.setEvent(*it, EPOLLIN);
   }
   catch(const std::exception& e) {
-    std::cerr << e.what() << '\n';
-    sSocket.close();
+    std::cerr << ERROR_COLOR << e.what() << COLOR_RESET << '\n';
+    for (std::vector<Socket>::iterator it = sockets.begin(); it != sockets.end(); it++)
+      it->close();
     std::exit(WSV_ERROR);
   }
   while (true) {
@@ -34,18 +37,28 @@ void eventLoop(Socket& sSocket) {
     }
     catch(const std::exception& e) {
       std::cerr << e.what() << '\n';
-      sSocket.close();
+      for (std::vector<Socket>::iterator it = sockets.begin(); it != sockets.end(); it++)
+        it->close();
       std::exit(WSV_ERROR);
     }
-    try {
-      sSocket.accept(cSocket);
-      std::cout << "accept" << std::endl;
-      httpServer(cSocket, epoll);
-    }
-    catch(const std::exception& e) {
-      std::cerr << ERROR_COLOR << e.what() << COLOR_RESET << '\n';
-      cSocket.close();
-      break ;
+    for (std::vector<Socket>::iterator it = sockets.begin(); it != sockets.end(); it++) {
+      try {
+        it->accept(cSocket);
+        std::cout << "accept" << std::endl;
+      }
+      catch(const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        continue ;
+      }
+      try {
+        epoll.setEvent(cSocket, EPOLLIN | EPOLLET);
+        httpServer(cSocket, configs[it - sockets.begin()], epoll);
+      }
+      catch(const std::exception& e) {
+        std::cerr << ERROR_COLOR << e.what() << COLOR_RESET << '\n';
+        cSocket.close();
+        break ;
+      }
     }
     cSocket.close();
   }

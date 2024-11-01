@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   isValidDirectiveArguments.cpp                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/18 13:14:30 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2024/10/18 14:28:10 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/10/23 15:28:50 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 

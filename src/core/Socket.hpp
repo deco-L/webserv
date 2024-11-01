@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/27 22:54:55 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/01 17:13:33 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@
 #define SENDFILE_MAX_CHUNK 2097152
 #define GETLINE_BUFFER 4096
 #define NO_EOL 1
-#define REUSE_PORT -1
+#define REUSE_PORT 1
 
 class Socket {
 protected:
@@ -59,7 +59,7 @@ public:
   };
 
   void create(void);
-  void passive(short int port, bool opt);
+  void passive(std::string ipAddress, short int port, bool opt);
   void accept(Socket& cSocket);
   int recv(void);
   void send(std::string buf, size_t len);
