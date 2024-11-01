@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/01 19:38:43 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/01 23:42:51 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,14 +168,16 @@
 
 // ソケットを作成します.
 void socketMain(std::vector<Socket>& sockets, const std::vector<ConfigServer>& config) {
+  Socket tmpSocket;
   try {
     for (std::vector<ConfigServer>::const_iterator it = config.begin(); it != config.end(); it++) {
-      Socket tmpSocket;
       tmpSocket.create();
       tmpSocket.passive(it->listen.begin()->first, mylib::stringToShort(it->listen.begin()->second), REUSE_PORT);
       sockets.push_back(tmpSocket);
     }
   } catch (const std::exception& e) {
+    for (std::vector<Socket>::iterator it = sockets.begin(); it != sockets.end(); it++)
+      it->close();
     std::cerr << ERROR_COLOR << e.what() << COLOR_RESET << std::endl;
     std::exit(WSV_ERROR);
   }

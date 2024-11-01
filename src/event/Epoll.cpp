@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/01 22:22:55 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/01 23:29:24 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ const struct epoll_event* Epoll::getEvents(void) const {
 }
 
 void Epoll::epollCreate(void) {
-  this->_epollFd = epoll_create(1);
+  this->_epollFd = epoll_create(FD_SETSIZE);
   if (this->_epollFd < 0)
     throw Epoll::EpollError("Error: epoll_create error.");
   return ;

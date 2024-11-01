@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/01 22:11:41 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/01 23:49:32 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
 #include "Error.hpp"
 
 void eventLoop(std::vector<Socket>& sockets, const std::vector<ConfigServer>& configs) {
-  Socket cSocket;
   Epoll epoll;
 
   try {
@@ -42,6 +41,7 @@ void eventLoop(std::vector<Socket>& sockets, const std::vector<ConfigServer>& co
       std::exit(WSV_ERROR);
     }
     for (std::vector<Socket>::iterator it = sockets.begin(); it != sockets.end(); it++) {
+      Socket cSocket;
       try {
         it->accept(cSocket);
         std::cout << "accept" << std::endl;
@@ -59,8 +59,8 @@ void eventLoop(std::vector<Socket>& sockets, const std::vector<ConfigServer>& co
         cSocket.close();
         break ;
       }
+      cSocket.close();
     }
-    cSocket.close();
   }
   return ;
 }

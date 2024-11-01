@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/01 22:29:04 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/01 23:41:37 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,6 @@ Socket::Socket(const Socket& obj) {
 }
 
 Socket::~Socket() {
-  if (this->_socket > 0)
-    ::close(this->_socket);
   return ;
 }
 
@@ -55,7 +53,7 @@ const char* Socket::SocketError::what(void) const throw() {
 
 void Socket::create(void) {
   this->_socket = socket(AF_INET, SOCK_STREAM, 0);
-  if (this->_socket == -1)
+  if (this->_socket < 0)
     throw Socket::SocketError("socket error");
   return ;
 }
