@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/01 23:58:02 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/02 00:00:50 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,6 @@ void Socket::create(void) {
 
 void Socket::passive(std::string ipAddress, short int port, bool opt) {
   int optval = 1;
-  (void)ipAddress;
 
   if (opt) {
     this->_error = setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, (char *) &optval, sizeof(optval));
@@ -71,7 +70,7 @@ void Socket::passive(std::string ipAddress, short int port, bool opt) {
   std::memset(&this->_sSockAddr, 0, sizeof(struct sockaddr_in));
   this->_sSockAddr.sin_family = AF_INET;
   this->_sSockAddr.sin_port = htons(static_cast<unsigned int>(this->_sPort));
-  this->_sSockAddr.sin_addr.s_addr = INADDR_ANY;
+  this->_sSockAddr.sin_addr.s_addr = inet_addr(ipAddress.c_str());
   this->_error = bind(this->_socket, (const struct sockaddr *) &this->_sSockAddr, sizeof(this->_sSockAddr));
   if (this->_error < 0)
     throw Socket::SocketError("bind failed");
