@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/01 23:29:24 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/02 15:11:23 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,12 @@ void Epoll::epollWait(int time) {
   this->_wait = epoll_wait(this->_epollFd, this->_events, FD_SETSIZE, time);
   if (this->_wait < 0)
     throw Epoll::EpollError("Error: epoll_wait error");
+  return ;
+}
+
+void Epoll::epollCrose(void) {
+  if (mylib::ifFdValid(this->_epollFd))
+    close(this->_epollFd);
   return ;
 }
 

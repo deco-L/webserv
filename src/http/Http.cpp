@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/18 21:09:10 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/02 16:24:50 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,7 +112,6 @@ void Http::parseRequestMessage(Socket& socket) {
   std::istringstream stream(socket._outBuf);
 
   while (std::getline(stream, line)) {
-    this->_requestSize -= line.length();
     if (!line.empty()) {
       line.substr(0, line.length() - 1);
       crline.push_back(line);
@@ -131,7 +130,7 @@ void Http::parseRequestMessage(Socket& socket) {
 void Http::recvRequestMessage(Socket& socket) {
   this->_requestSize = socket.recv();
   if (this->_requestSize < 0)
-    throw Http::HttpError("recvRequestMessage error");
+    throw Http::HttpError("");
   else if (this->_requestSize > MAX_SOCK_BUFFER)
     this->_httpResponse = new HttpResponse(413);
   else if (this->_requestSize == 0)

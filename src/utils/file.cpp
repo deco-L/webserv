@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/11 19:50:20 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/02 15:18:17 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,5 +82,10 @@ namespace mylib {
     if (fcntl(fd, F_SETFL, flag | O_NONBLOCK) < 0)
       return (-1);
     return (0);
+  }
+
+  bool isFileOpen(int fd) {
+    int flags = fcntl(fd, F_GETFD);
+    return (flags != -1);
   }
 }

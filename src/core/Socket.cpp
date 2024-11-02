@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/02 00:00:50 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/02 15:20:07 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,10 @@ const char* Socket::SocketError::what(void) const throw() {
   return (this->_error_message.c_str());
 }
 
+bool Socket::isSocketOpen(void) {
+  return (mylib::isFileOpen(this->_socket));
+}
+
 void Socket::create(void) {
   this->_socket = socket(AF_INET, SOCK_STREAM, 0);
   if (this->_socket < 0)
@@ -85,7 +89,10 @@ void Socket::passive(std::string ipAddress, short int port, bool opt) {
 void Socket::accept(Socket& cSocket) {
   mylib::bzero(&this->_cSockAddr, this->_addrLen);
   cSocket._socket = ::accept(this->_socket, (struct sockaddr *) &cSocket._cSockAddr, (unsigned int *) &cSocket._addrLen);
-  if (cSocket._socket < 0) {
+  if (cSocket._socket < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+    this->_error = cSocket._socket;
+    throw Socket::SocketError("");
+  } else if(cSocket._socket < 0) {
     this->_error = cSocket._socket;
     throw Socket::SocketError("accept error");
   }

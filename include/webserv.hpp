@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/01 21:20:54 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/02 15:21:02 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,6 +115,7 @@ namespace mylib {
   int countFileSize(const std::string& path);
   bool readFile(const std::string path, std::string& buf);
   int nonBlocking(int fd);
+  bool isFileOpen(int fd);
 
   void	bzero(void *s, size_t n);
 

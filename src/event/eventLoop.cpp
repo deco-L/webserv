@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/01 23:55:04 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/02 15:13:20 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ void eventLoop(std::vector<Socket>& sockets, const std::vector<ConfigServer>& co
       epoll.epollWait(-1);
     }
     catch(const std::exception& e) {
-      std::cerr << e.what() << '\n';
+      std::cerr << ERROR_COLOR << e.what() << COLOR_RESET << '\n';
       for (std::vector<Socket>::iterator it = sockets.begin(); it != sockets.end(); it++)
         it->close();
       std::exit(WSV_ERROR);
@@ -47,20 +47,22 @@ void eventLoop(std::vector<Socket>& sockets, const std::vector<ConfigServer>& co
         std::cout << "accept" << std::endl;
       }
       catch(const std::exception& e) {
-        std::cerr << e.what() << '\n';
+        if (mylib::strlen(e.what()))
+          std::cerr << ERROR_COLOR << e.what() << COLOR_RESET << '\n';
         continue ;
       }
       try {
         epoll.setEvent(cSocket, EPOLLIN | EPOLLET);
-        httpServer(cSocket, configs[it - sockets.begin()], epoll);
       }
       catch(const std::exception& e) {
         std::cerr << ERROR_COLOR << e.what() << COLOR_RESET << '\n';
         cSocket.close();
         break ;
       }
+      httpServer(cSocket, configs[it - sockets.begin()], epoll);
       cSocket.close();
     }
   }
+  epoll.epollCrose();
   return ;
 }

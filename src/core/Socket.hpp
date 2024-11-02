@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/01 17:13:33 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/02 15:19:24 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ public:
     virtual const char* what(void) const throw();
   };
 
+  bool isSocketOpen(void);
   void create(void);
   void passive(std::string ipAddress, short int port, bool opt);
   void accept(Socket& cSocket);
