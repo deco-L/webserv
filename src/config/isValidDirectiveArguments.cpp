@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/18 13:14:30 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2024/10/18 14:28:10 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/11/03 23:04:10 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@ static bool hasCorrectNumberOfArguments(const std::vector<std::string>& lines)
 {
 	// 1
     const char* directivesArray[] = {
+		"listen",
         "client_max_body_size",
         "root",
         "autoindex",
@@ -70,7 +71,6 @@ static bool hasCorrectNumberOfArguments(const std::vector<std::string>& lines)
 
 	// 1~N
 	const char* directives1NArray[] = {
-		"listen",
 		"server_name",
 		"index",
 		"methods"
@@ -193,6 +193,7 @@ static bool hasValidArguments(const std::vector<std::string>& lines)
 		// addressはIPv4のみ
 		// portは1~65535
 		// 重複は追加なので、重複がある場合はエラー
+		// 11/03 重複を上書きということに変更。厳しい分には問題ないのでコードは放置
 		if (directive == "listen") //[address:]port
 		{
 			if (tokens[1].find(':') != std::string::npos)
