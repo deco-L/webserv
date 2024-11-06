@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/23 10:25:05 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/01 20:37:15 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ void configMain(Config& config, int argc, char **argv)
           std::cout << *it << " ";
         }
         std::cout << std::endl;
-        std::cout << "Return: ";
+        std::cout << "Return: " << location.return_.first << " " << location.return_.second << std::endl;
 
         std::cout << std::endl;
         std::cout << "Autoindex: " << location.autoindex << std::endl;

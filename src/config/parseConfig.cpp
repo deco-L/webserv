@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/18 20:49:24 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2024/10/18 23:37:23 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/11/03 23:04:54 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,18 +50,32 @@ void Config::parseConfig(void)
 
 		if (mode == MODE_SERVER)
 		{
+			// 当初はlistenの重複をを追加としていたが上書きに変更
 			if (directive == "listen")
 			{
+				std::pair<std::string, std::string> new_pair;
 				if (tokens[1].find(':') != std::string::npos) // address:port
 				{
 					std::vector<std::string> addressPort = mylib::split(tokens[1], ":");
-					this->_servers.back().listen.push_back(std::make_pair(addressPort[0], addressPort[1]));
+					new_pair = std::make_pair(addressPort[0], addressPort[1]);
 				}
 				else // port
 				{
-					this->_servers.back().listen.push_back(std::make_pair("", tokens[1]));
+					new_pair = std::make_pair("", tokens[1]);
+				}
+
+				if (this->_servers.back().listen.empty())
+				{
+					// ベクターが空の場合、要素を追加
+					this->_servers.back().listen.push_back(new_pair);
+				}
+				else
+				{
+					// 最初の要素を上書き
+					this->_servers.back().listen[0] = new_pair;
 				}
 			}
+
 			else if (directive == "server_name")
 			{
 				for (size_t i = 1; i < tokens.size(); ++i)
