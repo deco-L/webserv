@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/18 00:27:51 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/02 17:26:22 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,11 @@
 #include "Error.hpp"
 #include "webserv.hpp"
 
-HttpRequest::HttpRequest(void): _body("") {
+HttpRequest::HttpRequest(void): _method(""), _uri(""), _version(""), _body(""), _bodySize(0) {
   return ;
 }
 
-HttpRequest::HttpRequest(const HttpRequest& obj): _body("") {
+HttpRequest::HttpRequest(const HttpRequest& obj): _method(""), _uri(""), _version(""), _body(""), _bodySize(0) {
   *this = obj;
   return ;
 }
@@ -29,6 +29,37 @@ HttpRequest::~HttpRequest() {
 
 std::map<std::string, std::string> HttpRequest::getHeader(void) const {
   return (this->_headers);
+}
+
+const std::string& HttpRequest::getMethod(void) const {
+  return (this->_method);
+}
+
+const std::string& HttpRequest::getUri(void) const {
+  return (this->_uri);
+}
+
+const std::string& HttpRequest::getVersion(void) const {
+  return (this->_version);
+}
+
+unsigned long HttpRequest::getBodySize(void) const {
+  return (this->_bodySize);
+}
+
+void HttpRequest::setMethod(const std::string& method) {
+  this->_method = method;
+  return ;
+}
+
+void HttpRequest::setUri(const std::string& uri) {
+  this->_uri = uri;
+  return ;
+}
+
+void HttpRequest::setVersion(const std::string& version) {
+  this->_version = version;
+  return ;
 }
 
 void HttpRequest::setHeaders(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end) {
@@ -58,6 +89,7 @@ void HttpRequest::setBody(std::vector<std::string>::iterator& it, std::vector<st
     this->_body.append(stream.str());
     it++;
   }
+  this->_bodySize = this->_body.length();
   return ;
 }
 

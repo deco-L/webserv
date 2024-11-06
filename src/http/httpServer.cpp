@@ -6,12 +6,13 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/02 15:48:09 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/06 13:15:54 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
 #include "Http.hpp"
+#include "Config.hpp"
 #include "Socket.hpp"
 #include "Epoll.hpp"
 #include "Error.hpp"
@@ -32,37 +33,36 @@ static void showResponseMessage(Http& http) {
 }
 
 void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll) {
-  (void)config;
   while (true) {
-    try {
-      Http http;
+    Http http;
 
+    try {
       epoll.epollWait(-1);
       http.recvRequestMessage(cSocket);
       if (cSocket._error == 0)
         break ;
       if (http.checkSemantics(cSocket)) {
         http.sendResponse(cSocket, http.getVersion());
+        throw Http::HttpError("HTTP_BAD_REQUEST");
         break ;
       }
       http.parseRequestMessage(cSocket);
-      if (http.getRequestSize() > MAX_SOCK_BUFFER) {
-        http.sendResponse(cSocket, http.getVersion());
-        break ;
+      if (config.client_max_body_size != 0 && http.getRequestBodySize() > config.client_max_body_size) {
+        http.setHttpResponse(HTTP_REQUEST_ENTITY_TOO_LARGE);
+        throw Http::HttpError("HTTP_REQUEST_ENTITY_TOO_LARGE");
       }
       showRequestMessage(http);
       std::memset((void* )cSocket._outBuf.c_str(), 0, cSocket._outBuf.length());
-      if (!http.createMethod()) {
-        http.sendResponse(cSocket, http.getVersion());
-        break ;
-      }
-      http.executeMethod();
+      if (!http.createMethod())
+        throw Http::HttpError("HTTP_BAD_REQUEST");
+      http.executeMethod(config);
       showResponseMessage(http);
       http.sendResponse(cSocket, http.getVersion());
     }
     catch(const std::exception& e) {
-      if (mylib::strlen(e.what()))
-        std::cerr << ERROR_COLOR << e.what() << COLOR_RESET << '\n';
+      std::string error(e.what());
+      if (error.compare("accept"))
+        http.sendResponse(cSocket, http.getVersion());
       break ;
     }
   }

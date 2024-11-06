@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/18 17:38:24 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/06 17:12:21 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,29 +15,21 @@
 #include "HttpRequest.hpp"
 #include "webserv.hpp"
 
-HttpDelete::HttpDelete(): AHttpMethod("DELETE"), _uri(""), _version("") {
+HttpDelete::HttpDelete(): AHttpMethod("DELETE") {
   return ;
 }
 
-HttpDelete::HttpDelete(std::string uri, std::string version): AHttpMethod("DELETE"), _uri(uri), _version(version) {
+HttpDelete::HttpDelete(std::string uri, std::string version): AHttpMethod("DELETE") {
   return ;
 }
 
-HttpDelete::HttpDelete(const HttpDelete& obj): AHttpMethod("DELETE"), _uri(""), _version("") {
+HttpDelete::HttpDelete(const HttpDelete& obj): AHttpMethod("DELETE") {
   *this = obj;
   return ;
 }
 
 HttpDelete::~HttpDelete() {
   return ;
-}
-
-const std::string& HttpDelete::getUri(void) const {
-  return (this->_uri);
-}
-
-const std::string& HttpDelete::getVersion(void) const {
-  return (this->_version);
 }
 
 HttpResponse* HttpDelete::setResponseStatus(void) {
@@ -50,7 +42,7 @@ HttpResponse* HttpDelete::setResponseStatus(void) {
   return (new HttpResponse(HTTP_OK));
 }
 
-void HttpDelete::setResponseMessage(HttpRequest& request, HttpResponse& response) const {
+void HttpDelete::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const {
   int responseSize;
   std::string root = "./wsv/html";
 
@@ -62,7 +54,7 @@ void HttpDelete::setResponseMessage(HttpRequest& request, HttpResponse& response
   return ;
 }
 
-void HttpDelete::execute(HttpRequest& request, HttpResponse*& response) {
+void HttpDelete::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response) {
   std::string root = "./wsv/html";
   response = this->setResponseStatus();
   if (std::remove(root.append(this->_uri).c_str())) {
@@ -71,12 +63,13 @@ void HttpDelete::execute(HttpRequest& request, HttpResponse*& response) {
   }
   if (400 <= response->getStatus() && response->getStatus() <= 600)
     return ;
-  this->setResponseMessage(request, *response);
+  this->setResponseMessage(config, request, *response);
   return ;
 }
 
 HttpDelete& HttpDelete::operator=(const HttpDelete& obj) {
   if (this != &obj) {
+    ;
   }
   else
   {

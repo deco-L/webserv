@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/02 15:11:23 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/02 17:28:47 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,10 +68,8 @@ void Epoll::setEvent(const Socket& socket, unsigned int flag) {
   struct epoll_event event;
   event.events = flag;
   event.data.fd = socket._socket;
-  if (epoll_ctl(this->_epollFd, EPOLL_CTL_ADD, socket._socket, &event) == -1) {
-    std::cout << strerror(errno) << std::endl;
+  if (epoll_ctl(this->_epollFd, EPOLL_CTL_ADD, socket._socket, &event) == -1)
     throw Epoll::EpollError("Error: epoll_ctl error.");
-  }
   return ;
 }
 

@@ -6,19 +6,20 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/02 16:24:50 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/06 15:25:01 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Http.hpp"
 #include "Socket.hpp"
+#include "Config.hpp"
 #include "Error.hpp"
 #include "HttpGet.hpp"
 #include "HttpPost.hpp"
 #include "HttpDelete.hpp"
 
 
-Http::Http(void): _method(""), _uri(""), _version(""), _requestSize(0), _httpRequest(), _httpMethod(NULL), _httpResponse(NULL) {
+Http::Http(void): _requestSize(0), _httpRequest(), _httpMethod(NULL), _httpResponse(NULL) {
   return ;
 }
 
@@ -46,63 +47,53 @@ const char* Http::HttpError::what(void) const throw() {
   return (this->_error_message.c_str());
 }
 
-void Http::executeMethod(void) {
-  this->_httpMethod->execute(this->_httpRequest, this->_httpResponse);
-  return ;
-}
+void Http::_parseRequestLine(std::string line) {
+  std::string element;
+  std::istringstream stream(line);
 
-bool Http::createMethod(void) {
-  if (this->_method == "GET")
-    this->_httpMethod = new HttpGet(this->_uri, this->_version);
-  else if (this->_method == "DELETE")
-    this->_httpMethod = new HttpDelete(this->_uri, this->_version);
-  else if (this->_method == "POST")
-    this->_httpMethod = new HttpPost(this->_uri, this->_version);
-  else {
-    this->_httpMethod = NULL;
-    this->_httpResponse = new HttpResponse(400);
+  while (std::getline(stream, element, ' ')) {
+    if (this->_httpRequest.getMethod().empty())
+      this->_httpRequest.setMethod(element);
+    else if (this->_httpRequest.getUri().empty())
+      this->_httpRequest.setUri(element);
+    else if (this->_httpRequest.getVersion().empty())
+      this->_httpRequest.setVersion(element.substr(0, element.length() - 1));
   }
-  return (this->_httpMethod != NULL);
-}
-
-void Http::sendResponse(Socket& socket, const std::string& version) {
-  this->_httpResponse->execute(socket, this->_httpRequest, version);
   return ;
 }
 
-std::string Http::getMethod(void) const {
-  return (this->_method);
+const std::string& Http::getMethod(void) const {
+  return (this->_httpRequest.getMethod());
 }
 
-std::string Http::getUri(void) const {
-  return (this->_uri);
+const std::string& Http::getUri(void) const {
+  return (this->_httpRequest.getUri());
 }
 
-std::string Http::getVersion(void) const {
-  return (this->_version);
+const std::string& Http::getVersion(void) const {
+  return (this->_httpRequest.getVersion());
 }
 
 int Http::getRequestSize(void) const {
   return (this->_requestSize);
 }
 
-bool Http::checkSemantics(Socket& socket) {
-  (void)socket;
-  return (false);
+unsigned long Http::getRequestBodySize(void) const {
+  return (this->_httpRequest.getBodySize());
 }
 
-void Http::_parseRequestLine(std::string line) {
-  std::string element;
-  std::istringstream stream(line);
+void Http::setHttpResponse(unsigned int status) {
+  this->_httpResponse = new HttpResponse(status);
+  return ;
+}
 
-  while (std::getline(stream, element, ' ')) {
-    if (this->_method.empty())
-      this->_method = element;
-    else if (this->_uri.empty())
-      this->_uri = element;
-    else if (this->_version.empty())
-      this->_version = element.substr(0, element.length() - 1);
-  }
+void Http::recvRequestMessage(Socket& socket) {
+  this->_requestSize = socket.recv();
+  if (this->_requestSize < 0)
+    throw Http::HttpError("accept");
+  else if (this->_requestSize == 0)
+    std::cout << NORMA_COLOR << "connection end." << COLOR_RESET << std::endl;
+  socket._error = this->_requestSize;
   return ;
 }
 
@@ -127,20 +118,37 @@ void Http::parseRequestMessage(Socket& socket) {
   return ;
 }
 
-void Http::recvRequestMessage(Socket& socket) {
-  this->_requestSize = socket.recv();
-  if (this->_requestSize < 0)
-    throw Http::HttpError("");
-  else if (this->_requestSize > MAX_SOCK_BUFFER)
-    this->_httpResponse = new HttpResponse(413);
-  else if (this->_requestSize == 0)
-    std::cout << NORMA_COLOR << "connection end." << COLOR_RESET << std::endl;
-  socket._error = this->_requestSize;
+bool Http::checkSemantics(Socket& socket) {
+  (void)socket;
+  return (false);
+}
+
+void Http::executeMethod(const ConfigServer& config) {
+  this->_httpMethod->execute(config, this->_httpRequest, this->_httpResponse);
+  return ;
+}
+
+bool Http::createMethod(void) {
+  if (this->_httpRequest.getMethod() == "GET")
+    this->_httpMethod = new HttpGet(this->_httpRequest.getUri(), this->_httpRequest.getVersion());
+  else if (this->_httpRequest.getMethod() == "DELETE")
+    this->_httpMethod = new HttpDelete(this->_httpRequest.getUri(), this->_httpRequest.getVersion());
+  else if (this->_httpRequest.getMethod() == "POST")
+    this->_httpMethod = new HttpPost(this->_httpRequest.getUri(), this->_httpRequest.getVersion());
+  else {
+    this->_httpMethod = NULL;
+    this->_httpResponse = new HttpResponse(HTTP_BAD_REQUEST);
+  }
+  return (this->_httpMethod != NULL);
+}
+
+void Http::sendResponse(Socket& socket, const std::string& version) {
+  this->_httpResponse->execute(socket, this->_httpRequest, version);
   return ;
 }
 
 void Http::showRequestLine(void) const {
-  std::cout << this->_method << " " << this->_uri << " " << this->_version << std::endl;
+  std::cout << this->_httpRequest.getMethod() << " " << this->_httpRequest.getUri() << " " << this->_httpRequest.getVersion() << std::endl;
   return ;
 }
 
@@ -161,9 +169,6 @@ void Http::showResponseMessage(void) const {
 
 Http& Http::operator=(const Http& obj) {
   if (this != &obj) {
-    this->_method = obj.getMethod();
-    this->_uri = obj.getUri();
-    this->_version = obj.getVersion();
     this->_requestSize = obj.getRequestSize();
   }
   else

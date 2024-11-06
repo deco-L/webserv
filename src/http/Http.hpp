@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/17 22:40:41 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/06 15:19:53 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,13 +22,11 @@
 #include "AHttpMethod.hpp"
 #include "HttpResponse.hpp"
 
+class ConfigServer;
 class Socket;
 
 class Http {
 private:
-  std::string _method;
-  std::string _uri;
-  std::string _version;
   int _requestSize;
   HttpRequest _httpRequest;
   AHttpMethod* _httpMethod;
@@ -53,20 +51,22 @@ public:
     virtual const char* what(void) const throw();
   };
 
-  std::string getMethod(void) const;
-  std::string getUri(void) const;
-  std::string getVersion(void) const;
+  const std::string& getMethod(void) const;
+  const std::string& getUri(void) const;
+  const std::string& getVersion(void) const;
   int getRequestSize(void) const;
+  unsigned long getRequestBodySize(void) const;
+  void setHttpResponse(unsigned int status);
+  void recvRequestMessage(Socket& socket);
+  void parseRequestMessage(Socket& socket);
+  bool checkSemantics(Socket& socket);
+  void executeMethod(const ConfigServer& config);
+  bool createMethod(void);
+  void sendResponse(Socket& socket, const std::string& version);
   void showRequestLine(void) const;
   void showRequestHeaders(void) const;
   void showRequestBody(void) const;
   void showResponseMessage(void) const;
-  bool checkSemantics(Socket& socket);
-  void parseRequestMessage(Socket& socket);
-  void recvRequestMessage(Socket& socket);
-  bool createMethod(void);
-  void sendResponse(Socket& socket, const std::string& version);
-  void executeMethod(void);
 };
 
 #endif

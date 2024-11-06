@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/18 21:13:28 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/06 17:13:48 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,15 +15,15 @@
 #include "HttpResponse.hpp"
 #include "HttpRequest.hpp"
 
-HttpPost::HttpPost(void): AHttpMethod("POST"), _uri(""), _version("") {
+HttpPost::HttpPost(void): AHttpMethod("POST") {
   return ;
 }
 
-HttpPost::HttpPost(std::string uri, std::string version): AHttpMethod("POST"), _uri(uri), _version(version) {
+HttpPost::HttpPost(std::string uri, std::string version): AHttpMethod("POST") {
   return ;
 }
 
-HttpPost::HttpPost(const HttpPost& obj): AHttpMethod("POST"), _uri(""), _version("") {
+HttpPost::HttpPost(const HttpPost& obj): AHttpMethod("POST") {
   *this = obj;
   return ;
 }
@@ -51,7 +51,7 @@ HttpResponse* HttpPost::setResponseStatus(void) {
   return (new HttpResponse(HTTP_CREATED));
 }
 
-void HttpPost::setResponseMessage(HttpRequest& request, HttpResponse& response) const {
+void HttpPost::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const {
   int responseSize;
   std::string root = "./wsv";
 
@@ -63,7 +63,7 @@ void HttpPost::setResponseMessage(HttpRequest& request, HttpResponse& response) 
   return ;
 }
 
-void HttpPost::execute(HttpRequest& request, HttpResponse*& response) {
+void HttpPost::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response) {
   response = this->setResponseStatus();
   if (400 <= response->getStatus() && response->getStatus() <= 600)
     return ;
@@ -71,16 +71,8 @@ void HttpPost::execute(HttpRequest& request, HttpResponse*& response) {
     response->setStatus(HTTP_INTERNAL_SERVER_ERROR);
     return ;
   }
-  this->setResponseMessage(request, *response);
+  this->setResponseMessage(config, request, *response);
   return ;
-}
-
-const std::string& HttpPost::getUri(void) const {
-  return (this->_uri);
-}
-
-const std::string& HttpPost::getVersion(void) const {
-  return (this->_version);
 }
 
 HttpPost& HttpPost::operator=(const HttpPost& obj) {
