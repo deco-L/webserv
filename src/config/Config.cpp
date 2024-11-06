@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/07 13:48:55 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/11/01 17:04:04 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ std::string Config::getFileName(void) const {
   return (this->_file_path);
 }
 
-std::vector<ConfigServer> Config::getServers(void) const {
+const std::vector<ConfigServer>& Config::getServers(void) const {
   return (this->_servers);
 }
 

@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/15 17:25:19 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/01 23:51:18 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,9 @@ int main(int argc, char **argv, char **envp)
   (void)envp;
 
   configMain(root.config, argc, argv);
-  socketMain(root.socketData);
+  socketMain(root.socket, root.config.getServers());
+  eventLoop(root.socket, root.config.getServers());
+  socketEnd(root.socket);
   std::cout << "finish" << std::endl;
   return (EXIT_SUCCESS);
 }

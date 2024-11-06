@@ -6,60 +6,46 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/26 18:36:48 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/02 17:26:15 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTPREQUEST_HPP
 #define HTTPREQUEST_HPP
 
-#define HTTP_CONTINUE                       100
-#define HTTP_SWITCHING_PROTOCOlS            101
+#include <iostream>
+#include <sstream>
+#include <map>
+#include <vector>
 
-#define HTTP_OK                             200
-#define HTTP_CREATED                        201
-#define HTTP_ACCEPTED                       202
-#define HTTP_NON_AUTHORITATIVE_INFO         203
-#define HTTP_NO_CONTENT                     204
-#define HTTP_RESET_CONTENT                  205
-#define HTTP_PARTIAL_CONTENT                206
+class HttpRequest {
+private:
+  std::string _method;
+  std::string _uri;
+  std::string _version;
+  std::map<std::string, std::string> _headers;
+  std::string _body;
+  int _bodySize;
 
-#define HTTP_SPECIAL_RESPONSE               300
-#define HTTP_MOVED_PERMANENTLY              301
-#define HTTP_MOVED_TEMPORARILY              302
-#define HTTP_SEE_OTHER                      303
-#define HTTP_NOT_MODIFIED                   304
-#define HTTP_USE_PROXY                      305
-#define HTTP_TEMPORARY_REDIRECT             307
-#define HTTP_PERMANENT_REDIRECT             308
+  HttpRequest(const HttpRequest& obj);
+  HttpRequest& operator=(const HttpRequest& obj);
 
-#define HTTP_BAD_REQUEST                    400
-#define HTTP_UNAUTHORIZED                   401
-#define HTTP_PAYMENT_REQUIRED               402
-#define HTTP_FORBIDDEN                      403
-#define HTTP_NOT_FOUND                      404
-#define HTTP_NOT_ALLOWED                    405
-#define HTTP_NOT_ACCEPTABLE                 406
-#define HTTP_PROXY_AUTHENTICATION_REQUIRED  407
-#define HTTP_REQUEST_TIME_OUT               408
-#define HTTP_CONFLICT                       409
-#define HTTP_GONE                           410
-#define HTTP_LENGTH_REQUIRED                411
-#define HTTP_PRECONDETION_FAILED            412
-#define HTTP_REQUEST_ENTITY_TOO_LARGE       413
-#define HTTP_REQUEST_URI_TOO_LARGE          414
-#define HTTP_UNSUPPORTED_MEDIA_TYPE         415
-#define HTTP_RANGE_NOT_SATISFIABLE          416
-#define HTTP_EXPECTATION_FAILED             417
-#define HTTP_MISDIRECTED_REQUEST            421
-#define HTTP_UNPROCESSABLE_CONTENT          422
-#define HTTP_UPGRADE_REQUIRED               426
+public:
+  HttpRequest(void);
+  ~HttpRequest();
 
-#define HTTP_INTERNAL_SERVER_ERROR          500
-#define HTTP_NOT_IMPLEMENTED                501
-#define HTTP_BAD_GATEWAY                    502
-#define HTTP_SERVIICE_UNAVAILABLE           503
-#define HTTP_GATEWAY_TIME_OUT               504
-#define HTTP_VERSION_NOT_SUPPORTED          505
+  const std::string& getMethod(void) const;
+  const std::string& getUri(void) const;
+  const std::string& getVersion(void) const;
+  unsigned long getBodySize(void) const;
+  std::map<std::string, std::string> getHeader(void) const;
+  void setMethod(const std::string& method);
+  void setUri(const std::string& uri);
+  void setVersion(const std::string& version);
+  void setHeaders(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
+  void setBody(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
+  std::string getBody(void) const;
+  void showHeaders(void) const;
+};
 
 #endif

@@ -51,4 +51,6 @@ write, waitpid, kill, signal, access, stat, open,
 opendir, readdir and closedir.
 ```
 
-
+# technology used
+![cplusplus](https://img.shields.io/badge/-Cplusplus-F34B7D.svg?logo=cplusplus&style=for-the-badge)
+![docker](https://img.shields.io/badge/-Docker-384D54.svg?logo=docker&style=for-the-badge)

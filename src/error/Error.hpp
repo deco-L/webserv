@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/08/29 18:53:00 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/09/27 15:38:24 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <iostream>
 #include <cstdlib>
 
+#define NORMA_COLOR "\033[0;38;5;119m"
 #define ERROR_COLOR "\033[0;38;5;200m"
 #define COLOR_RESET "\033[0m"
 

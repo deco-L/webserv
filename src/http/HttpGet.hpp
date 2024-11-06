@@ -1,17 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   httpServerMain.cpp                                 :+:      :+:    :+:   */
+/*   HttpGet.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/14 19:35:56 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/06 17:11:25 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "webserv.hpp"
+#ifndef HTTPGET_HPP
+#define HTTPGET_HPP
 
-void httpServerMain(void) {
-  return ;
-}
+#include "AHttpMethod.hpp"
+
+class HttpGet : public AHttpMethod {
+private:
+  HttpGet(void);
+  HttpGet(const HttpGet& obj);
+  HttpGet& operator=(const HttpGet& obj);
+
+public:
+  HttpGet(std::string uri, std::string version);
+  ~HttpGet();
+
+  void setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const;
+  void execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response);
+};
+
+#endif

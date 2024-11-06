@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/15 17:54:07 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/02 17:42:02 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,12 +21,6 @@ _sPort(0),
 _cPort(0),
 _addrLen(sizeof(_sSockAddr)),
 _bufFlag(1),
-_buf1(std::string(MAX_SOCK_BUFFER / 2, 0)),
-_buf2(std::string(MAX_SOCK_BUFFER / 2, 0)),
-_beg1(0),
-_beg2(0),
-_end1(0),
-_end2(0),
 _socket(-1),
 _error(0),
 _outBuf(std::string(MAX_SOCK_BUFFER, 0)),
@@ -36,30 +30,12 @@ _timeOut(60) {
   return ;
 }
 
-Socket::Socket(const Socket& obj) : 
-  _sSockAddr(obj._sSockAddr),
-  _cSockAddr(obj._cSockAddr),
-  _sPort(obj._sPort),
-  _cPort(obj._cPort),
-  _addrLen(obj._addrLen),
-  _bufFlag(obj._bufFlag),
-  _buf1(obj._buf1),
-  _buf2(obj._buf2),
-  _beg1(obj._beg1),
-  _beg2(obj._beg2),
-  _end1(obj._end1),
-  _end2(obj._end2),
-  _socket(obj._socket),
-  _error(obj._error),
-  _outBuf(obj._outBuf),
-  _peerIpName(obj._peerIpName),
-  _peerIp(obj._peerIp),
-  _timeOut(obj._timeOut) {
+Socket::Socket(const Socket& obj) {
+  *this = obj;
+  return ;
 }
 
 Socket::~Socket() {
-  if (this->_socket > 0)
-    ::close(this->_socket);
   return ;
 }
 
@@ -68,188 +44,76 @@ Socket::SocketError::SocketError(std::string error) : _error_message(error) {
 }
 
 Socket::SocketError::~SocketError() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW {
+  return ;
 }
 
 const char* Socket::SocketError::what(void) const throw() {
   return (this->_error_message.c_str());
 }
 
+bool Socket::isSocketOpen(void) {
+  return (mylib::isFileOpen(this->_socket));
+}
+
 void Socket::create(void) {
   this->_socket = socket(AF_INET, SOCK_STREAM, 0);
-  if (this->_socket == -1)
+  if (this->_socket < 0)
     throw Socket::SocketError("socket error");
   return ;
 }
 
-void Socket::passive(short int port, bool opt) {
+void Socket::passive(std::string ipAddress, short int port, bool opt) {
   int optval = 1;
 
   if (opt) {
     this->_error = setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, (char *) &optval, sizeof(optval));
     if (this->_error < 0)
-      throw Socket::SocketError("setsockopt errro");
+      throw Socket::SocketError("setsockopt error");
   }
   this->_sPort = port;
   std::memset(&this->_sSockAddr, 0, sizeof(struct sockaddr_in));
   this->_sSockAddr.sin_family = AF_INET;
   this->_sSockAddr.sin_port = htons(static_cast<unsigned int>(this->_sPort));
-  this->_sSockAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+  this->_sSockAddr.sin_addr.s_addr = inet_addr(ipAddress.c_str());
   this->_error = bind(this->_socket, (const struct sockaddr *) &this->_sSockAddr, sizeof(this->_sSockAddr));
   if (this->_error < 0)
     throw Socket::SocketError("bind failed");
   this->_error = listen(this->_socket, SOMAXCONN);
   if (this->_error < 0)
     throw Socket::SocketError("listen error");
+  if (mylib::nonBlocking(this->_socket) < 0)
+    throw Socket::SocketError("fcntl error");
   return ;
 }
 
 void Socket::accept(Socket& cSocket) {
-  mylib::bzero (&this->_cSockAddr, this->_addrLen);
+  mylib::bzero(&this->_cSockAddr, this->_addrLen);
   cSocket._socket = ::accept(this->_socket, (struct sockaddr *) &cSocket._cSockAddr, (unsigned int *) &cSocket._addrLen);
-  if (cSocket._socket < 0) {
+  if (cSocket._socket < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+    this->_error = cSocket._socket;
+    throw Socket::SocketError("");
+  } else if(cSocket._socket < 0) {
     this->_error = cSocket._socket;
     throw Socket::SocketError("accept error");
   }
+  if (mylib::nonBlocking(cSocket._socket) < 0)
+    throw Socket::SocketError("fcntl error");
   cSocket._peerIp = mylib::to_string(ntohs(cSocket._cSockAddr.sin_port));
   return ;
 }
 
-void Socket::recv(int bytes) {
-  if ((this->_bufFlag == 1) && this->_end1 != 0) {
-    if (bytes >= (this->_end1 - this->_beg1)) {
-      this->_outBuf.append(this->_buf1.substr(this->_beg1), this->_end1 - this->_beg1);
-      this->_error = this->_end1 - this->_beg1;
-      this->_beg1 = this->_end1 = 0;
-      this->_bufFlag = 2;
-    } else {
-      this->_outBuf.append(this->_buf1.substr(this->_beg1), bytes);
-      this->_error = bytes;
-      this->_beg1 += bytes;
-    }
-  } else if ((this->_bufFlag == 2) && (this->_end2 != 0)) {
-    if (bytes >= (this->_end2 - this->_beg2)) {
-      this->_outBuf.append(this->_buf2.substr(this->_beg2), this->_end2 - this->_beg2);
-      this->_bufFlag = 1;
-    } else {
-      this->_outBuf.append(this->_buf2.substr(this->_beg2), bytes);
-      this->_error = bytes;
-      this->_beg1 += bytes;
-    }
+int Socket::recv(void) {
+  int size;
+  size = ::recv(this->_socket, (char *) this->_outBuf.c_str(), MAX_SOCK_BUFFER, 0);
+  if (size < 0)
+    this->_error = size;
+  else if (size == MAX_SOCK_BUFFER) {
+    std::string tmp;
+    size = ::recv(this->_socket, (char *) tmp.c_str(), 1, 0);
+    return (MAX_SOCK_BUFFER + size);
   }
-  return ;
-}
-
-int Socket::recvTeol(bool remove) {
-  int state, idx;
-
-  state = 1;
-  idx = 0;
-  while (state != 0) {
-    switch (state) {
-      case (1): {
-        if ((this->_end1 == 0) && (this->_end2 == 0))
-          state = 2;
-        else
-          state = 3;
-        break ;
-      }
-      case (2): {
-        const char* tmp = this->_buf1.c_str();
-        this->_error = ::recv(this->_socket, (char *)tmp, MAX_SOCK_BUFFER / 2, 0);
-        if (this->_error == -1) {
-          state = 0;
-          break ;
-        }
-        this->_beg1 = 0;
-        this->_end1 = this->_error;
-        if (this->_error == MAX_SOCK_BUFFER / 2) {
-          const char* tmp2 = this->_buf2.c_str();
-          this->_error = ::recv(this->_socket, (char *)tmp2, MAX_SOCK_BUFFER / 2, 0);
-          if (this->_error == -1) {
-            state = 0;
-            break ;
-          }
-          this->_beg2 = 0;
-          this->_end2 = this->_error;
-        }
-        this->_bufFlag = 1;
-        state = 3;
-        break ;
-      }
-      case (3): {
-        if ((this->_bufFlag == 1) && (this->_end1 != 0)) {
-          for (; this->_beg1 < this->_end1; this->_beg1++) {
-            this->_outBuf[idx] = this->_buf1[this->_beg1];
-            if ((this->_outBuf[idx] == '\n') || (this->_outBuf[idx] == 'r')) {
-              this->_beg1++;
-              if ((this->_outBuf[idx] == '\r') && (this->_buf1[this->_beg1] == '\n')) {
-                idx++;
-                this->_outBuf[idx] = this->_buf1[this->_beg1];
-                this->_beg1++;
-              }
-              this->_outBuf[idx + 1] = '\0';
-              state = 4;
-              break ;
-            }
-            idx++;
-            if ((idx + 1) == MAX_SOCK_BUFFER) {
-              this->_outBuf[MAX_SOCK_BUFFER] = '\0';
-              state = 4;
-              break ;
-            }
-          }
-          if (this->_beg1 == this->_end1)
-            this->_beg1 = this->_end1 = 0;
-          if (state == 3)
-            this->_bufFlag = 2;
-          else if ((this->_bufFlag == 2) && (this->_end2 != 0)) {
-            for (; this->_beg2 < this->_end2; this->_beg2++) {
-              this->_outBuf[idx] = this->_buf2[this->_beg2];
-              if ((this->_outBuf[idx] == '\n') || (this->_outBuf[idx] == '\r')) {
-                this->_beg2++;
-                if ((this->_outBuf[idx] == '\r') && (this->_buf2[this->_beg2] == '\n')) {
-                  idx++;
-                  this->_outBuf[idx] = this->_buf2[this->_beg2];
-                  this->_beg2++;
-                }
-                this->_outBuf[idx + 1] = '\0';
-                state = 4;
-                break ;
-              }
-              idx++;
-              if ((idx + 1) == MAX_SOCK_BUFFER) {
-                this->_outBuf[MAX_SOCK_BUFFER] = '\0';
-                state = 4;
-                break ;
-              }
-            }
-            if (this->_beg2 == this->_end2)
-              this->_beg2 = this->_end2 = 0;
-            if (state == 3)
-              this->_bufFlag = 1;
-          }
-          else {
-            if (idx < MAX_SOCK_BUFFER)
-              state = 2;
-            else
-              state = 4;
-          }
-        }
-        break ;
-      }
-      case (4): {
-        state = 0;
-        break ;
-      }
-    }
-  }
-  if (remove > 0) {
-    while ((this->_outBuf[idx] == '\r') || (this->_outBuf[idx] == '\n')) {
-      this->_outBuf[idx] = '\0';
-      idx--;
-    }
-  }
-  return (idx + 1);
+  this->_outBuf.substr(0, size);
+  return (size);
 }
 
 void Socket::send(std::string buf, size_t len) {
@@ -312,7 +176,6 @@ void Socket::resolveName(void) {
 }
 
 void Socket::close(void) {
-  this->_beg1 = this->_beg2 = this->_end1 = this->_end2 = 0;
   this->_error = -1;
   ::close(this->_socket);
   return ;
@@ -326,12 +189,6 @@ Socket& Socket::operator=(const Socket& obj) {
     this->_cPort = obj._cPort;
     this->_addrLen = obj._addrLen;
     this->_bufFlag = obj._bufFlag;
-    this->_buf1 = obj._buf1;
-    this->_buf2 = obj._buf2;
-    this->_beg1 = obj._beg1;
-    this->_beg2 = obj._beg2;
-    this->_end1 = obj._end1;
-    this->_end2 = obj._end2;
     this->_socket = obj._socket;
     this->_error = obj._error;
     this->_outBuf = obj._outBuf;

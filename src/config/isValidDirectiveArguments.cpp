@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   isValidDirectiveArguments.cpp                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/18 13:14:30 by miyazawa.ka       #+#    #+#             */
 /*   Updated: 2024/11/03 23:04:10 by miyazawa.ka      ###   ########.fr       */

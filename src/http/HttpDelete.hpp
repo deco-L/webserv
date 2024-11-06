@@ -1,34 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   net.cpp                                            :+:      :+:    :+:   */
+/*   HttpDelete.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/09/30 13:31:37 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/06 17:10:25 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "webserv.hpp"
+#ifndef HTTPDELETE_HPP
+#define HTTPDELETE_HPP
 
-static __thread char buffer[18];
+#include "AHttpMethod.hpp"
+#include <cstdio>
 
-namespace mylib {
-  char* inet_ntoa(struct in_addr in) {
-    unsigned char* bytes = reinterpret_cast<unsigned char*>(&in);
-    std::ostringstream oss;
-    
-    oss << static_cast<int>(bytes[0]) << '.'
-      << static_cast<int>(bytes[1]) << '.'
-      << static_cast<int>(bytes[2]) << '.'
-      << static_cast<int>(bytes[3]);
+class HttpDelete : public AHttpMethod {
+private:
+  HttpDelete(void);
+  HttpDelete(const HttpDelete& obj);
+  HttpDelete& operator=(const HttpDelete& obj);
 
-    std::string ip_str = oss.str();
+public:
+  HttpDelete(std::string uri, std::string version);
+  ~HttpDelete();
 
-    std::strncpy(buffer, ip_str.c_str(), sizeof(buffer) - 1);
-    buffer[sizeof(buffer) - 1] = '\0';
+  HttpResponse* setResponseStatus(void);
+  void setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const;
+  void execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response);
+};
 
-    return buffer;
-  }
-}
+#endif
