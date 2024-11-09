@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/06 13:15:54 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/09 14:49:52 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,8 @@ void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll) {
     }
     catch(const std::exception& e) {
       std::string error(e.what());
+
+      std::cout << error << std::endl;
       if (error.compare("accept"))
         http.sendResponse(cSocket, http.getVersion());
       break ;

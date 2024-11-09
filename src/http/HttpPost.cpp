@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/06 17:13:48 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/09 14:38:18 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,15 +15,15 @@
 #include "HttpResponse.hpp"
 #include "HttpRequest.hpp"
 
-HttpPost::HttpPost(void): AHttpMethod("POST") {
+HttpPost::HttpPost(void): AHttpMethod("POST", "", "") {
   return ;
 }
 
-HttpPost::HttpPost(std::string uri, std::string version): AHttpMethod("POST") {
+HttpPost::HttpPost(std::string uri, std::string version): AHttpMethod("POST", uri, version) {
   return ;
 }
 
-HttpPost::HttpPost(const HttpPost& obj): AHttpMethod("POST") {
+HttpPost::HttpPost(const HttpPost& obj): AHttpMethod("POST", obj.getUri(), obj.getVersion()) {
   *this = obj;
   return ;
 }
@@ -54,6 +54,7 @@ HttpResponse* HttpPost::setResponseStatus(void) {
 void HttpPost::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const {
   int responseSize;
   std::string root = "./wsv";
+  (void)config;
 
   responseSize = response.createResponseMessage(this->getMethod(), root.append(this->_uri), request, this->_version);
   if (responseSize < 0) {

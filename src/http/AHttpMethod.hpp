@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/06 17:06:56 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/09 14:23:05 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ protected:
 
 public:
   AHttpMethod(void);
-  AHttpMethod(std::string method);
+  AHttpMethod(std::string method, std::string uri, std::string version);
   virtual ~AHttpMethod();
 
   const std::string& getMethod(void) const;

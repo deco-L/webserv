@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/06 15:25:01 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/09 14:46:39 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,6 +125,17 @@ bool Http::checkSemantics(Socket& socket) {
 
 void Http::executeMethod(const ConfigServer& config) {
   this->_httpMethod->execute(config, this->_httpRequest, this->_httpResponse);
+  if (400 <= this->_httpResponse->getStatus() && this->_httpResponse->getStatus() <= 600) {
+    if (this->_httpResponse->getStatus() == 400)
+      throw Http::HttpError("HTTP_BAD_REQUEST");
+    else if (this->_httpResponse->getStatus() == 500)
+      throw Http::HttpError("HTTP_INTERNAL_SERVER_ERROR");
+    else if (this->_httpResponse->getStatus() == 404)
+      throw Http::HttpError("HTTP_NOT_FOUND");
+    else if (this->_httpResponse->getStatus() == 403)
+      throw Http::HttpError("HTTP_FORBIDDEN");
+    throw Http::HttpError("Error Status");
+  }
   return ;
 }
 

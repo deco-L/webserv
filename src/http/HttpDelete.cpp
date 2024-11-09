@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/06 17:12:21 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/09 14:25:48 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,15 +15,17 @@
 #include "HttpRequest.hpp"
 #include "webserv.hpp"
 
-HttpDelete::HttpDelete(): AHttpMethod("DELETE") {
+HttpDelete::HttpDelete(): AHttpMethod("DELETE", "", "") {
   return ;
 }
 
-HttpDelete::HttpDelete(std::string uri, std::string version): AHttpMethod("DELETE") {
+HttpDelete::HttpDelete(std::string uri, std::string version): AHttpMethod("DELETE", uri, version) {
+  (void)uri;
+  (void)version;
   return ;
 }
 
-HttpDelete::HttpDelete(const HttpDelete& obj): AHttpMethod("DELETE") {
+HttpDelete::HttpDelete(const HttpDelete& obj): AHttpMethod("DELETE", obj.getUri(), obj.getVersion()) {
   *this = obj;
   return ;
 }
@@ -45,6 +47,7 @@ HttpResponse* HttpDelete::setResponseStatus(void) {
 void HttpDelete::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const {
   int responseSize;
   std::string root = "./wsv/html";
+  (void)config;
 
   responseSize = response.createResponseMessage(this->getMethod(), root.append(this->_uri), request, this->_version);
   if (responseSize < 0) {

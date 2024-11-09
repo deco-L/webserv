@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/06 17:19:02 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/09 14:27:39 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,15 +16,15 @@
 #include "HttpResponse.hpp"
 #include "HttpRequest.hpp"
 
-HttpGet::HttpGet(): AHttpMethod("GET") {
+HttpGet::HttpGet(): AHttpMethod("GET", "", "") {
   return ;
 }
 
-HttpGet::HttpGet(std::string uri, std::string version): AHttpMethod("GET") {
+HttpGet::HttpGet(std::string uri, std::string version): AHttpMethod("GET", uri, version) {
   return ;
 }
 
-HttpGet::HttpGet(const HttpGet& obj): AHttpMethod("GET") {
+HttpGet::HttpGet(const HttpGet& obj): AHttpMethod("GET", obj.getUri(), obj.getVersion()) {
   *this = obj;
   return ;
 }
@@ -35,6 +35,7 @@ HttpGet::~HttpGet() {
 
 void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const {
   int responseSize;
+  (void)config;
 
   responseSize = response.createResponseMessage(this->getMethod(), this->_uri, request, this->_version);
   if (responseSize < 0) {

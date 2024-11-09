@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/06 17:23:19 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/09 16:25:09 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ AHttpMethod::AHttpMethod(void) : _method("default"), _uri(""), _version("") {
   return ;
 }
 
-AHttpMethod::AHttpMethod(std::string method) : _method(method) {
+AHttpMethod::AHttpMethod(std::string method, std::string uri, std::string version) : _method(method), _uri(uri), _version(version) {
   return ;
 }
 
@@ -62,10 +62,11 @@ void AHttpMethod::setUri(std::string& uri) {
   return ;
 }
 
-static std::pair<std::string, std::string>& setRootPath(const ConfigServer& config, std::string uri) {
+static std::pair<std::string, std::string> setRootPath(const ConfigServer& config, std::string uri) {
   std::pair<std::string, std::string> rootAndFilePath;
   size_t pos;
 
+  (void)config;
   pos = uri.rfind("/");
   if (pos == std::string::npos)
     return (rootAndFilePath);
@@ -80,7 +81,7 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
 
   uri = setRootPath(config, this->_uri);
   if (uri.first.empty() && uri.second.empty())
-    throw (new HttpResponse(HTTP_BAD_REQUEST));
+    return (new HttpResponse(HTTP_BAD_REQUEST));
   for (std::vector<ConfigLocation>::const_iterator it = config.locations.begin(); it != config.locations.end(); it++) {
     if (!uri.first.compare(it->path))
       location = *it;
@@ -88,7 +89,7 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
   if (location.methods.size()) {
     std::vector<std::string>::const_iterator it = std::find(location.methods.begin(), location.methods.end(), this->_method);
     if (it == location.methods.end())
-      throw (new HttpResponse(HTTP_NOT_ALLOWED));
+      return (new HttpResponse(HTTP_NOT_ALLOWED));
   }
   if (!config.root.empty())
     uri.first = config.root;
@@ -96,17 +97,28 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
     uri.first = location.root;
   if (location.upload_enable && !location.upload_store.empty())
     uri.first = location.upload_store;
+  if (uri.first.at(uri.first.size() - 1) != '/')
+    uri.first.append("/");
   else if (location.upload_enable && location.upload_store.empty())
-    throw (new HttpResponse(HTTP_INTERNAL_SERVER_ERROR));
+    return (new HttpResponse(HTTP_INTERNAL_SERVER_ERROR));
   if (mylib::isPathValid(uri.first) || mylib::isDirectory(uri.first))
     return (new HttpResponse(HTTP_NOT_FOUND));
   if (uri.second.empty() && location.index.size()) {
-    for (std::vector<std::string>::const_iterator it = location.index.begin(); it != location.index.end(); it++)
-      if (!mylib::isPathValid(uri.first.append(*it)) && mylib::isModeValid(uri.first.append(*it), S_IRUSR | S_IXUSR))
+    int status = 0;
+    for (std::vector<std::string>::const_iterator it = location.index.begin(); it != location.index.end(); it++) {
+      if (mylib::isPathValid(uri.first + *it))
+        status = HTTP_NOT_FOUND;
+      else if (!mylib::isModeValid(uri.first + *it, S_IRUSR))
+        status = HTTP_FORBIDDEN;
+      if (!mylib::isPathValid(uri.first + *it) && mylib::isModeValid(uri.first + *it, S_IRUSR)) {
+        uri.second = *it;
         break ;
-    throw(new HttpResponse(HTTP_FORBIDDEN));
+      }
+    }
+    if (status != 0)
+      return(new HttpResponse(status));
   }
-  if (mylib::isPathValid(uri.first.append(uri.second)) || mylib::isModeValid(uri.first.append(uri.second), S_IRUSR | S_IXUSR))
+  if (mylib::isPathValid(uri.first + uri.second) || !mylib::isModeValid(uri.first + uri.second, S_IRUSR))
     return (new HttpResponse(HTTP_FORBIDDEN));
   this->setUri(uri.first.append(uri.second));
   return (new HttpResponse(HTTP_OK));
