@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/06 15:19:53 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/16 16:43:29 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,8 @@ public:
   bool checkSemantics(Socket& socket);
   void executeMethod(const ConfigServer& config);
   bool createMethod(void);
-  void sendResponse(Socket& socket, const std::string& version);
+  void createResponseMessage(const ConfigServer& config);
+  void sendResponse(Socket& socket);
   void showRequestLine(void) const;
   void showRequestHeaders(void) const;
   void showRequestBody(void) const;

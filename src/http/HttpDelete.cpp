@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/09 14:25:48 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/12 10:57:36 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,9 +47,9 @@ HttpResponse* HttpDelete::setResponseStatus(void) {
 void HttpDelete::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const {
   int responseSize;
   std::string root = "./wsv/html";
-  (void)config;
+  (void)request;
 
-  responseSize = response.createResponseMessage(this->getMethod(), root.append(this->_uri), request, this->_version);
+  responseSize = response.createResponseMessage(this->getMethod(), root.append(this->_uri), config, this->_version);
   if (responseSize < 0) {
     response.setStatus(HTTP_INTERNAL_SERVER_ERROR);
     return ;

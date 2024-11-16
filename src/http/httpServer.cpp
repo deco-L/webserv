@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/09 14:49:52 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/16 16:44:56 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll) {
       if (cSocket._error == 0)
         break ;
       if (http.checkSemantics(cSocket)) {
-        http.sendResponse(cSocket, http.getVersion());
+        http.sendResponse(cSocket);
         throw Http::HttpError("HTTP_BAD_REQUEST");
         break ;
       }
@@ -57,15 +57,17 @@ void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll) {
         throw Http::HttpError("HTTP_BAD_REQUEST");
       http.executeMethod(config);
       showResponseMessage(http);
-      http.sendResponse(cSocket, http.getVersion());
+      http.sendResponse(cSocket);
     }
     catch(const std::exception& e) {
       std::string error(e.what());
 
       std::cout << error << std::endl;
-      if (error.compare("accept"))
-        http.sendResponse(cSocket, http.getVersion());
-      break ;
+      if (!error.compare("accept"))
+        break ;
+      http.createResponseMessage(config);
+      showResponseMessage(http);
+      http.sendResponse(cSocket);
     }
   }
   return ;

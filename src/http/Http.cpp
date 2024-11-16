@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/09 14:46:39 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/16 16:43:17 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,13 +128,58 @@ void Http::executeMethod(const ConfigServer& config) {
   if (400 <= this->_httpResponse->getStatus() && this->_httpResponse->getStatus() <= 600) {
     if (this->_httpResponse->getStatus() == 400)
       throw Http::HttpError("HTTP_BAD_REQUEST");
-    else if (this->_httpResponse->getStatus() == 500)
-      throw Http::HttpError("HTTP_INTERNAL_SERVER_ERROR");
-    else if (this->_httpResponse->getStatus() == 404)
-      throw Http::HttpError("HTTP_NOT_FOUND");
+    else if (this->_httpResponse->getStatus() == 401)
+      throw Http::HttpError("HTTP_UNAUTHORIZED");
+    else if (this->_httpResponse->getStatus() == 402)
+      throw Http::HttpError("HTTP_PAYMENT_REQUIRED");
     else if (this->_httpResponse->getStatus() == 403)
       throw Http::HttpError("HTTP_FORBIDDEN");
-    throw Http::HttpError("Error Status");
+    else if (this->_httpResponse->getStatus() == 404)
+      throw Http::HttpError("HTTP_NOT_FOUND");
+    else if (this->_httpResponse->getStatus() == 405)
+      throw Http::HttpError("HTTP_NOT_ALLOWED");
+    else if (this->_httpResponse->getStatus() == 406)
+      throw Http::HttpError("HTTP_NOT_ACCEPTED");
+    else if (this->_httpResponse->getStatus() == 407)
+      throw Http::HttpError("HTTP_PROXY_AUTHENTICATION_REQUIRED");
+    else if (this->_httpResponse->getStatus() == 408)
+      throw Http::HttpError("HTTP_REQUEST_TIME_OUT");
+    else if (this->_httpResponse->getStatus() == 409)
+      throw Http::HttpError("HTTP_CONFLICT");
+    else if (this->_httpResponse->getStatus() == 410)
+      throw Http::HttpError("HTTP_GONE");
+    else if (this->_httpResponse->getStatus() == 411)
+      throw Http::HttpError("HTTP_LENGTH_REQUIRED");
+    else if (this->_httpResponse->getStatus() == 412)
+      throw Http::HttpError("HTTP_PRECONDETION_FAILED");
+    else if (this->_httpResponse->getStatus() == 413)
+      throw Http::HttpError("HTTP_REQUEST_ENTITY_TOO_LARGE");
+    else if (this->_httpResponse->getStatus() == 414)
+      throw Http::HttpError("HTTP_REQUEST_URI_TOO_LARGE");
+    else if (this->_httpResponse->getStatus() == 415)
+      throw Http::HttpError("HTTP_UNSUPPORTED_MEDIA_TYPE");
+    else if (this->_httpResponse->getStatus() == 416)
+      throw Http::HttpError("HTTP_RANGE_NOT_SATISFIABLE");
+    else if (this->_httpResponse->getStatus() == 417)
+      throw Http::HttpError("HTTP_EXPECTATION_FAILED");
+    else if (this->_httpResponse->getStatus() == 421)
+      throw Http::HttpError("HTTP_MISDIRECTED_REQUEST");
+    else if (this->_httpResponse->getStatus() == 421)
+      throw Http::HttpError("HTTP_UNPROCESSABLE_CONTENT");
+    else if (this->_httpResponse->getStatus() == 426)
+      throw Http::HttpError("HTTP_UPGRADE_REQUIRED");
+    else if (this->_httpResponse->getStatus() == 500)
+      throw Http::HttpError("HTTP_INTERNAL_SERVER_ERROR");
+    else if (this->_httpResponse->getStatus() == 501)
+      throw Http::HttpError("HTTP_NOT_IMPLEMENTED");
+    else if (this->_httpResponse->getStatus() == 502)
+      throw Http::HttpError("HTTP_BAD_GATEWAY");
+    else if (this->_httpResponse->getStatus() == 503)
+      throw Http::HttpError("HTTP_SERVICE_UNAVAILABLE");
+    else if (this->_httpResponse->getStatus() == 504)
+      throw Http::HttpError("HTTP_GATEWAY_TIME_OUT");
+    else if (this->_httpResponse->getStatus() == 505)
+      throw Http::HttpError("HTTP_VERSION_NOT_SUPPORTED");
   }
   return ;
 }
@@ -153,8 +198,18 @@ bool Http::createMethod(void) {
   return (this->_httpMethod != NULL);
 }
 
-void Http::sendResponse(Socket& socket, const std::string& version) {
-  this->_httpResponse->execute(socket, this->_httpRequest, version);
+void Http::createResponseMessage(const ConfigServer& config) {
+  this->_httpResponse->createResponseMessage(
+    this->getMethod(),
+    this->getUri(),
+    config,
+    this->getVersion()
+  );
+  return ;
+}
+
+void Http::sendResponse(Socket& socket) {
+  this->_httpResponse->execute(socket);
   return ;
 }
 

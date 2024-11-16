@@ -6,7 +6,7 @@
 #    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2024/10/23 15:18:43 by csakamot         ###   ########.fr        #
+#    Updated: 2024/11/15 11:56:26 by csakamot         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,7 +33,7 @@ CONFSRC = configMain.cpp Config.cpp checkConfig.cpp isValidConfig.cpp isValidBra
 
 EVENSRC = eventLoop.cpp Epoll.cpp
 
-HTTPSRC = httpServer.cpp Http.cpp HttpRequest.cpp AHttpMethod.cpp HttpDelete.cpp HttpGet.cpp HttpPost.cpp HttpResponse.cpp
+HTTPSRC = httpServer.cpp Http.cpp HttpRequest.cpp AHttpMethod.cpp HttpDelete.cpp HttpGet.cpp HttpPost.cpp HttpResponse.cpp HttpErrorPage.cpp
 
 ERROSRC = Error.cpp
 

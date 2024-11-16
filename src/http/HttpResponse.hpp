@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/10/18 12:01:46 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/16 16:42:40 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 #define HTTP_CONTINUE                       100
 #define HTTP_SWITCHING_PROTOCOlS            101
@@ -61,10 +62,11 @@
 #define HTTP_INTERNAL_SERVER_ERROR          500
 #define HTTP_NOT_IMPLEMENTED                501
 #define HTTP_BAD_GATEWAY                    502
-#define HTTP_SERVIICE_UNAVAILABLE           503
+#define HTTP_SERVICE_UNAVAILABLE            503
 #define HTTP_GATEWAY_TIME_OUT               504
 #define HTTP_VERSION_NOT_SUPPORTED          505
 
+class ConfigServer;
 class Socket;
 class HttpRequest;
 class AHttpMethod;
@@ -77,7 +79,8 @@ private:
   HttpResponse(void);
 
   int _createStatusLine(std::string version);
-  int _createHeaderLine(HttpRequest& request, int bodySize);
+  int _createHeaderLine(const ConfigServer& request, int bodySize);
+  void _createErrorResponse(const ConfigServer& config, int status);
 
 public:
   HttpResponse(unsigned int status);
@@ -87,10 +90,20 @@ public:
   unsigned int getStatus(void) const;
   const std::string& getResponse(void) const;
   void setStatus(unsigned int status);
-  int createResponseMessage(const std::string& method, std::string path, HttpRequest& request, std::string version);
-  void execute(Socket& socket, HttpRequest& request, std::string version);
+  int createResponseMessage(const std::string& method, std::string path, const ConfigServer& config, std::string version);
+  int createErrorResponseMessage(ConfigServer config, std::string version);
+  void execute(Socket& socket);
 
   HttpResponse& operator=(const HttpResponse& obj);
 };
+
+struct FindNbrInVector {
+    int target;
+    FindNbrInVector (int code) : target(code) {}
+
+    bool operator()(const std::pair<int, std::string>& p) const;
+};
+
+std::string wsvErrorPage(int status);
 
 #endif

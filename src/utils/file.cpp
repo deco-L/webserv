@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/02 15:18:17 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/16 16:16:01 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,10 +47,8 @@ namespace mylib {
     int fileSize;
     std::ifstream file(path.c_str(), std::ios::binary);
     
-    if (!file) {
-        std::cerr << "Failed to open the file." << std::endl;
+    if (!file)
         return (-1);
-    }
 
     file.seekg(0, std::ios::end);
     fileSize = file.tellg();
