@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/16 16:42:40 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/19 17:48:24 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <queue>
+#include <sys/stat.h>
 
 #define HTTP_CONTINUE                       100
 #define HTTP_SWITCHING_PROTOCOlS            101
@@ -42,7 +44,7 @@
 #define HTTP_PAYMENT_REQUIRED               402
 #define HTTP_FORBIDDEN                      403
 #define HTTP_NOT_FOUND                      404
-#define HTTP_NOT_ALLOWED                    405
+#define HTTP_METHOD_NOT_ALLOWED             405
 #define HTTP_NOT_ACCEPTABLE                 406
 #define HTTP_PROXY_AUTHENTICATION_REQUIRED  407
 #define HTTP_REQUEST_TIME_OUT               408
@@ -81,16 +83,28 @@ private:
   int _createStatusLine(std::string version);
   int _createHeaderLine(const ConfigServer& request, int bodySize);
   void _createErrorResponse(const ConfigServer& config, int status);
+  std::string _createAutoindexBody(std::string path);
 
 public:
   HttpResponse(unsigned int status);
   HttpResponse(const HttpResponse& obj);
   ~HttpResponse();
 
+  class HttpResponseError : public std::exception {
+  private:
+    std::string _error_message;
+  
+  public:
+    HttpResponseError(std::string error);
+    virtual ~HttpResponseError() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW;
+    virtual const char* what(void) const throw();
+  };
+
   unsigned int getStatus(void) const;
   const std::string& getResponse(void) const;
   void setStatus(unsigned int status);
   int createResponseMessage(const std::string& method, std::string path, const ConfigServer& config, std::string version);
+  int createAutoindexMessage(std::string path, const ConfigServer& config, std::string version);
   int createErrorResponseMessage(ConfigServer config, std::string version);
   void execute(Socket& socket);
 

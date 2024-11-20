@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/02 15:21:02 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/17 01:43:07 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 /* c++ std library */
 #include <cstdlib>
+#include <ctime>
 #include <iostream>
 #include <sstream>
 #include <cstring>
@@ -116,6 +117,7 @@ namespace mylib {
   bool readFile(const std::string path, std::string& buf);
   int nonBlocking(int fd);
   bool isFileOpen(int fd);
+  std::string fileSizeToString(off_t size);
 
   void	bzero(void *s, size_t n);
 
@@ -132,6 +134,8 @@ namespace mylib {
   std::string to_string(const T& n);
   template <typename T>
   std::string nbrToS(T nbr);
+
+  std::string formatTime(time_t rawTime);
 }
 
 #include "string.tpp"

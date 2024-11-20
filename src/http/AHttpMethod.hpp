@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/09 14:23:05 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/16 22:33:24 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ protected:
   const std::string _method;
   std::string _uri;
   const std::string _version;
+  bool _autoindex;
 
   class MethodError : public std::exception {
   private:

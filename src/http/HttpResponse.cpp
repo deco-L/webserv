@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/16 17:39:14 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/20 12:27:48 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 #include "Config.hpp"
 #include "webserv.hpp"
 #include "Error.hpp"
-#include <map>
 
 HttpResponse::HttpResponse(void): _status(0), _response("") {
   return ;
@@ -33,6 +32,17 @@ HttpResponse::HttpResponse(const HttpResponse& obj) {
 
 HttpResponse::~HttpResponse() {
   return ;
+}
+
+HttpResponse::HttpResponseError::HttpResponseError(std::string error) : _error_message(error) {
+  return ;
+}
+
+HttpResponse::HttpResponseError::~HttpResponseError() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW {
+}
+
+const char* HttpResponse::HttpResponseError::what(void) const throw() {
+  return (this->_error_message.c_str());
 }
 
 int HttpResponse::_createStatusLine(std::string version) {
@@ -62,8 +72,8 @@ int HttpResponse::_createStatusLine(std::string version) {
     case HTTP_NOT_FOUND:
       this->_response.append("Not Found");
       break ;
-    case HTTP_NOT_ALLOWED:
-      this->_response.append("Not Allowed");
+    case HTTP_METHOD_NOT_ALLOWED:
+      this->_response.append("Method Not Allowed");
       break ;
     case HTTP_NOT_ACCEPTABLE:
       this->_response.append("Not Acceptable");
@@ -157,6 +167,75 @@ void HttpResponse::_createErrorResponse(const ConfigServer& config, int status) 
   return ;
 }
 
+static std::string _traverse(std::string path) {
+  std::string directories;
+  std::string filePath;
+  DIR *dir;
+  struct dirent *entry;
+  struct stat status;
+
+  dir = opendir(path.c_str());
+  if (dir == NULL) {
+    return ("");
+  }
+  while ((entry = readdir(dir)) != NULL) {
+    std::string filePath = path + "/" + entry->d_name;
+    if (stat(filePath.c_str(), &status) == 0) {
+      std::ostringstream oss;
+
+      oss << "      <a href=\"" << entry->d_name << "/\">" << entry->d_name << "</a>\n";
+      oss << "      \" " << mylib::formatTime(status.st_mtime) << " ";
+      if (S_ISDIR(status.st_mode)) {
+        oss << "- \"\n";
+      } else {
+        oss << mylib::fileSizeToString(status.st_size) << " \"\n";
+      }
+      directories.append(oss.str());
+    }
+  }
+  closedir(dir);
+  return (directories);
+}
+
+std::string HttpResponse::_createAutoindexBody(std::string path) {
+  std::string body;
+  std::string tmp;
+
+  body.append(
+    "<!DOCTYPE html>\n"
+    "<html>\n"
+    "  <head>\n"
+    "    <link rel=\"icon\" href=\"data:,\" />\n"
+    "    <meta charset=\"UTF-8\">\n"
+    "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+    "    <title>Index of "
+  );
+  body.append(path);
+  body.append(
+    "</title>\n"
+    "  </head>\n"
+    "  <body cz-shortcut-listen=\"true\">\n"
+    "    <h1>Index of "
+  );
+  body.append(path);
+  body.append(
+    "<h1>\n"
+    "    <hr>\n"
+    "    <pre>\n"
+  );
+  tmp = _traverse(path);
+  if (tmp.empty())
+    return ("");
+  body.append(tmp);
+  body.append(
+    "    </pre>\n"
+    "    <hr>\n"
+    "  </body>\n"
+    "</html>\n"
+  );
+  return (body);
+}
+
 unsigned int HttpResponse::getStatus(void) const {
   return (this->_status);
 }
@@ -216,6 +295,23 @@ int HttpResponse::createResponseMessage(const std::string& method, std::string p
     this->_createHeaderLine(config, 0);
     this->_response.append(CRLF);
   }
+  responseSize = this->_response.length();
+  return (responseSize);
+}
+
+int HttpResponse::createAutoindexMessage(std::string path, const ConfigServer& config, std::string version) {
+  int responseSize;
+  std::string body;
+
+  this->_createStatusLine(version);
+  body = _createAutoindexBody(path);
+  if (body.empty()) {
+    this->_response.clear();
+    this->setStatus(HTTP_INTERNAL_SERVER_ERROR);
+  }
+  this->_createHeaderLine(config, body.length());
+  this->_response.append(CRLF);
+  this->_response.append(body);
   responseSize = this->_response.length();
   return (responseSize);
 }

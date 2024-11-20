@@ -45,8 +45,8 @@ std::string wsvErrorPage(int status) {
     return (errorPageTemplate("403 Forbidden"));
   case HTTP_NOT_FOUND:
     return (errorPageTemplate("404 Not Found"));
-  case HTTP_NOT_ALLOWED:
-    return (errorPageTemplate("405 Not Allowed"));
+  case HTTP_METHOD_NOT_ALLOWED:
+    return (errorPageTemplate("405 Method Not Allowed"));
   case HTTP_NOT_ACCEPTABLE:
     return (errorPageTemplate("406 Not Acceptable"));
   case HTTP_PROXY_AUTHENTICATION_REQUIRED:

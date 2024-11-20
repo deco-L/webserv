@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/16 16:43:17 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/19 17:51:38 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include "HttpGet.hpp"
 #include "HttpPost.hpp"
 #include "HttpDelete.hpp"
+#include "HttpResponse.hpp"
 
 
 Http::Http(void): _requestSize(0), _httpRequest(), _httpMethod(NULL), _httpResponse(NULL) {
@@ -126,59 +127,59 @@ bool Http::checkSemantics(Socket& socket) {
 void Http::executeMethod(const ConfigServer& config) {
   this->_httpMethod->execute(config, this->_httpRequest, this->_httpResponse);
   if (400 <= this->_httpResponse->getStatus() && this->_httpResponse->getStatus() <= 600) {
-    if (this->_httpResponse->getStatus() == 400)
+    if (this->_httpResponse->getStatus() == HTTP_BAD_REQUEST)
       throw Http::HttpError("HTTP_BAD_REQUEST");
-    else if (this->_httpResponse->getStatus() == 401)
+    else if (this->_httpResponse->getStatus() == HTTP_UNAUTHORIZED)
       throw Http::HttpError("HTTP_UNAUTHORIZED");
-    else if (this->_httpResponse->getStatus() == 402)
+    else if (this->_httpResponse->getStatus() == HTTP_PAYMENT_REQUIRED)
       throw Http::HttpError("HTTP_PAYMENT_REQUIRED");
-    else if (this->_httpResponse->getStatus() == 403)
+    else if (this->_httpResponse->getStatus() == HTTP_FORBIDDEN)
       throw Http::HttpError("HTTP_FORBIDDEN");
-    else if (this->_httpResponse->getStatus() == 404)
+    else if (this->_httpResponse->getStatus() == HTTP_NOT_FOUND)
       throw Http::HttpError("HTTP_NOT_FOUND");
-    else if (this->_httpResponse->getStatus() == 405)
+    else if (this->_httpResponse->getStatus() == HTTP_METHOD_NOT_ALLOWED)
       throw Http::HttpError("HTTP_NOT_ALLOWED");
-    else if (this->_httpResponse->getStatus() == 406)
+    else if (this->_httpResponse->getStatus() == HTTP_NOT_ACCEPTABLE)
       throw Http::HttpError("HTTP_NOT_ACCEPTED");
-    else if (this->_httpResponse->getStatus() == 407)
+    else if (this->_httpResponse->getStatus() == HTTP_PROXY_AUTHENTICATION_REQUIRED)
       throw Http::HttpError("HTTP_PROXY_AUTHENTICATION_REQUIRED");
-    else if (this->_httpResponse->getStatus() == 408)
+    else if (this->_httpResponse->getStatus() == HTTP_REQUEST_TIME_OUT)
       throw Http::HttpError("HTTP_REQUEST_TIME_OUT");
-    else if (this->_httpResponse->getStatus() == 409)
+    else if (this->_httpResponse->getStatus() == HTTP_CONFLICT)
       throw Http::HttpError("HTTP_CONFLICT");
-    else if (this->_httpResponse->getStatus() == 410)
+    else if (this->_httpResponse->getStatus() == HTTP_GONE)
       throw Http::HttpError("HTTP_GONE");
-    else if (this->_httpResponse->getStatus() == 411)
+    else if (this->_httpResponse->getStatus() == HTTP_LENGTH_REQUIRED)
       throw Http::HttpError("HTTP_LENGTH_REQUIRED");
-    else if (this->_httpResponse->getStatus() == 412)
+    else if (this->_httpResponse->getStatus() == HTTP_PRECONDETION_FAILED)
       throw Http::HttpError("HTTP_PRECONDETION_FAILED");
-    else if (this->_httpResponse->getStatus() == 413)
+    else if (this->_httpResponse->getStatus() == HTTP_REQUEST_ENTITY_TOO_LARGE)
       throw Http::HttpError("HTTP_REQUEST_ENTITY_TOO_LARGE");
-    else if (this->_httpResponse->getStatus() == 414)
+    else if (this->_httpResponse->getStatus() == HTTP_REQUEST_URI_TOO_LARGE)
       throw Http::HttpError("HTTP_REQUEST_URI_TOO_LARGE");
-    else if (this->_httpResponse->getStatus() == 415)
+    else if (this->_httpResponse->getStatus() == HTTP_UNSUPPORTED_MEDIA_TYPE)
       throw Http::HttpError("HTTP_UNSUPPORTED_MEDIA_TYPE");
-    else if (this->_httpResponse->getStatus() == 416)
+    else if (this->_httpResponse->getStatus() == HTTP_RANGE_NOT_SATISFIABLE)
       throw Http::HttpError("HTTP_RANGE_NOT_SATISFIABLE");
-    else if (this->_httpResponse->getStatus() == 417)
+    else if (this->_httpResponse->getStatus() == HTTP_EXPECTATION_FAILED)
       throw Http::HttpError("HTTP_EXPECTATION_FAILED");
-    else if (this->_httpResponse->getStatus() == 421)
+    else if (this->_httpResponse->getStatus() == HTTP_MISDIRECTED_REQUEST)
       throw Http::HttpError("HTTP_MISDIRECTED_REQUEST");
-    else if (this->_httpResponse->getStatus() == 421)
+    else if (this->_httpResponse->getStatus() == HTTP_UNPROCESSABLE_CONTENT)
       throw Http::HttpError("HTTP_UNPROCESSABLE_CONTENT");
-    else if (this->_httpResponse->getStatus() == 426)
+    else if (this->_httpResponse->getStatus() == HTTP_UPGRADE_REQUIRED)
       throw Http::HttpError("HTTP_UPGRADE_REQUIRED");
-    else if (this->_httpResponse->getStatus() == 500)
+    else if (this->_httpResponse->getStatus() == HTTP_INTERNAL_SERVER_ERROR)
       throw Http::HttpError("HTTP_INTERNAL_SERVER_ERROR");
-    else if (this->_httpResponse->getStatus() == 501)
+    else if (this->_httpResponse->getStatus() == HTTP_NOT_IMPLEMENTED)
       throw Http::HttpError("HTTP_NOT_IMPLEMENTED");
-    else if (this->_httpResponse->getStatus() == 502)
+    else if (this->_httpResponse->getStatus() == HTTP_BAD_GATEWAY)
       throw Http::HttpError("HTTP_BAD_GATEWAY");
-    else if (this->_httpResponse->getStatus() == 503)
+    else if (this->_httpResponse->getStatus() == HTTP_SERVICE_UNAVAILABLE)
       throw Http::HttpError("HTTP_SERVICE_UNAVAILABLE");
-    else if (this->_httpResponse->getStatus() == 504)
+    else if (this->_httpResponse->getStatus() == HTTP_GATEWAY_TIME_OUT)
       throw Http::HttpError("HTTP_GATEWAY_TIME_OUT");
-    else if (this->_httpResponse->getStatus() == 505)
+    else if (this->_httpResponse->getStatus() == HTTP_VERSION_NOT_SUPPORTED)
       throw Http::HttpError("HTTP_VERSION_NOT_SUPPORTED");
   }
   return ;

@@ -6,7 +6,7 @@
 #    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2024/11/15 11:56:26 by csakamot         ###   ########.fr        #
+#    Updated: 2024/11/17 01:27:28 by csakamot         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -37,7 +37,7 @@ HTTPSRC = httpServer.cpp Http.cpp HttpRequest.cpp AHttpMethod.cpp HttpDelete.cpp
 
 ERROSRC = Error.cpp
 
-UTILSRC = access.cpp charaOutput.cpp memory.cpp string.cpp net.cpp file.cpp
+UTILSRC = access.cpp charaOutput.cpp memory.cpp string.cpp net.cpp file.cpp time.cpp
 
 SRCS		= $(addprefix $(SRCDIR)core/, ${CORESRC}) $(addprefix $(SRCDIR)config/, $(CONFSRC)) \
 					$(addprefix $(SRCDIR)event/, $(EVENSRC)) $(addprefix $(SRCDIR)http/, $(HTTPSRC)) \

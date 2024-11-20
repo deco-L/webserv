@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/16 16:16:01 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/17 01:42:50 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ namespace mylib {
     if (stat(path.c_str(), &info) != 0)
       return (false);
 
-    return ((info.st_mode & S_IFDIR) == 0);
+    return ((info.st_mode & S_IFDIR) != 0);
   }
 
   bool isPathValid(std::string path) {
@@ -85,5 +85,18 @@ namespace mylib {
   bool isFileOpen(int fd) {
     int flags = fcntl(fd, F_GETFD);
     return (flags != -1);
+  }
+
+  std::string fileSizeToString(off_t size) {
+    std::ostringstream oss;
+    if (size < 1024)
+      oss << size << " B";
+    else if (size < 1024 * 1024)
+      oss << size / 1024.0 << " KB";
+    else if (size < 1024 * 1024 * 1024)
+      oss << size / (1024.0 * 1024) << " MB";
+    else
+      oss << size / (1024.0 * 1024 * 1024) << " GB";
+    return oss.str();
   }
 }

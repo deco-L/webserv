@@ -1,32 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HttpGet.hpp                                        :+:      :+:    :+:   */
+/*   time.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/16 22:32:56 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/17 01:24:15 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef HTTPGET_HPP
-#define HTTPGET_HPP
+#include "webserv.hpp"
 
-#include "AHttpMethod.hpp"
+namespace mylib {
+  std::string formatTime(time_t rawTime) {
+      std::ostringstream oss;
+      struct tm * timeinfo = localtime(&rawTime);
 
-class HttpGet : public AHttpMethod {
-private:
-  HttpGet(void);
-  HttpGet(const HttpGet& obj);
-  HttpGet& operator=(const HttpGet& obj);
+      char buffer[100];
+      std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
 
-public:
-  HttpGet(std::string uri, std::string version);
-  ~HttpGet();
-
-  void setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const;
-  void execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response);
-};
-
-#endif
+      oss << buffer;
+      return oss.str();
+  }
+}

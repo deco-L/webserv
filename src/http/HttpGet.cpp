@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/12 10:57:10 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/17 00:14:12 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,10 @@ void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& reques
   int responseSize;
   (void)request;
 
-  responseSize = response.createResponseMessage(this->getMethod(), this->_uri, config, this->_version);
+  if (this->_autoindex)
+    responseSize = response.createAutoindexMessage(this->_uri, config, this->_version);
+  else
+    responseSize = response.createResponseMessage(this->getMethod(), this->_uri, config, this->_version);
   if (responseSize < 0) {
     response.setStatus(HTTP_INTERNAL_SERVER_ERROR);
     return ;
