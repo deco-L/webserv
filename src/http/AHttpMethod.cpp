@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/20 12:28:48 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/22 11:51:49 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,10 +74,11 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
       this->_autoindex = location.autoindex;
     }
   }
-  if (!config.root.empty())
+  if (path.empty() && !config.root.empty()) {
     path = config.root + this->_uri;
-  if (config.autoindex)
-    this->_autoindex = true;
+    if (config.autoindex)
+      this->_autoindex = true;
+  }
   if (path.empty())
     return (new HttpResponse(HTTP_NOT_FOUND));
   if (location.methods.size()) {
@@ -93,17 +94,19 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
   } else if (!this->_method.compare("POST") && location.upload_store.empty() && !location.root.empty()) {
     this->setUri(path);
   }
-  if (!this->_method.compare("GET") && !this->_autoindex && path.at(path.length() - 1) == '/') {
-    if (mylib::isPathValid(path))
-      return (new HttpResponse(HTTP_NOT_FOUND));
-    else if (mylib::isDirectory(path))
-      return (new HttpResponse(HTTP_FORBIDDEN));
+  if (!this->_method.compare("GET") && path.at(path.length() - 1) == '/') {
+    int status = 0;
+
     if (location.index.size()) {
+      if (mylib::isPathValid(path))
+        return (new HttpResponse(HTTP_NOT_FOUND));
+      if (!this->_autoindex && mylib::isDirectory(path))
+        status = HTTP_FORBIDDEN;
       for (std::vector<std::string>::const_iterator it = location.index.begin(); it != location.index.end(); it++) {
         if (mylib::isPathValid(path + *it))
-          return (new HttpResponse(HTTP_NOT_FOUND));
+          status = HTTP_NOT_FOUND;
         else if (!mylib::isModeValid(path + *it, S_IRUSR))
-          return (new HttpResponse(HTTP_FORBIDDEN));
+          status = HTTP_FORBIDDEN;
         else {
           path = path + *it;
           this->setUri(path);
@@ -113,9 +116,9 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
     } else if (!location.index.size() && config.index.size()){
       for (std::vector<std::string>::const_iterator it = config.index.begin(); it != config.index.end(); it++) {
         if (mylib::isPathValid(path + *it))
-          return (new HttpResponse(HTTP_NOT_FOUND));
+          status = HTTP_NOT_FOUND;
         else if (!mylib::isModeValid(path + *it, S_IRUSR))
-          return (new HttpResponse(HTTP_FORBIDDEN));
+          status = HTTP_FORBIDDEN;
         else {
           path = path + *it;
           this->setUri(path);
@@ -123,12 +126,16 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
         }
       }
     }
+    if (this->_autoindex && mylib::isDirectory(path)) {
+      this->setUri(path);
+      return (new HttpResponse(HTTP_OK));
+    }
+    return (new HttpResponse(status));
   }
   if (mylib::isPathValid(path))
     return (new HttpResponse(HTTP_NOT_FOUND));
   else if (!mylib::isModeValid(path, S_IRUSR))
     return (new HttpResponse(HTTP_FORBIDDEN));
-  std::cout << path << std::endl;
   this->setUri(path);
   return (new HttpResponse(HTTP_OK));
 }

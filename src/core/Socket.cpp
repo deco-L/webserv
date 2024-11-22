@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/16 17:40:13 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/21 16:08:16 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ bool Socket::isSocketOpen(void) {
 void Socket::create(void) {
   this->_socket = socket(AF_INET, SOCK_STREAM, 0);
   if (this->_socket < 0)
-    throw Socket::SocketError("socket error");
+    throw Socket::SocketError("socket error: " + std::string(strerror(errno)));
   return ;
 }
 
@@ -68,7 +68,7 @@ void Socket::passive(std::string ipAddress, short int port, bool opt) {
   if (opt) {
     this->_error = setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, (char *) &optval, sizeof(optval));
     if (this->_error < 0)
-      throw Socket::SocketError("setsockopt error");
+      throw Socket::SocketError("setsockopt error: " + std::string(strerror(errno)));
   }
   this->_sPort = port;
   std::memset(&this->_sSockAddr, 0, sizeof(struct sockaddr_in));
@@ -77,12 +77,12 @@ void Socket::passive(std::string ipAddress, short int port, bool opt) {
   this->_sSockAddr.sin_addr.s_addr = inet_addr(ipAddress.c_str());
   this->_error = bind(this->_socket, (const struct sockaddr *) &this->_sSockAddr, sizeof(this->_sSockAddr));
   if (this->_error < 0)
-    throw Socket::SocketError("bind failed");
+    throw Socket::SocketError("bind error: " + std::string(strerror(errno)));
   this->_error = listen(this->_socket, SOMAXCONN);
   if (this->_error < 0)
-    throw Socket::SocketError("listen error");
+    throw Socket::SocketError("listen error: " + std::string(strerror(errno)));
   if (mylib::nonBlocking(this->_socket) < 0)
-    throw Socket::SocketError("fcntl error");
+    throw Socket::SocketError("fcntl error: " + std::string(strerror(errno)));
   return ;
 }
 
@@ -94,10 +94,10 @@ void Socket::accept(Socket& cSocket) {
     throw Socket::SocketError("");
   } else if(cSocket._socket < 0) {
     this->_error = cSocket._socket;
-    throw Socket::SocketError("accept error");
+    throw Socket::SocketError("accept error: " + std::string(strerror(errno)));
   }
   if (mylib::nonBlocking(cSocket._socket) < 0)
-    throw Socket::SocketError("fcntl error");
+    throw Socket::SocketError("fcntl error: " + std::string(strerror(errno)));
   cSocket._peerIp = mylib::to_string(ntohs(cSocket._cSockAddr.sin_port));
   return ;
 }
@@ -120,7 +120,7 @@ void Socket::send(std::string buf, size_t len) {
   const char* tmp = buf.c_str();
   this->_error = ::send(this->_socket, (char *)tmp, len, 0);
   if (this->_error < 0)
-    throw Socket::SocketError("send error");
+    throw Socket::SocketError("send error: " + std::string(strerror(errno)));
   return ;
 }
 
@@ -130,7 +130,7 @@ void Socket::sendText(std::string fileName) {
 
   inFile.open(fileName.c_str());
   if (!inFile)
-    throw Socket::SocketError("open error");
+    throw Socket::SocketError("open error: " + std::string(strerror(errno)));
   this->_error = 0;
   while (true) {
     mylib::bzero(buf, GETLINE_BUFFER);
@@ -139,7 +139,7 @@ void Socket::sendText(std::string fileName) {
         if (inFile.eof())
           break;
         else
-          throw Socket::SocketError("getline error");
+          throw Socket::SocketError("getline error: " + std::string(strerror(errno)));
     }
     this->_error += ::send(this->_socket, buf, inFile.gcount(), 0);
     this->_error += ::send(this->_socket, CRLF, mylib::strlen(CRLF), 0);
@@ -154,7 +154,7 @@ void Socket::sendBinary(std::string fileName) {
 
   inBinary.open(fileName.c_str(), std::ios::binary);
   if (!inBinary)
-    throw Socket::SocketError("open error");
+    throw Socket::SocketError("open error: " + std::string(strerror(errno)));
   while (!inBinary.eof()) {
     inBinary.read(buf, GETLINE_BUFFER);
     this->_error = ::send(this->_socket, buf, inBinary.gcount(), 0);

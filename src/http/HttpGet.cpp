@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/17 00:14:12 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/22 11:48:46 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& reques
   int responseSize;
   (void)request;
 
-  if (this->_autoindex)
+  if (this->_autoindex && mylib::isDirectory(this->_uri))
     responseSize = response.createAutoindexMessage(this->_uri, config, this->_version);
   else
     responseSize = response.createResponseMessage(this->getMethod(), this->_uri, config, this->_version);
@@ -50,6 +50,7 @@ void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& reques
 
 void HttpGet::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response) {
   response = this->setResponseStatus(config);
+  std::cout << this->_uri << std::endl;
   if (400 <= response->getStatus() && response->getStatus() <= 600)
     return ;
   this->setResponseMessage(config, request, *response);

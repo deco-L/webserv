@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/20 12:27:48 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/11/22 12:13:43 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,12 +183,16 @@ static std::string _traverse(std::string path) {
     if (stat(filePath.c_str(), &status) == 0) {
       std::ostringstream oss;
 
-      oss << "      <a href=\"" << entry->d_name << "/\">" << entry->d_name << "</a>\n";
-      oss << "      \" " << mylib::formatTime(status.st_mtime) << " ";
+      oss << "      <a href=\"" << entry->d_name;
+      if (mylib::isDirectory(path + entry->d_name))
+        oss << "/\">" << entry->d_name << "</a>\n";
+      else
+        oss <<  "\">" << entry->d_name << "</a>\n";
+      oss << "       " << mylib::formatTime(status.st_mtime) << " ";
       if (S_ISDIR(status.st_mode)) {
-        oss << "- \"\n";
+        oss << "- \n";
       } else {
-        oss << mylib::fileSizeToString(status.st_size) << " \"\n";
+        oss << mylib::fileSizeToString(status.st_size) << " \n";
       }
       directories.append(oss.str());
     }
@@ -219,7 +223,7 @@ std::string HttpResponse::_createAutoindexBody(std::string path) {
   );
   body.append(path);
   body.append(
-    "<h1>\n"
+    "</h1>\n"
     "    <hr>\n"
     "    <pre>\n"
   );
