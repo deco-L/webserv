@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/22 12:13:43 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/06 20:47:48 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,11 +51,56 @@ int HttpResponse::_createStatusLine(std::string version) {
   this->_response.append(mylib::nbrToS(this->_status));
   this->_response.append(" ");
   switch(this->_status) {
+    case HTTP_CONTINUE:
+      this->_response.append("Continue");
+      break ;
+    case HTTP_SWITCHING_PROTOCOlS:
+      this->_response.append("Switching Protocols");
+      break ;
     case HTTP_OK:
       this->_response.append("OK");
       break ;
     case HTTP_CREATED:
       this->_response.append("Created");
+      break ;
+    case HTTP_ACCEPTED:
+      this->_response.append("Accepted");
+      break ;
+    case HTTP_NON_AUTHORITATIVE_INFO:
+      this->_response.append("Non Authoritative Info");
+      break ;
+    case HTTP_NO_CONTENT:
+      this->_response.append("No Content");
+      break ;
+    case HTTP_RESET_CONTENT:
+      this->_response.append("Reset Content");
+      break ;
+    case HTTP_PARTIAL_CONTENT:
+      this->_response.append("Partial Content");
+      break ;
+    case HTTP_SPECIAL_RESPONSE:
+      this->_response.append("Special Response");
+      break ;
+    case HTTP_MOVED_PERMANENTLY:
+      this->_response.append("Moved Permanently");
+      break ;
+    case HTTP_MOVED_TEMPORARILY:
+      this->_response.append("Moved Temporarily");
+      break ;
+    case HTTP_SEE_OTHER:
+      this->_response.append("See Other");
+      break ;
+    case HTTP_NOT_MODIFIED:
+      this->_response.append("Not Modified");
+      break ;
+    case HTTP_USE_PROXY:
+      this->_response.append("Use Proxy");
+      break ;
+    case HTTP_TEMPORARY_REDIRECT:
+      this->_response.append("Temporary Redirect");
+      break ;
+    case HTTP_PERMANENT_REDIRECT:
+      this->_response.append("Permanent Redirect");
       break ;
     case HTTP_BAD_REQUEST:
       this->_response.append("Bad Request");
@@ -253,7 +298,88 @@ void HttpResponse::setStatus(unsigned int status) {
   return ;
 }
 
-int HttpResponse::createErrorResponseMessage(ConfigServer config, std::string version) {
+static std::string responseTemplateMessage(const std::string& uri, const std::string& exec) {
+  std::string str;
+
+  str.append(
+    "<!DOCTYPE html>\n"
+    "<html>\n"
+    "  <head>\n"
+    "    <link rel=\"icon\" href=\"data:,\" />\n"
+    "    <meta charset=\"UTF-8\">\n"
+    "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+    "    <title> File \""
+  );
+  str.append(uri);
+  str.append(
+    "\" "
+  );
+  str.append(exec);
+  str.append(
+    ".</title>\n"
+    "  </head>\n"
+    "  <body cz-shortcut-listen=\"true\">\n"
+    "    <center>\n"
+    "      <h1> File\""
+  );
+  str.append(uri);
+  str.append(
+    "\" "
+  );
+  str.append(exec);
+  str.append(
+    ".</h1>\n"
+    "    </center>\n"
+    "    <hr>\n"
+    "    <center>webserv/1.0</center>\n"
+    "  </body>\n"
+    "</html>\n"
+  );
+  return (str);
+}
+
+void HttpResponse::_createPostResponseMessage(const std::string& uri, const ConfigServer& config) {
+  int bodySize = 0;
+  std::string PostBody;
+
+  PostBody = responseTemplateMessage(uri, "created");
+  bodySize = PostBody.length();
+  this->_createHeaderLine(config, bodySize);
+  this->_response.append(CRLF);
+  this->_response.append(PostBody);
+  return ;
+}
+
+void HttpResponse::_createDeleteResponseMessage(const std::string& uri, const ConfigServer& config) {
+  int bodySize = 0;
+  std::string deleteBody;
+
+  deleteBody = responseTemplateMessage(uri, "deleted");
+  bodySize = deleteBody.length();
+  this->_createHeaderLine(config, bodySize);
+  this->_response.append(CRLF);
+  this->_response.append(deleteBody);
+  return ;
+}
+
+int HttpResponse::_createRedirectResponseMessage(const std::string& uri, const ConfigServer& config) {
+  int responseSize;
+  int bodySize = 0;
+  std::string redirectBody;
+
+  redirectBody = wsvRedirectPage(this->_status, uri);
+  bodySize = redirectBody.length();
+  if (bodySize == 0)
+    return (-1);
+  this->_response.append("Location: " + uri);
+  this->_createHeaderLine(config, bodySize);
+  this->_response.append(CRLF);
+  this->_response.append(redirectBody);
+  responseSize = this->_response.length();
+  return (responseSize);
+}
+
+int HttpResponse::_createErrorResponseMessage(const ConfigServer& config, const std::string& version) {
   int responseSize;
   int bodySize = 0;
   std::vector<std::pair<int, std::string> >::const_iterator it;
@@ -284,21 +410,20 @@ int HttpResponse::createResponseMessage(const std::string& method, std::string p
   int bodySize;
 
   this->_createStatusLine(version);
-  if (400 <= this->_status && this->_status <= 600)
-    return (this->createErrorResponseMessage(config, version));
+  if (300 <= this->_status && this->_status < 400)
+    return (this->_createRedirectResponseMessage(path, config));
+  if (400 <= this->_status && this->_status < 600)
+    return (this->_createErrorResponseMessage(config, version));
   if (!method.compare("GET")) {
     bodySize = mylib::countFileSize(path);
     responseSize = this->_createHeaderLine(config, bodySize);
     this->_response.append(CRLF);
     if (!mylib::readFile(path, this->_response))
       return (-1);
-  } else if (!method.compare("POST")) {
-    this->_createHeaderLine(config, 0);
-    this->_response.append(CRLF);
-  } else if (!method.compare("DELETE")) {
-    this->_createHeaderLine(config, 0);
-    this->_response.append(CRLF);
-  }
+  } else if (!method.compare("POST"))
+    this->_createPostResponseMessage(path, config);
+  else if (!method.compare("DELETE"))
+    this->_createDeleteResponseMessage(path, config);
   responseSize = this->_response.length();
   return (responseSize);
 }

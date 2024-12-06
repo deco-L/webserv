@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/19 17:51:38 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/06 14:18:26 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,8 +126,24 @@ bool Http::checkSemantics(Socket& socket) {
 
 void Http::executeMethod(const ConfigServer& config) {
   this->_httpMethod->execute(config, this->_httpRequest, this->_httpResponse);
-  if (400 <= this->_httpResponse->getStatus() && this->_httpResponse->getStatus() <= 600) {
-    if (this->_httpResponse->getStatus() == HTTP_BAD_REQUEST)
+  if (300 <= this->_httpResponse->getStatus() && this->_httpResponse->getStatus() < 600) {
+    if (this->_httpResponse->getStatus() == HTTP_SPECIAL_RESPONSE)
+      throw Http::HttpError("HTTP_SPECIAL_RESPONSE");
+    else if (this->_httpResponse->getStatus() == HTTP_MOVED_PERMANENTLY)
+      throw Http::HttpError("HTTP_MOVED_PERMANENTLY");
+    else if (this->_httpResponse->getStatus() == HTTP_MOVED_TEMPORARILY)
+      throw Http::HttpError("HTTP_MOVED_TEMPORARILY");
+    else if (this->_httpResponse->getStatus() == HTTP_SEE_OTHER)
+      throw Http::HttpError("HTTP_SEE_OTHER");
+    else if (this->_httpResponse->getStatus() == HTTP_NOT_MODIFIED)
+      throw Http::HttpError("HTTP_NOT_MODIFIED");
+    else if (this->_httpResponse->getStatus() == HTTP_USE_PROXY)
+      throw Http::HttpError("HTTP_USE_PROXY");
+    else if (this->_httpResponse->getStatus() == HTTP_TEMPORARY_REDIRECT)
+      throw Http::HttpError("HTTP_TEMPORARY_REDIRECT");
+    else if (this->_httpResponse->getStatus() == HTTP_PERMANENT_REDIRECT)
+      throw Http::HttpError("HTTP_PERMANENT_REDIRECT");
+    else if (this->_httpResponse->getStatus() == HTTP_BAD_REQUEST)
       throw Http::HttpError("HTTP_BAD_REQUEST");
     else if (this->_httpResponse->getStatus() == HTTP_UNAUTHORIZED)
       throw Http::HttpError("HTTP_UNAUTHORIZED");

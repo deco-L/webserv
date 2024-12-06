@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/22 11:48:46 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/06 16:14:59 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,8 +50,7 @@ void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& reques
 
 void HttpGet::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response) {
   response = this->setResponseStatus(config);
-  std::cout << this->_uri << std::endl;
-  if (400 <= response->getStatus() && response->getStatus() <= 600)
+  if (300 <= response->getStatus() && response->getStatus() < 600)
     return ;
   this->setResponseMessage(config, request, *response);
   return ;

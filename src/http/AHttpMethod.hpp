@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/16 22:33:24 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/06 13:42:17 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,10 @@
 #define AHTTPMETHOD_HPP
 
 #include <iostream>
+#include <vector>
 
 class ConfigServer;
+class ConfigLocation;
 class Socket;
 class HttpRequest;
 class HttpResponse;
@@ -24,6 +26,10 @@ class AHttpMethod {
 private:
   AHttpMethod(const AHttpMethod& obj);
   AHttpMethod& operator=(const AHttpMethod& obj);
+  HttpResponse* _returnRedirectStatus(const ConfigLocation& location);
+  HttpResponse* _setGetResponseStatus(const ConfigServer& config, std::string& path, const ConfigLocation& location);
+  HttpResponse* _setPostResponseStatus(std::string& path, const ConfigLocation& location);
+  HttpResponse* _setDeleteResponseStatus(const ConfigServer& config, std::string& path, const ConfigLocation& location);
 
 protected:
   const std::string _method;

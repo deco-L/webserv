@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/12 10:57:01 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/06 20:39:44 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,7 @@ HttpPost::~HttpPost() {
 }
 
 bool HttpPost::_uploadFile(HttpRequest& request) {
-  std::string root = "./wsv";
-  std::ofstream file(root.append(this->_uri).c_str());
+  std::ofstream file(this->_uri.c_str());
 
   if (!file.is_open())
     return (false);
@@ -43,20 +42,11 @@ bool HttpPost::_uploadFile(HttpRequest& request) {
   return (true);
 }
 
-HttpResponse* HttpPost::setResponseStatus(void) {
-  std::string root = "./wsv";
-
-  if (mylib::isDirectory(root.append(this->_uri)) || mylib::isModeValid(root.append(this->_uri), S_IRUSR | S_IXUSR))
-    return (new HttpResponse(HTTP_FORBIDDEN));
-  return (new HttpResponse(HTTP_CREATED));
-}
-
 void HttpPost::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const {
   int responseSize;
-  std::string root = "./wsv";
   (void)request;
 
-  responseSize = response.createResponseMessage(this->getMethod(), root.append(this->_uri), config, this->_version);
+  responseSize = response.createResponseMessage(this->getMethod(), this->_uri, config, this->_version);
   if (responseSize < 0) {
     response.setStatus(HTTP_INTERNAL_SERVER_ERROR);
     return ;
@@ -65,7 +55,7 @@ void HttpPost::setResponseMessage(const ConfigServer& config, HttpRequest& reque
 }
 
 void HttpPost::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response) {
-  response = this->setResponseStatus();
+  response = this->setResponseStatus(config);
   if (400 <= response->getStatus() && response->getStatus() <= 600)
     return ;
   if (!this->_uploadFile(request)) {

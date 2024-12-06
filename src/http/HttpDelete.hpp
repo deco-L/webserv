@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/06 17:10:25 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/06 16:16:32 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@ public:
   HttpDelete(std::string uri, std::string version);
   ~HttpDelete();
 
-  HttpResponse* setResponseStatus(void);
   void setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const;
   void execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response);
 };

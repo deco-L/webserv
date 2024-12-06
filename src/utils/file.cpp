@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/17 01:42:50 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/04 21:35:55 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ namespace mylib {
   bool isPathValid(std::string path) {
     struct stat info;
 
-    return (stat(path.c_str(), &info) != 0);
+    return (stat(path.c_str(), &info) == 0);
   }
 
   bool isModeValid(std::string path, int mode) {

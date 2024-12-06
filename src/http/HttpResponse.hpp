@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/19 17:48:24 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/06 20:47:18 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,10 @@ private:
 
   int _createStatusLine(std::string version);
   int _createHeaderLine(const ConfigServer& request, int bodySize);
+  void _createPostResponseMessage(const std::string& uri, const ConfigServer& config);
+  void _createDeleteResponseMessage(const std::string& uri, const ConfigServer& config);
+  int _createRedirectResponseMessage(const std::string& uri, const ConfigServer& config);
+  int _createErrorResponseMessage(const ConfigServer& config, const std::string& version);
   void _createErrorResponse(const ConfigServer& config, int status);
   std::string _createAutoindexBody(std::string path);
 
@@ -105,7 +109,6 @@ public:
   void setStatus(unsigned int status);
   int createResponseMessage(const std::string& method, std::string path, const ConfigServer& config, std::string version);
   int createAutoindexMessage(std::string path, const ConfigServer& config, std::string version);
-  int createErrorResponseMessage(ConfigServer config, std::string version);
   void execute(Socket& socket);
 
   HttpResponse& operator=(const HttpResponse& obj);
@@ -119,5 +122,6 @@ struct FindNbrInVector {
 };
 
 std::string wsvErrorPage(int status);
+std::string wsvRedirectPage(int status, const std::string& uri);
 
 #endif

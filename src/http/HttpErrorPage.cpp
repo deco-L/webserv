@@ -1,6 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   HttpErrorPage.cpp                                  :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
+/*   Updated: 2024/12/06 15:34:53 by csakamot         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "HttpResponse.hpp"
 
-static std::string errorPageTemplate(std::string error) {
+static std::string errorPageTemplate(const std::string& error) {
   std::string body;
 
   body.append(
@@ -33,8 +45,7 @@ static std::string errorPageTemplate(std::string error) {
 }
 
 std::string wsvErrorPage(int status) {
-  switch (status)
-  {
+  switch (status) {
   case HTTP_BAD_REQUEST:
     return (errorPageTemplate("400 Bad Request"));
   case HTTP_UNAUTHORIZED:

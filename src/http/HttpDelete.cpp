@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/12 10:57:36 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/06 20:38:10 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,22 +34,11 @@ HttpDelete::~HttpDelete() {
   return ;
 }
 
-HttpResponse* HttpDelete::setResponseStatus(void) {
-  std::string root = "./wsv/html";
-
-  if (mylib::isPathValid(root.append(this->_uri)))
-    return (new HttpResponse(HTTP_NOT_FOUND));
-  if (mylib::isDirectory(root.append(this->_uri)) || mylib::isModeValid(root.append(this->_uri), S_IRUSR | S_IXUSR))
-    return (new HttpResponse(HTTP_FORBIDDEN));
-  return (new HttpResponse(HTTP_OK));
-}
-
 void HttpDelete::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const {
   int responseSize;
-  std::string root = "./wsv/html";
   (void)request;
 
-  responseSize = response.createResponseMessage(this->getMethod(), root.append(this->_uri), config, this->_version);
+  responseSize = response.createResponseMessage(this->getMethod(), this->_uri, config, this->_version);
   if (responseSize < 0) {
     response.setStatus(HTTP_INTERNAL_SERVER_ERROR);
     return ;
@@ -58,13 +47,12 @@ void HttpDelete::setResponseMessage(const ConfigServer& config, HttpRequest& req
 }
 
 void HttpDelete::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response) {
-  std::string root = "./wsv/html";
-  response = this->setResponseStatus();
-  if (std::remove(root.append(this->_uri).c_str())) {
+  response = this->setResponseStatus(config);
+  if (std::remove(this->_uri.c_str())) {
     response->setStatus(HTTP_INTERNAL_SERVER_ERROR);
     return ;
   }
-  if (400 <= response->getStatus() && response->getStatus() <= 600)
+  if (300 <= response->getStatus() && response->getStatus() < 600)
     return ;
   this->setResponseMessage(config, request, *response);
   return ;
