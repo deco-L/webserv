@@ -6,7 +6,7 @@
 /*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/07 13:50:56 by kmiyazaw         ###   ########.fr       */
+/*   Updated: 2024/12/07 17:14:30 by kmiyazaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,11 +174,11 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
       {
       // cgi_extension .py /usr/bin/python3
         // std::cout << location.cgi_extension[0].second << std::endl;
-        std::cout << "location.cgi_extension.empty()" << std::endl;
+        // std::cout << "location.cgi_extension.empty()" << std::endl;
         this->_cgi_extension = location.cgi_extension[0].first;
         this->_cgi_path = location.cgi_extension[0].second;
-        std::cout << "this->_cgi_extension: " << this->_cgi_extension << std::endl;
-        std::cout << "this->_cgi_path: " << this->_cgi_path << std::endl;
+        // std::cout << "this->_cgi_extension: " << this->_cgi_extension << std::endl;
+        // std::cout << "this->_cgi_path: " << this->_cgi_path << std::endl;
       }
     }
   }

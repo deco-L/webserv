@@ -6,7 +6,7 @@
 /*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/07 16:49:01 by kmiyazaw         ###   ########.fr       */
+/*   Updated: 2024/12/07 17:52:20 by kmiyazaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -666,7 +666,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
     close(readFd);
   }
 
-  std::cout << "body: " << body << std::endl;
+  // std::cout << "body: " << body << std::endl;
   return (body);
 }
 
@@ -756,6 +756,7 @@ int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, 
   // 2: Client Redirect Response
   // 3: Client Ridirect Response with Document
   
+  //Only Document Response
   cgiCase = this->_judgeCgiCase(tmp); // ないぶで判定して、ステータスを変更する
   header = makeCgiHeader(tmp, cgiCase);
   body = makeCgiBody(tmp, cgiCase);
@@ -769,7 +770,7 @@ int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, 
   this->_response.append(CRLF);
   this->_response.append(CRLF);
   this->_response.append(body);
-  std::cout << "response: " << this->_response << std::endl;
+  // std::cout << "response: " << this->_response << std::endl;
   responseSize = this->_response.length();
   return (responseSize);
 }
