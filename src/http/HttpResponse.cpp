@@ -6,7 +6,7 @@
 /*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/07 16:00:15 by kmiyazaw         ###   ########.fr       */
+/*   Updated: 2024/12/07 16:49:01 by kmiyazaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -490,6 +490,7 @@ static std::vector<std::string> createEnvs(const ConfigServer& config, std::stri
     envs.push_back("PATH_INFO=" + _uri.substr(_uri.find(cgiExtension) + cgiExtension.length(), _uri.find("?") - _uri.find(cgiExtension) - cgiExtension.length()));
     envs.push_back("SCRIPT_NAME=" + cgiPath + _uri.substr(0, _uri.find("?")));
     envs.push_back("QUERY_STRING=" + _uri.substr(_uri.find("?") + 1));
+    std::cout << "QUERY_STRING: " << _uri.substr(_uri.find("?") + 1) << std::endl;
   }
   envs.push_back("SERVER_NAME=" + config.server_name.front());
   envs.push_back("SERVER_PORT=" + config.listen.front().first);
@@ -504,7 +505,8 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
   int pipeFd[2];
   int status;
   
-  (void)_uri;
+  // (void)_uri;
+  std::cout << _uri << std::endl;
   
   if (pipe(pipeFd) == -1)
   {
@@ -529,19 +531,23 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
     }
     close(pipeFd[1]);
 
+    // std::cout << "cgiPath: " << cgiPath << "$" << std::endl;
+    // std::cout << "cgiExtension: " << cgiExtension << "$" << std::endl;
     if (cgiExtension == ".py") {
       char* argv[] = {
         const_cast<char*>("python3"),
-        const_cast<char*>(cgiPath.c_str()),
+        const_cast<char*>(_uri.c_str()),
         NULL};
+      // "/usr/bin/python3", "python3, /Users/kmiyazaw/42/webserv/src/cgi-bin/test.py, NULL"
       if (execve(cgiPath.c_str(), argv, envs.data()) == -1)
       {
         perror("execve");
         _exit(EXIT_FAILURE);
       }
     } else {
+      std:: cout << "not python3" << std::endl;
       char *argv[] = {
-        (char *)cgiPath.c_str(),
+        (char *)_uri.c_str(),
         NULL};
       if (execve(cgiPath.c_str(), argv, envs.data()) == -1)
       {
@@ -624,8 +630,8 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
   
 
   if (!method.compare("GET")) {
+    std::cout << "cgi start" << std::endl; 
     if (cgiExecGet(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri) < 0) {
-      std::cout << "cgi start" << std::endl; 
       if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1)
         {
@@ -651,6 +657,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
     
   }
   if (readFd != -1) {
+    std::cout << "start read ===" << std::endl;
     char buf[1024];
     int len;
     while ((len = read(readFd, buf, 1024)) > 0) {
@@ -658,6 +665,8 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
     }
     close(readFd);
   }
+
+  std::cout << "body: " << body << std::endl;
   return (body);
 }
 
@@ -684,24 +693,31 @@ std::string makeCgiHeader(std::string str, int cgiCase) {
   std::string location;
   std::string contentType;
   std::string contentLength;
-  std::string body;
+
+  contentType = str.substr(str.find("Content-Type: ") + 14, str.find("\n", str.find("Content-Type: ")) - str.find("Content-Type: ") - 14);
+  contentType = "Content-Type: " + contentType;
+
+  //contentTypeの部分を削除
+  str = str.substr(str.find("\n", str.find("Content-Type: ")) + 1);
+  //先頭の改行を削除
+  str = str.substr(1);
 
   if (cgiCase == 0) {
-    contentType = "Content-Type: text/html";
+    // contentType = "Content-Type: text/html";
     contentLength = "Content-Length: " + mylib::nbrToS(str.length());
   } else if (cgiCase == 1) {
-    contentType = "Content-Type: text/html";
+    // contentType = "Content-Type: text/html";
     contentLength = "Content-Length: " + mylib::nbrToS(str.length());
   } else if (cgiCase == 2) {
     location = str.substr(str.find("Location: ") + 10, str.find("\n", str.find("Location: ")) - str.find("Location: ") - 10);
-    contentType = "Content-Type: text/html";
+    // contentType = "Content-Type: text/html";
     contentLength = "Content-Length: " + mylib::nbrToS(str.length());
   } else if (cgiCase == 3) {
     location = str.substr(str.find("Location: ") + 10, str.find("\n", str.find("Location: ")) - str.find("Location: ") - 10);
-    contentType = "Content-Type: text/html";
+    // contentType = "Content-Type: text/html";
     contentLength = "Content-Length: " + mylib::nbrToS(str.length());
   }
-  header = contentType + CRLF + contentLength + CRLF + CRLF + body;
+  header = contentType + CRLF + contentLength;
   if (location.length() > 0)
     header = "Location: " + location + CRLF + header;
   return (header);
@@ -709,6 +725,8 @@ std::string makeCgiHeader(std::string str, int cgiCase) {
 
 std::string makeCgiBody(std::string str, int cgiCase) {
   std::string body;
+
+  str = str.substr(str.find("\n\n") + 2);
 
   if (cgiCase == 0) {
     body = str;
@@ -737,7 +755,7 @@ int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, 
   // 1: Local Redirect Response
   // 2: Client Redirect Response
   // 3: Client Ridirect Response with Document
-  std::cout << "here" << std::endl;
+  
   cgiCase = this->_judgeCgiCase(tmp); // ないぶで判定して、ステータスを変更する
   header = makeCgiHeader(tmp, cgiCase);
   body = makeCgiBody(tmp, cgiCase);
@@ -748,6 +766,7 @@ int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, 
   // this->_createHeaderLine(config, body.length());
   // std::cout << this->_response << std::endl;
   this->_response.append(header);
+  this->_response.append(CRLF);
   this->_response.append(CRLF);
   this->_response.append(body);
   std::cout << "response: " << this->_response << std::endl;
