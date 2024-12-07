@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/06 20:47:48 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/07 16:00:15 by kmiyazaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -466,4 +466,291 @@ HttpResponse& HttpResponse::operator=(const HttpResponse& obj) {
 
 bool FindNbrInVector::operator()(const std::pair<int, std::string>& p) const {
   return (p.first == target);
+}
+
+
+
+
+
+
+
+
+static std::vector<std::string> createEnvs(const ConfigServer& config, std::string _uri, std::string method, std::string cgiPath, std::string cgiExtension, std::string version)
+{
+  std::vector<std::string> envs;
+  
+  //envs = config.getEnvp();
+  //PATH_INFO	パス情報。たとえば、「cgi-bin/xxx.cgi/taro/xxx.htm」というURLでCGIスクリプトを呼び出した場合、PATH_INFOには「/taro/xxx.htm」が格納される。
+  //cgiExtensionがある部分より右側の部分を取得する
+  if (_uri.find("?") == std::string::npos) //_uriに?が含まれいない場合
+  {
+    envs.push_back("PATH_INFO=" + _uri.substr(_uri.find(cgiExtension) + cgiExtension.length()));
+    envs.push_back("SCRIPT_NAME=" + cgiPath);
+  } else { //_uriに?が含まれる場合
+    envs.push_back("PATH_INFO=" + _uri.substr(_uri.find(cgiExtension) + cgiExtension.length(), _uri.find("?") - _uri.find(cgiExtension) - cgiExtension.length()));
+    envs.push_back("SCRIPT_NAME=" + cgiPath + _uri.substr(0, _uri.find("?")));
+    envs.push_back("QUERY_STRING=" + _uri.substr(_uri.find("?") + 1));
+  }
+  envs.push_back("SERVER_NAME=" + config.server_name.front());
+  envs.push_back("SERVER_PORT=" + config.listen.front().first);
+  envs.push_back("REQUEST_METHOD=" + method);
+  envs.push_back("SERVER_PROTOCOL=" + version);
+  envs.push_back("SERVER_SOFTWARE=webserv");
+  return (envs);
+}
+
+
+int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri) {
+  int pipeFd[2];
+  int status;
+  
+  (void)_uri;
+  
+  if (pipe(pipeFd) == -1)
+  {
+    std::cout << "pipe error" << std::endl;
+    return (-1);
+  }
+  
+  pid = fork();
+  if (pid == -1)
+  {
+    std::cout << "fork error" << std::endl;
+    close(pipeFd[0]);
+    close(pipeFd[1]);
+    return (-1);
+  }
+  if (pid == 0) {
+    close(pipeFd[0]);
+    if (dup2(pipeFd[1], 1) == -1)
+    {
+      perror("dup2");
+      _exit(EXIT_FAILURE);
+    }
+    close(pipeFd[1]);
+
+    if (cgiExtension == ".py") {
+      char* argv[] = {
+        const_cast<char*>("python3"),
+        const_cast<char*>(cgiPath.c_str()),
+        NULL};
+      if (execve(cgiPath.c_str(), argv, envs.data()) == -1)
+      {
+        perror("execve");
+        _exit(EXIT_FAILURE);
+      }
+    } else {
+      char *argv[] = {
+        (char *)cgiPath.c_str(),
+        NULL};
+      if (execve(cgiPath.c_str(), argv, envs.data()) == -1)
+      {
+        perror("execve");
+        _exit(EXIT_FAILURE);
+      }
+    }
+  }
+  close(pipeFd[1]);
+  readFd = pipeFd[0];
+  if (waitpid(pid, &status, 0) == -1)
+  {
+    perror("waitpid");
+    return (-1);
+  }
+  return (0);
+}
+
+
+
+int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri) {
+  int pipeFd[2];
+  int status;
+  
+  (void)_uri;
+  
+  if (pipe(pipeFd) == -1)
+  {
+    std::cout << "pipe error" << std::endl;
+    return (-1);
+  }
+  pid = fork();
+  if (pid == -1)
+  {
+    close(pipeFd[0]);
+    close(pipeFd[1]);
+    std::cout << "fork error" << std::endl;
+    return (-1);
+  }
+  if (pid == 0) {
+    close(pipeFd[0]);
+    dup2(pipeFd[1], 1);
+    close(pipeFd[1]);
+    if (cgiExtension == ".py") {
+      char* argv[] = {const_cast<char*>("python3"), const_cast<char*>(cgiPath.c_str()), NULL};
+      if (execve(cgiPath.c_str(), argv, envs.data()) == -1){
+        std::cout << "execve error" << std::endl;
+        return (-1);
+      }
+    } else {
+      char *argv[] = {(char *)cgiPath.c_str(), NULL};
+      if (execve(cgiPath.c_str(), argv, envs.data()) == -1)
+      {
+        std::cout << "execve error2" << std::endl;
+        return (-1);
+      }
+    }
+  }
+  close(pipeFd[1]);
+  readFd = pipeFd[0];
+  waitpid(pid, &status, 0);
+  return (0);
+}
+
+
+std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string version) {
+  std::string body;
+  
+  std::vector<std::string> envs = createEnvs(config, _uri, method, cgiPath, cgiExtension, version);
+  
+  std::vector<char*> env_cstrs;
+  for (size_t i = 0; i < envs.size(); ++i) {
+      env_cstrs.push_back(const_cast<char*>(envs[i].c_str()));
+  }
+  env_cstrs.push_back(NULL); // NULL 終端を追加
+  
+  int readFd;
+  //int writeFd;
+  pid_t pid;
+  
+
+  if (!method.compare("GET")) {
+    if (cgiExecGet(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri) < 0) {
+      std::cout << "cgi start" << std::endl; 
+      if (pid != 0 && kill(pid, 0) == 0) {
+        if (kill(pid, SIGTERM) == -1)
+        {
+          std::cout << "kill error" << std::endl;
+          throw HttpResponse::HttpResponseError("kill");
+        }
+      }
+      this->_response.clear();
+      this->setStatus(HTTP_INTERNAL_SERVER_ERROR);
+    }
+  } else if (!method.compare("POST")) {
+    if (cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri) < 0) {
+      if (pid != 0 && kill(pid, 0) == 0) {
+        if (kill(pid, SIGTERM) == -1)
+        {
+          std::cout << "kill error" << std::endl;
+          throw HttpResponse::HttpResponseError("kill");
+        }
+      }
+      this->_response.clear();
+      this->setStatus(HTTP_INTERNAL_SERVER_ERROR);
+    }
+    
+  }
+  if (readFd != -1) {
+    char buf[1024];
+    int len;
+    while ((len = read(readFd, buf, 1024)) > 0) {
+      body.append(buf, len);
+    }
+    close(readFd);
+  }
+  return (body);
+}
+
+
+int HttpResponse::_judgeCgiCase(std::string body) {
+  if (body.find("Location: ") != std::string::npos) {
+    this->setStatus(HTTP_MOVED_TEMPORARILY);
+    if (body.find("Content-Type: text/html") != std::string::npos)
+      return (3);
+    return (2);
+  }
+  if (body.find("Content-Type: text/html") != std::string::npos)
+  {
+    this->setStatus(HTTP_OK);
+    return (0);
+  }
+  this->setStatus(HTTP_OK);
+  return (1);
+}
+
+std::string makeCgiHeader(std::string str, int cgiCase) {
+  std::string header;
+  std::string status;
+  std::string location;
+  std::string contentType;
+  std::string contentLength;
+  std::string body;
+
+  if (cgiCase == 0) {
+    contentType = "Content-Type: text/html";
+    contentLength = "Content-Length: " + mylib::nbrToS(str.length());
+  } else if (cgiCase == 1) {
+    contentType = "Content-Type: text/html";
+    contentLength = "Content-Length: " + mylib::nbrToS(str.length());
+  } else if (cgiCase == 2) {
+    location = str.substr(str.find("Location: ") + 10, str.find("\n", str.find("Location: ")) - str.find("Location: ") - 10);
+    contentType = "Content-Type: text/html";
+    contentLength = "Content-Length: " + mylib::nbrToS(str.length());
+  } else if (cgiCase == 3) {
+    location = str.substr(str.find("Location: ") + 10, str.find("\n", str.find("Location: ")) - str.find("Location: ") - 10);
+    contentType = "Content-Type: text/html";
+    contentLength = "Content-Length: " + mylib::nbrToS(str.length());
+  }
+  header = contentType + CRLF + contentLength + CRLF + CRLF + body;
+  if (location.length() > 0)
+    header = "Location: " + location + CRLF + header;
+  return (header);
+}
+
+std::string makeCgiBody(std::string str, int cgiCase) {
+  std::string body;
+
+  if (cgiCase == 0) {
+    body = str;
+  } else if (cgiCase == 1) {
+    body = str;
+  } else if (cgiCase == 2) {
+    body = str;
+  } else if (cgiCase == 3) {
+    body = str.substr(str.find("\n\n") + 2);
+  }
+  return (body);
+}
+
+int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension) {
+  int responseSize;
+  std::string body;
+  std::string header;
+  std::string tmp;
+
+  tmp = this->_doCgi(method, _uri, config, cgiPath, cgiExtension, version);
+
+
+  
+  int cgiCase;
+  // 0: Document Response
+  // 1: Local Redirect Response
+  // 2: Client Redirect Response
+  // 3: Client Ridirect Response with Document
+  std::cout << "here" << std::endl;
+  cgiCase = this->_judgeCgiCase(tmp); // ないぶで判定して、ステータスを変更する
+  header = makeCgiHeader(tmp, cgiCase);
+  body = makeCgiBody(tmp, cgiCase);
+
+  // this->setStatus(HTTP_NOT_FOUND);
+  // std::cout << "body: " << body << std::endl;
+  this->_createStatusLine(version);
+  // this->_createHeaderLine(config, body.length());
+  // std::cout << this->_response << std::endl;
+  this->_response.append(header);
+  this->_response.append(CRLF);
+  this->_response.append(body);
+  std::cout << "response: " << this->_response << std::endl;
+  responseSize = this->_response.length();
+  return (responseSize);
 }

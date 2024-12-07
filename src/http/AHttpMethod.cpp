@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AHttpMethod.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/06 20:36:44 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/07 13:50:56 by kmiyazaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,11 @@
 #include "Config.hpp"
 #include "HttpResponse.hpp"
 
-AHttpMethod::AHttpMethod(void) : _method("default"), _uri(""), _version(""), _autoindex(false) {
+AHttpMethod::AHttpMethod(void) : _method("default"), _uri(""), _version(""), _autoindex(false), _cgi_extension(""), _cgi_path("") {
   return ;
 }
 
-AHttpMethod::AHttpMethod(std::string method, std::string uri, std::string version) : _method(method), _uri(uri), _version(version), _autoindex(false) {
+AHttpMethod::AHttpMethod(std::string method, std::string uri, std::string version) : _method(method), _uri(uri), _version(version), _autoindex(false), _cgi_extension(""), _cgi_path("") {
   return ;
 }
 
@@ -169,6 +169,17 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
       if (!location.root.empty())
         path = location.root + this->_uri;
       this->_autoindex = location.autoindex;
+
+      if (location.cgi_extension.size())
+      {
+      // cgi_extension .py /usr/bin/python3
+        // std::cout << location.cgi_extension[0].second << std::endl;
+        std::cout << "location.cgi_extension.empty()" << std::endl;
+        this->_cgi_extension = location.cgi_extension[0].first;
+        this->_cgi_path = location.cgi_extension[0].second;
+        std::cout << "this->_cgi_extension: " << this->_cgi_extension << std::endl;
+        std::cout << "this->_cgi_path: " << this->_cgi_path << std::endl;
+      }
     }
   }
   if (path.empty() && location.return_.first != 0 && !location.return_.second.empty())
