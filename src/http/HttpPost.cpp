@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/06 20:39:44 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/08 17:41:38 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,11 +33,16 @@ HttpPost::~HttpPost() {
 }
 
 bool HttpPost::_uploadFile(HttpRequest& request) {
+  if (mylib::isDirectory(this->_uri) && this->_uri[this->_uri.length() - 1] != '/')
+    this->_uri.append("/tmp.txt");
+  else if (mylib::isDirectory(this->_uri) && this->_uri[this->_uri.length() - 1] == '/')
+    this->_uri.append("tmp.txt");
+
   std::ofstream file(this->_uri.c_str());
 
   if (!file.is_open())
     return (false);
-  file << request.getBody();
+  file << request.getBody().substr(0, request.getBody().find_last_not_of('\0') + 1);
   file.close();
   return (true);
 }

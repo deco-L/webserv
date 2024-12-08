@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/06 20:47:48 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/08 16:21:02 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,15 @@
 #include "webserv.hpp"
 #include "Error.hpp"
 
-HttpResponse::HttpResponse(void): _status(0), _response("") {
+HttpResponse::HttpResponse(void): _status(0), _redirectPath(""), _response("") {
   return ;
 }
 
-HttpResponse::HttpResponse(unsigned int status): _status(status) {
+HttpResponse::HttpResponse(unsigned int status): _status(status), _redirectPath(""), _response("") {
+  return ;
+}
+
+HttpResponse::HttpResponse(unsigned int status, std::string redirectPath): _status(status), _redirectPath(redirectPath), _response("") {
   return ;
 }
 
@@ -289,6 +293,10 @@ unsigned int HttpResponse::getStatus(void) const {
   return (this->_status);
 }
 
+const std::string& HttpResponse::getRedirectPath(void) const {
+  return (this->_redirectPath);
+}
+
 const std::string& HttpResponse::getResponse(void) const {
   return (this->_response);
 }
@@ -371,7 +379,7 @@ int HttpResponse::_createRedirectResponseMessage(const std::string& uri, const C
   bodySize = redirectBody.length();
   if (bodySize == 0)
     return (-1);
-  this->_response.append("Location: " + uri);
+  this->_response.append("Location: " + uri + '/' + CRLF);
   this->_createHeaderLine(config, bodySize);
   this->_response.append(CRLF);
   this->_response.append(redirectBody);
