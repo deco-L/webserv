@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpPost.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/06 20:39:44 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/09 17:04:14 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,9 +44,22 @@ bool HttpPost::_uploadFile(HttpRequest& request) {
 
 void HttpPost::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const {
   int responseSize;
-  (void)request;
-
-  responseSize = response.createResponseMessage(this->getMethod(), this->_uri, config, this->_version);
+  //(void)request;
+  
+  if (this->getMethod() == "POST" && request.getBody().size())
+  {
+    std::cout << "POST yeah" << std::endl;
+    std::cout << "body: " << request.getBody() << std::endl;
+  }
+  
+  // cgiを実行する
+  if ((!this->_cgi_extension.empty() && !this->_cgi_path.empty()) || this->_cgi_relative_path.size())
+  {
+    responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_path, this->_cgi_extension, this->_uri_old, request.getBody());
+  }
+  else {
+    responseSize = response.createResponseMessage(this->getMethod(), this->_uri, config, this->_version);
+  }
   if (responseSize < 0) {
     response.setStatus(HTTP_INTERNAL_SERVER_ERROR);
     return ;
@@ -55,7 +68,8 @@ void HttpPost::setResponseMessage(const ConfigServer& config, HttpRequest& reque
 }
 
 void HttpPost::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response) {
-  response = this->setResponseStatus(config);
+  if ((this->_cgi_extension.empty() || this->_cgi_path.empty()) || !this->_cgi_relative_path.size())
+    response = this->setResponseStatus(config);
   if (400 <= response->getStatus() && response->getStatus() <= 600)
     return ;
   if (!this->_uploadFile(request)) {

@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/09 14:27:28 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/09 22:41:48 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -530,7 +530,6 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
   pid = fork();
   if (pid == -1)
   {
-    std::cout << "fork error" << std::endl;
     close(pipeFd[0]);
     close(pipeFd[1]);
     return (-1);
@@ -543,31 +542,18 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
       _exit(EXIT_FAILURE);
     }
     close(pipeFd[1]);
-    
-    //if (cgiRelativePath.size())
-    //{
-    //  if (chdir(cgiRelativePath.c_str()) == -1)
-    //  {
-    //    perror("chdir");
-    //    _exit(EXIT_FAILURE);
-    //  }
-    //}
 
-    // std::cout << "cgiPath: " << cgiPath << "$" << std::endl;
-    // std::cout << "cgiExtension: " << cgiExtension << "$" << std::endl;
     if (cgiExtension == ".py") {
       char* argv[] = {
         const_cast<char*>("python3"),
         const_cast<char*>(_uri.c_str()),
         NULL};
-      // "/usr/bin/python3", "python3, /Users/kmiyazaw/42/webserv/src/cgi-bin/test.py, NULL"
       if (execve(cgiPath.c_str(), argv, envs.data()) == -1)
       {
         perror("execve");
         _exit(EXIT_FAILURE);
       }
     } else {
-      std:: cout << "not python3" << std::endl;
       char *argv[] = {
         (char *)_uri.c_str(),
         NULL};
@@ -589,65 +575,102 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
 }
 
 
-
-int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string _uri) {
-  int pipeFd[2];
+//POSTのCGIは、requestのbodyをCGIのstdinに書き込む
+/// この関数
+int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string _uri, std::string body) {
+  int pipeIn[2]; // parent -> child
+  int pipeOut[2]; // child -> parent
+  
   int status;
   
   (void)_uri;
   (void)_uri_old;
-  //(void)cgiRelativePath;
   
-  if (pipe(pipeFd) == -1)
+  if (pipe(pipeIn) == -1)
   {
     std::cout << "pipe error" << std::endl;
     return (-1);
   }
+  
+  if (pipe(pipeOut) == -1)
+  {
+    close(pipeIn[0]);
+    close(pipeIn[1]);
+    std::cout << "pipe error" << std::endl;
+    return (-1);
+  }
+  
   pid = fork();
   if (pid == -1)
   {
-    close(pipeFd[0]);
-    close(pipeFd[1]);
-    std::cout << "fork error" << std::endl;
+    close(pipeIn[0]);
+    close(pipeIn[1]);
+    close(pipeOut[0]);
+    close(pipeOut[1]);
     return (-1);
   }
+  
+  // child
   if (pid == 0) {
-    close(pipeFd[0]);
-    dup2(pipeFd[1], 1);
-    close(pipeFd[1]);
+    close(pipeIn[1]);
+    if (dup2(pipeIn[0], STDIN_FILENO) == -1)
+    {
+      perror("dup2");
+      _exit(EXIT_FAILURE);
+    }
+    close(pipeIn[0]);
     
-    //if (cgiRelativePath.size())
-    //{
-    //  if (chdir(cgiRelativePath.c_str()) == -1)
-    //  {
-    //    perror("chdir");
-    //    _exit(EXIT_FAILURE);
-    //  }
-    //}
+    close(pipeOut[0]);
+    if (dup2(pipeOut[1], STDOUT_FILENO) == -1)
+    {
+      perror("dup2");
+      _exit(EXIT_FAILURE);
+    }
+    close(pipeOut[1]);
     
     if (cgiExtension == ".py") {
-      char* argv[] = {const_cast<char*>("python3"), const_cast<char*>(cgiPath.c_str()), NULL};
-      if (execve(cgiPath.c_str(), argv, envs.data()) == -1){
-        std::cout << "execve error" << std::endl;
-        return (-1);
-      }
-    } else {
-      char *argv[] = {(char *)cgiPath.c_str(), NULL};
+      char* argv[] = {
+        const_cast<char*>("python3"),
+        const_cast<char*>(_uri.c_str()),
+        NULL};
       if (execve(cgiPath.c_str(), argv, envs.data()) == -1)
       {
-        std::cout << "execve error2" << std::endl;
-        return (-1);
+        perror("execve");
+        _exit(EXIT_FAILURE);
+      }
+    } else {
+      char *argv[] = {
+        (char *)_uri.c_str(),
+        NULL};
+      if (execve(cgiPath.c_str(), argv, envs.data()) == -1)
+      {
+        perror("execve");
+        _exit(EXIT_FAILURE);
       }
     }
   }
-  close(pipeFd[1]);
-  readFd = pipeFd[0];
-  waitpid(pid, &status, 0);
+  else // parent
+  {
+    close(pipeIn[0]);
+    
+    write(pipeIn[1], body.data(), body.size());
+    //write(stdout, body.c_str(), body.length());
+    //write(1, body.c_str(), body.length());
+    close(pipeIn[1]);
+    
+    close(pipeOut[1]);
+    readFd = pipeOut[0];
+    if (waitpid(pid, &status, 0) == -1)
+    {
+      perror("waitpid");
+      return (-1);
+    }
+  }
   return (0);
 }
 
 
-std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version) {
+std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, std::string _body) {
   std::string body;
   
   std::vector<std::string> envs = createEnvs(config, _uri, method, cgiPath, cgiExtension, _uri_old, version);
@@ -679,7 +702,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
       this->setStatus(HTTP_INTERNAL_SERVER_ERROR);
     }
   } else if (!method.compare("POST")) {
-    if (cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri) < 0) {
+    if (cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri, _body) < 0) {
       if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1)
         {
@@ -765,13 +788,13 @@ std::string makeCgiHeader(std::string str) {
 //  return (body);
 //}
 
-int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old) {
+int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string _body) {
   int responseSize;
   std::string body;
   std::string header;
   std::string tmp;
 
-  tmp = this->_doCgi(method, _uri, config, cgiPath, cgiExtension, _uri_old, version);
+  tmp = this->_doCgi(method, _uri, config, cgiPath, cgiExtension, _uri_old, version, _body);
 
 
   

@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/09 14:20:57 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/09 22:41:09 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -225,7 +225,7 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
         // std::cout << "this->_cgi_path: " << this->_cgi_path << std::endl;
       }
       
-      //// ここは、/cig/cgi.py/usr/src/app/wsv/cgiとかに対応するやつ
+      // ここは、/cig/cgi.py/usr/src/app/wsv/cgiとかに対応するやつ
       //if (this->_uri.find(this->_cgi_extension) != std::string::npos || (!this->_cgi_extension.empty() && !this->_cgi_path.empty()))
       //{
       //  this->_cgi_relative_path = this->_uri.substr(this->_uri.find(this->_cgi_extension) + this->_cgi_extension.length());
