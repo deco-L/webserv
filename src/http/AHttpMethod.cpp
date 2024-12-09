@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AHttpMethod.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/07 17:14:30 by kmiyazaw         ###   ########.fr       */
+/*   Updated: 2024/12/09 12:44:03 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,23 @@
 #include "Config.hpp"
 #include "HttpResponse.hpp"
 
-AHttpMethod::AHttpMethod(void) : _method("default"), _uri(""), _version(""), _autoindex(false), _cgi_extension(""), _cgi_path("") {
+AHttpMethod::AHttpMethod(void) : _method("default"), _uri(""), _version(""), _autoindex(false), _cgi_extension(""), _cgi_path(""), _cgi_relative_path("") {
   return ;
 }
 
-AHttpMethod::AHttpMethod(std::string method, std::string uri, std::string version) : _method(method), _uri(uri), _version(version), _autoindex(false), _cgi_extension(""), _cgi_path("") {
+AHttpMethod::AHttpMethod(std::string method, std::string uri, std::string version) : _method(method), _version(version), _autoindex(false), _cgi_extension(""), _cgi_path("") {
+  if (uri.find(".py") != std::string::npos) {
+    //this->_cgi_extension = ".py";
+    //this->_cgi_path = "/usr/bin/python3";
+    this->_cgi_relative_path = uri.substr(uri.find(".py") + 3);
+    this->_uri = uri.substr(0, uri.find(".py") + 3);
+    
+  } else {
+    //this->_cgi_extension = "";
+    //this->_cgi_path = "";
+    this->_cgi_relative_path = "";
+    this->_uri = uri;
+  }
   return ;
 }
 
@@ -180,6 +192,13 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
         // std::cout << "this->_cgi_extension: " << this->_cgi_extension << std::endl;
         // std::cout << "this->_cgi_path: " << this->_cgi_path << std::endl;
       }
+      
+      //// ここは、/cig/cgi.py/usr/src/app/wsv/cgiとかに対応するやつ
+      //if (this->_uri.find(this->_cgi_extension) != std::string::npos || (!this->_cgi_extension.empty() && !this->_cgi_path.empty()))
+      //{
+      //  this->_cgi_relative_path = this->_uri.substr(this->_uri.find(this->_cgi_extension) + this->_cgi_extension.length());
+      //  this->_uri = this->_uri.substr(0, this->_uri.find(this->_cgi_extension) + this->_cgi_extension.length());
+      //}
     }
   }
   if (path.empty() && location.return_.first != 0 && !location.return_.second.empty())

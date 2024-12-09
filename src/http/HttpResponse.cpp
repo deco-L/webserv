@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/07 17:52:20 by kmiyazaw         ###   ########.fr       */
+/*   Updated: 2024/12/09 11:58:04 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -671,25 +671,25 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
 }
 
 
-int HttpResponse::_judgeCgiCase(std::string body) {
-  if (body.find("Location: ") != std::string::npos) {
-    this->setStatus(HTTP_MOVED_TEMPORARILY);
-    if (body.find("Content-Type: text/html") != std::string::npos)
-      return (3);
-    return (2);
-  }
-  if (body.find("Content-Type: text/html") != std::string::npos)
-  {
-    this->setStatus(HTTP_OK);
-    return (0);
-  }
-  this->setStatus(HTTP_OK);
-  return (1);
-}
+//int HttpResponse::_judgeCgiCase(std::string body) {
+//  if (body.find("Location: ") != std::string::npos) {
+//    this->setStatus(HTTP_MOVED_TEMPORARILY);
+//    if (body.find("Content-Type: text/html") != std::string::npos)
+//      return (3);
+//    return (2);
+//  }
+//  if (body.find("Content-Type: text/html") != std::string::npos)
+//  {
+//    this->setStatus(HTTP_OK);
+//    return (0);
+//  }
+//  this->setStatus(HTTP_OK);
+//  return (1);
+//}
 
-std::string makeCgiHeader(std::string str, int cgiCase) {
+std::string makeCgiHeader(std::string str) {
   std::string header;
-  std::string status;
+  //std::string status;
   std::string location;
   std::string contentType;
   std::string contentLength;
@@ -702,43 +702,32 @@ std::string makeCgiHeader(std::string str, int cgiCase) {
   //先頭の改行を削除
   str = str.substr(1);
 
-  if (cgiCase == 0) {
-    // contentType = "Content-Type: text/html";
-    contentLength = "Content-Length: " + mylib::nbrToS(str.length());
-  } else if (cgiCase == 1) {
-    // contentType = "Content-Type: text/html";
-    contentLength = "Content-Length: " + mylib::nbrToS(str.length());
-  } else if (cgiCase == 2) {
-    location = str.substr(str.find("Location: ") + 10, str.find("\n", str.find("Location: ")) - str.find("Location: ") - 10);
-    // contentType = "Content-Type: text/html";
-    contentLength = "Content-Length: " + mylib::nbrToS(str.length());
-  } else if (cgiCase == 3) {
-    location = str.substr(str.find("Location: ") + 10, str.find("\n", str.find("Location: ")) - str.find("Location: ") - 10);
-    // contentType = "Content-Type: text/html";
-    contentLength = "Content-Length: " + mylib::nbrToS(str.length());
-  }
+  // contentType = "Content-Type: text/html";
+  contentLength = "Content-Length: " + mylib::nbrToS(str.length());
+  
+  
   header = contentType + CRLF + contentLength;
   if (location.length() > 0)
     header = "Location: " + location + CRLF + header;
   return (header);
 }
 
-std::string makeCgiBody(std::string str, int cgiCase) {
-  std::string body;
+//std::string makeCgiBody(std::string str, int cgiCase) {
+//  std::string body;
 
-  str = str.substr(str.find("\n\n") + 2);
+//  str = str.substr(str.find("\n\n") + 2);
 
-  if (cgiCase == 0) {
-    body = str;
-  } else if (cgiCase == 1) {
-    body = str;
-  } else if (cgiCase == 2) {
-    body = str;
-  } else if (cgiCase == 3) {
-    body = str.substr(str.find("\n\n") + 2);
-  }
-  return (body);
-}
+//  if (cgiCase == 0) {
+//    body = str;
+//  } else if (cgiCase == 1) {
+//    body = str;
+//  } else if (cgiCase == 2) {
+//    body = str;
+//  } else if (cgiCase == 3) {
+//    body = str.substr(str.find("\n\n") + 2);
+//  }
+//  return (body);
+//}
 
 int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension) {
   int responseSize;
@@ -750,16 +739,16 @@ int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, 
 
 
   
-  int cgiCase;
-  // 0: Document Response
+  //int cgiCase;
+  // 0: Document Response <= これのみ実装
   // 1: Local Redirect Response
   // 2: Client Redirect Response
   // 3: Client Ridirect Response with Document
   
   //Only Document Response
-  cgiCase = this->_judgeCgiCase(tmp); // ないぶで判定して、ステータスを変更する
-  header = makeCgiHeader(tmp, cgiCase);
-  body = makeCgiBody(tmp, cgiCase);
+  //cgiCase = this->_judgeCgiCase(tmp); // ないぶで判定して、ステータスを変更する　
+  header = makeCgiHeader(tmp);
+  body = tmp.substr(tmp.find("\n\n") + 2);
 
   // this->setStatus(HTTP_NOT_FOUND);
   // std::cout << "body: " << body << std::endl;
