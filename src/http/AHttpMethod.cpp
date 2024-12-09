@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/09 12:44:03 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/09 14:20:57 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,24 +15,56 @@
 #include "Config.hpp"
 #include "HttpResponse.hpp"
 
-AHttpMethod::AHttpMethod(void) : _method("default"), _uri(""), _version(""), _autoindex(false), _cgi_extension(""), _cgi_path(""), _cgi_relative_path("") {
+AHttpMethod::AHttpMethod(void) : _method("default"), _uri(""), _uri_old(""), _version(""), _autoindex(false), _cgi_extension(""), _cgi_path(""), _cgi_relative_path("") {
   return ;
 }
 
-AHttpMethod::AHttpMethod(std::string method, std::string uri, std::string version) : _method(method), _version(version), _autoindex(false), _cgi_extension(""), _cgi_path("") {
-  if (uri.find(".py") != std::string::npos) {
-    //this->_cgi_extension = ".py";
-    //this->_cgi_path = "/usr/bin/python3";
-    this->_cgi_relative_path = uri.substr(uri.find(".py") + 3);
-    this->_uri = uri.substr(0, uri.find(".py") + 3);
-    
+AHttpMethod::AHttpMethod(std::string method, std::string uri, std::string version) : _method(method), _uri(uri), _uri_old(uri), _version(version), _autoindex(false), _cgi_extension(""), _cgi_path(""), _cgi_relative_path("") {
+  
+  // /cgi/cgi.py/usr/src/app/wsv/cgi
+  // /cgi/cgi.py + /usr/src/app/wsv/cgi
+  //<- uri , _cgi_relative_path ->
+  std::cout << "uri: " << uri << std::endl;
+
+  std::string::size_type pos = uri.find(".py");
+  
+  std::string tmp = uri;
+  
+  this->_cgi_relative_path.clear();
+  
+  if (pos != std::string::npos) {
+      std::cout << "pos: " << pos << std::endl;
+      std::cout << "uri.size(): " << uri.size() << std::endl;
+
+      // pos + 3 が uri.size() を超えていないか確認
+      if (pos + 3 <= uri.size()) {
+          // pos + 3 以降を _cgi_relative_path にセット
+          //this->_cgi_relative_path.clear();
+          //this->_cgi_relative_path = uri.substr(pos + 3, uri.size() - pos - 3);
+          std::cout << uri.substr(pos + 3, uri.size() - pos - 3) << std::endl;
+          // pos + 3 より前の部分を _uri にセット
+          std::cout << "here" << std::endl;
+          this->_uri = uri.substr(0, pos + 3);
+          this->_uri_old = uri;
+
+          std::cout << "uri: " << this->_uri << std::endl;
+          std::cout << "cgi_relative_path: " << this->_cgi_relative_path << std::endl;
+      } else {
+          // ".py" は見つかったが、その後ろに文字列が足りない場合
+          // 安全な対応策として、相対パスは空、_uriは元のuriで対処
+          //this->_cgi_relative_path.clear();
+          this->_uri = uri;
+      }
+
   } else {
-    //this->_cgi_extension = "";
-    //this->_cgi_path = "";
-    this->_cgi_relative_path = "";
-    this->_uri = uri;
+      // ".py" が見つからなかった場合は元のuriを使用
+      this->_cgi_relative_path.clear();
+      this->_uri = uri;
   }
-  return ;
+
+  return;
+
+
 }
 
 AHttpMethod::AHttpMethod(const AHttpMethod& obj) : _method(obj.getMethod()) {

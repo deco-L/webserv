@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/09 11:58:04 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/09 14:27:28 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -475,23 +475,34 @@ bool FindNbrInVector::operator()(const std::pair<int, std::string>& p) const {
 
 
 
-static std::vector<std::string> createEnvs(const ConfigServer& config, std::string _uri, std::string method, std::string cgiPath, std::string cgiExtension, std::string version)
+static std::vector<std::string> createEnvs(const ConfigServer& config, std::string _uri, std::string method, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version)
 {
   std::vector<std::string> envs;
+  
+  //(void)_uri;
+  (void)cgiExtension;
   
   //envs = config.getEnvp();
   //PATH_INFO	パス情報。たとえば、「cgi-bin/xxx.cgi/taro/xxx.htm」というURLでCGIスクリプトを呼び出した場合、PATH_INFOには「/taro/xxx.htm」が格納される。
   //cgiExtensionがある部分より右側の部分を取得する
-  if (_uri.find("?") == std::string::npos) //_uriに?が含まれいない場合
+  if (_uri != _uri_old)
   {
-    envs.push_back("PATH_INFO=" + _uri.substr(_uri.find(cgiExtension) + cgiExtension.length()));
-    envs.push_back("SCRIPT_NAME=" + cgiPath);
-  } else { //_uriに?が含まれる場合
-    envs.push_back("PATH_INFO=" + _uri.substr(_uri.find(cgiExtension) + cgiExtension.length(), _uri.find("?") - _uri.find(cgiExtension) - cgiExtension.length()));
-    envs.push_back("SCRIPT_NAME=" + cgiPath + _uri.substr(0, _uri.find("?")));
-    envs.push_back("QUERY_STRING=" + _uri.substr(_uri.find("?") + 1));
-    std::cout << "QUERY_STRING: " << _uri.substr(_uri.find("?") + 1) << std::endl;
+    envs.push_back("PATH_INFO=" + _uri_old.substr(_uri_old.find(cgiExtension) + cgiExtension.length()));
   }
+  envs.push_back("SCRIPT_NAME=" + cgiPath);
+  
+  
+  
+  //if (_uri.find("?") == std::string::npos) //_uriに?が含まれいない場合
+  //{
+  //  envs.push_back("PATH_INFO=" + _uri.substr(_uri.find(cgiExtension) + cgiExtension.length()));
+  //  envs.push_back("SCRIPT_NAME=" + cgiPath);
+  //} else { //_uriに?が含まれる場合
+  //  envs.push_back("PATH_INFO=" + _uri.substr(_uri.find(cgiExtension) + cgiExtension.length(), _uri.find("?") - _uri.find(cgiExtension) - cgiExtension.length()));
+  //  envs.push_back("SCRIPT_NAME=" + cgiPath + _uri.substr(0, _uri.find("?")));
+  //  envs.push_back("QUERY_STRING=" + _uri.substr(_uri.find("?") + 1));
+  //  std::cout << "QUERY_STRING: " << _uri.substr(_uri.find("?") + 1) << std::endl;
+  //}
   envs.push_back("SERVER_NAME=" + config.server_name.front());
   envs.push_back("SERVER_PORT=" + config.listen.front().first);
   envs.push_back("REQUEST_METHOD=" + method);
@@ -501,12 +512,14 @@ static std::vector<std::string> createEnvs(const ConfigServer& config, std::stri
 }
 
 
-int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri) {
+int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string _uri) {
   int pipeFd[2];
   int status;
   
-  // (void)_uri;
-  std::cout << _uri << std::endl;
+  //(void)cgiRelativePath;
+  (void)_uri;
+  (void)_uri_old;
+  //std::cout << _uri << std::endl;
   
   if (pipe(pipeFd) == -1)
   {
@@ -530,6 +543,15 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
       _exit(EXIT_FAILURE);
     }
     close(pipeFd[1]);
+    
+    //if (cgiRelativePath.size())
+    //{
+    //  if (chdir(cgiRelativePath.c_str()) == -1)
+    //  {
+    //    perror("chdir");
+    //    _exit(EXIT_FAILURE);
+    //  }
+    //}
 
     // std::cout << "cgiPath: " << cgiPath << "$" << std::endl;
     // std::cout << "cgiExtension: " << cgiExtension << "$" << std::endl;
@@ -568,11 +590,13 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
 
 
 
-int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri) {
+int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string _uri) {
   int pipeFd[2];
   int status;
   
   (void)_uri;
+  (void)_uri_old;
+  //(void)cgiRelativePath;
   
   if (pipe(pipeFd) == -1)
   {
@@ -591,6 +615,16 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
     close(pipeFd[0]);
     dup2(pipeFd[1], 1);
     close(pipeFd[1]);
+    
+    //if (cgiRelativePath.size())
+    //{
+    //  if (chdir(cgiRelativePath.c_str()) == -1)
+    //  {
+    //    perror("chdir");
+    //    _exit(EXIT_FAILURE);
+    //  }
+    //}
+    
     if (cgiExtension == ".py") {
       char* argv[] = {const_cast<char*>("python3"), const_cast<char*>(cgiPath.c_str()), NULL};
       if (execve(cgiPath.c_str(), argv, envs.data()) == -1){
@@ -613,16 +647,18 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
 }
 
 
-std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string version) {
+std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version) {
   std::string body;
   
-  std::vector<std::string> envs = createEnvs(config, _uri, method, cgiPath, cgiExtension, version);
+  std::vector<std::string> envs = createEnvs(config, _uri, method, cgiPath, cgiExtension, _uri_old, version);
   
   std::vector<char*> env_cstrs;
   for (size_t i = 0; i < envs.size(); ++i) {
       env_cstrs.push_back(const_cast<char*>(envs[i].c_str()));
   }
   env_cstrs.push_back(NULL); // NULL 終端を追加
+  
+  std::cout << "env done" << std::endl;
   
   int readFd;
   //int writeFd;
@@ -631,7 +667,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
 
   if (!method.compare("GET")) {
     std::cout << "cgi start" << std::endl; 
-    if (cgiExecGet(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri) < 0) {
+    if (cgiExecGet(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri) < 0) {
       if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1)
         {
@@ -643,7 +679,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
       this->setStatus(HTTP_INTERNAL_SERVER_ERROR);
     }
   } else if (!method.compare("POST")) {
-    if (cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri) < 0) {
+    if (cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri) < 0) {
       if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1)
         {
@@ -729,13 +765,13 @@ std::string makeCgiHeader(std::string str) {
 //  return (body);
 //}
 
-int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension) {
+int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old) {
   int responseSize;
   std::string body;
   std::string header;
   std::string tmp;
 
-  tmp = this->_doCgi(method, _uri, config, cgiPath, cgiExtension, version);
+  tmp = this->_doCgi(method, _uri, config, cgiPath, cgiExtension, _uri_old, version);
 
 
   

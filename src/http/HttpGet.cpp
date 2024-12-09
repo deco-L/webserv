@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/09 12:45:04 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/09 14:23:26 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& reques
   if ((!this->_cgi_extension.empty() && !this->_cgi_path.empty()) || this->_cgi_relative_path.size())
   {
     std::cout << "CGI yeah" << std::endl;
-    responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_path, this->_cgi_extension);
+    responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_path, this->_cgi_extension, this->_uri_old);
   }
   else if (this->_autoindex && mylib::isDirectory(this->_uri))
     responseSize = response.createAutoindexMessage(this->_uri, config, this->_version);

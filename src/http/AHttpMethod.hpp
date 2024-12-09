@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/09 12:35:35 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/09 14:19:28 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ private:
 protected:
   const std::string _method;
   std::string _uri;
+  std::string _uri_old;
   const std::string _version;
   
   bool _autoindex;
