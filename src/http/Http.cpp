@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/09 22:36:00 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/09 22:51:48 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,8 @@ void Http::parseRequestMessage(Socket& socket) {
   this->_parseRequestLine(*it);
   it++;
   this->_httpRequest.setHeaders(it, end);
-  it++;
+  if (it != end)
+    it++;
   this->_httpRequest.setBody(it, end);
   return ;
 }
