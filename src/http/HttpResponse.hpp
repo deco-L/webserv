@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/12 16:41:18 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/08 16:13:53 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,7 @@ class AHttpMethod;
 class HttpResponse {
 private:
   unsigned int _status;
+  std::string _redirectPath;
   std::string _response;
 
   HttpResponse(void);
@@ -94,6 +95,7 @@ private:
 
 public:
   HttpResponse(unsigned int status);
+  HttpResponse(unsigned int status, std::string redirectPath);
   HttpResponse(const HttpResponse& obj);
   ~HttpResponse();
 
@@ -108,6 +110,7 @@ public:
   };
 
   unsigned int getStatus(void) const;
+  const std::string& getRedirectPath(void) const;
   const std::string& getResponse(void) const;
   void setStatus(unsigned int status);
   int createResponseMessage(const std::string& method, std::string path, const ConfigServer& config, std::string version);

@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/09 22:41:09 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/08 17:58:39 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,7 @@ HttpResponse* AHttpMethod::_returnRedirectStatus(const ConfigLocation& location)
 }
 
 HttpResponse* AHttpMethod::_setGetResponseStatus(const ConfigServer& config, std::string& path, const ConfigLocation& location) {
+  path = path + this->_uri;
   if (path.at(path.length() - 1) == '/') {
     int status = 0;
 
@@ -142,8 +143,8 @@ HttpResponse* AHttpMethod::_setGetResponseStatus(const ConfigServer& config, std
   }
   if (!mylib::isPathValid(path))
     return (new HttpResponse(HTTP_NOT_FOUND));
-  if (mylib::isDirectory(path))
-    return (new HttpResponse(HTTP_MOVED_PERMANENTLY));
+  if (mylib::isDirectory(path) && path[path.size() - 1] != '/')
+    return (new HttpResponse(HTTP_MOVED_PERMANENTLY, path));
   else if (!mylib::isModeValid(path, S_IRUSR))
     return (new HttpResponse(HTTP_FORBIDDEN));
   this->setUri(path);
@@ -153,12 +154,14 @@ HttpResponse* AHttpMethod::_setGetResponseStatus(const ConfigServer& config, std
 HttpResponse* AHttpMethod::_setPostResponseStatus(std::string& path, const ConfigLocation& location) {
   if (!location.upload_enable)
     return (new HttpResponse(HTTP_METHOD_NOT_ALLOWED));
-  else if (!location.upload_store.empty()) {
-    path = location.upload_store + this->_uri;
-    this->setUri(path);
-  } else if (location.upload_store.empty() && !location.root.empty()) {
-    this->setUri(path);
-  }
+  else if (!location.upload_store.empty())
+    path = path + location.upload_store + this->_uri;
+  if (mylib::isDirectory(path) && path[path.size() - 1] != '/')
+    return (new HttpResponse(HTTP_MOVED_PERMANENTLY, path));
+  if (mylib::isDirectory(path) && !mylib::isPathValid(path))
+    return (new HttpResponse(HTTP_NOT_FOUND));
+
+  this->setUri(path);
   if (location.return_.first != 0)
     return (new HttpResponse(location.return_.first));
   return (new HttpResponse(HTTP_CREATED));
@@ -167,11 +170,14 @@ HttpResponse* AHttpMethod::_setPostResponseStatus(std::string& path, const Confi
 HttpResponse* AHttpMethod::_setDeleteResponseStatus(const ConfigServer& config, std::string& path, const ConfigLocation& location) {
   (void)config;
 
-  this->setUri(path);
-  if (mylib::isPathValid(this->_uri))
+  path = path + this->_uri;
+  if (!mylib::isPathValid(path))
     return (new HttpResponse(HTTP_NO_CONTENT));
-  if (mylib::isDirectory(this->_uri) || mylib::isModeValid(this->_uri, S_IRUSR | S_IXUSR))
+  if (mylib::isDirectory(path) || !mylib::isModeValid(path, S_IRUSR))
     return (new HttpResponse(HTTP_FORBIDDEN));
+  if (mylib::isDirectory(path) && path[path.size() - 1] != '/')
+    return (new HttpResponse(HTTP_MOVED_PERMANENTLY, path));
+  this->setUri(path);
   if (location.return_.first != 0)
     return (new HttpResponse(location.return_.first));
   return (new HttpResponse(HTTP_OK));
@@ -209,9 +215,8 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
 
   for (std::vector<ConfigLocation>::const_iterator it = config.locations.begin(); it != config.locations.end(); it++) {
     if (!this->_uri.compare(0, it->path.length(), it->path) && path.length() < it->path.length()) {
+      path = it->path;
       location = *it;
-      if (!location.root.empty())
-        path = location.root + this->_uri;
       this->_autoindex = location.autoindex;
 
       if (location.cgi_extension.size())
@@ -233,15 +238,19 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
       //}
     }
   }
-  if (path.empty() && location.return_.first != 0 && !location.return_.second.empty())
+  if ((location.path.empty() && config.root.empty()) || (!location.path.empty() && config.root.empty()))
+    return (new HttpResponse(HTTP_NOT_FOUND));
+  else if (!location.path.empty() && !location.root.empty())
+    path = location.root;
+  else if (!location.path.empty() && location.root.empty() && !config.root.empty())
+    path = config.root;
+  if (location.return_.first != 0 && !location.return_.second.empty())
     return (this->_returnRedirectStatus(location));
-  if (path.empty() && !config.root.empty()) {
-    path = config.root + this->_uri;
+  if (location.path.empty() && !config.root.empty()) {
+    path = config.root;
     if (config.autoindex)
       this->_autoindex = true;
   }
-  if (path.empty())
-    return (new HttpResponse(HTTP_NOT_FOUND));
   if (location.methods.size() && checkMethodPermission(this->_method, location.methods))
     return (new HttpResponse(HTTP_METHOD_NOT_ALLOWED));
   if (!this->_method.compare("GET"))
