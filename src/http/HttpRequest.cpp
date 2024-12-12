@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/02 17:26:22 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/12 15:56:01 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ void HttpRequest::setBody(std::vector<std::string>::iterator& it, std::vector<st
     it++;
   }
   this->_bodySize = this->_body.length();
+  std::cout << "BODY SIZE::: " << this->_bodySize << std::endl;
   return ;
 }
 

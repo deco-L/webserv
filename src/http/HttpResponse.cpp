@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/09 22:41:48 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/12 16:39:31 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -583,6 +583,7 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
   
   int status;
   
+  
   (void)_uri;
   (void)_uri_old;
   
@@ -599,6 +600,7 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
     std::cout << "pipe error" << std::endl;
     return (-1);
   }
+  std::cout << "pipe done" << std::endl;
   
   pid = fork();
   if (pid == -1)
@@ -610,8 +612,14 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
     return (-1);
   }
   
+  if (pid == 0)
+    std::cout << "fork done (child)" << std::endl;
+  else
+    std::cout << "fork done (parent)" << std::endl;
+  
   // child
   if (pid == 0) {
+    std::cout << "child start" << std::endl;
     close(pipeIn[1]);
     if (dup2(pipeIn[0], STDIN_FILENO) == -1)
     {
@@ -619,6 +627,11 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
       _exit(EXIT_FAILURE);
     }
     close(pipeIn[0]);
+    
+    std::cout << "child dup2 pipeIn done" << std::endl;
+    
+    //std::cout << "pipeOut[0]: " << pipeOut[0] << std::endl;
+    //std::cout << _uri << std::endl;
     
     close(pipeOut[0]);
     if (dup2(pipeOut[1], STDOUT_FILENO) == -1)
@@ -628,7 +641,10 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
     }
     close(pipeOut[1]);
     
+    std::cerr << "child dup2 pipeOut done" << std::endl;
+    
     if (cgiExtension == ".py") {
+      std::cerr << "child python3" << std::endl;
       char* argv[] = {
         const_cast<char*>("python3"),
         const_cast<char*>(_uri.c_str()),
@@ -639,6 +655,7 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
         _exit(EXIT_FAILURE);
       }
     } else {
+      std::cerr << "child else" << std::endl;
       char *argv[] = {
         (char *)_uri.c_str(),
         NULL};
@@ -651,12 +668,22 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
   }
   else // parent
   {
+    std::cout << "parent start" << std::endl;
     close(pipeIn[0]);
     
-    write(pipeIn[1], body.data(), body.size());
+    //sleep(1);
+    std::cout << body.length() << std::endl;
+    // body.size() == 1048415 <- 異常
+
+    body = body.substr(0, body.find_last_not_of('\0') + 1);
+    
+    write(pipeIn[1], body.data(), body.length());
     //write(stdout, body.c_str(), body.length());
     //write(1, body.c_str(), body.length());
+    
+    std::cout << "write done" << std::endl;
     close(pipeIn[1]);
+    std::cout << "send EOF" << std::endl;
     
     close(pipeOut[1]);
     readFd = pipeOut[0];
@@ -666,6 +693,7 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
       return (-1);
     }
   }
+  std::cout << "end" << std::endl;
   return (0);
 }
 
@@ -703,6 +731,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
     }
   } else if (!method.compare("POST")) {
     if (cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri, _body) < 0) {
+    std::cout << "cgi start" << std::endl;
       if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1)
         {

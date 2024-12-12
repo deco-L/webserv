@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/09 17:05:38 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/12 16:41:18 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ private:
   void _createErrorResponse(const ConfigServer& config, int status);
   std::string _createAutoindexBody(std::string path);
     
-  std::string _doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string cgiRelativePath, std::string version, std::string body);
+  std::string _doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, std::string _body);
   //int _judgeCgiCase(std::string str);
 
 public:

@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/09 17:04:14 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/10 21:58:52 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,13 +68,20 @@ void HttpPost::setResponseMessage(const ConfigServer& config, HttpRequest& reque
 }
 
 void HttpPost::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response) {
-  if ((this->_cgi_extension.empty() || this->_cgi_path.empty()) || !this->_cgi_relative_path.size())
+  if ((this->_cgi_extension.empty() || this->_cgi_path.empty()) || !this->_uri_old.size())
     response = this->setResponseStatus(config);
   if (400 <= response->getStatus() && response->getStatus() <= 600)
     return ;
-  if (!this->_uploadFile(request)) {
-    response->setStatus(HTTP_INTERNAL_SERVER_ERROR);
-    return ;
+  if ((this->_cgi_extension.empty() || this->_cgi_path.empty()) || !this->_uri_old.size())
+  {
+    std::cout << this->_cgi_extension << std::endl;
+    std::cout << this->_cgi_path << std::endl;
+    std::cout << this->_cgi_relative_path << std::endl;
+    std::cout << "in execute" << std::endl;
+    if (!this->_uploadFile(request)) {
+      response->setStatus(HTTP_INTERNAL_SERVER_ERROR);
+      return ;
+    }
   }
   this->setResponseMessage(config, request, *response);
   return ;

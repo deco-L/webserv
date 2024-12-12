@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/09 17:04:20 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/12 16:38:34 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& reques
   //}
 
   // cgiを実行する
-  if ((!this->_cgi_extension.empty() && !this->_cgi_path.empty()) || this->_cgi_relative_path.size())
+  if ((!this->_cgi_extension.empty() && !this->_cgi_path.empty()) || this->_uri_old.size())
   {
     std::cout << "CGI yeah" << std::endl;
     responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_path, this->_cgi_extension, this->_uri_old, request.getBody());
@@ -61,7 +61,7 @@ void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& reques
 }
 
 void HttpGet::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response) {
-  if ((this->_cgi_extension.empty() || this->_cgi_path.empty()) || !this->_cgi_relative_path.size())
+  if ((this->_cgi_extension.empty() || this->_cgi_path.empty()) || !this->_uri_old.empty())
     response = this->setResponseStatus(config);
   if (300 <= response->getStatus() && response->getStatus() < 600)
     return ;
