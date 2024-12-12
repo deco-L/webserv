@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parseConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/18 20:49:24 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2024/11/03 23:04:54 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/07 13:40:26 by kmiyazaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,8 +174,12 @@ void Config::parseConfig(void)
 				}
 			}
 			else if (directive == "cgi_extension") // cgi_extention extension path_to_cgi_executable
+			// vector<pair<string, string> > cgi_extension; // 拡張子とパス
 			{
-				this->_servers.back().locations.back().cgi_extension.push_back(std::make_pair(tokens[1], tokens[2]));
+				if (this->_servers.back().locations.back().cgi_extension.empty())
+					this->_servers.back().locations.back().cgi_extension.push_back(std::make_pair(tokens[1], tokens[2]));
+				else
+					this->_servers.back().locations.back().cgi_extension.front() = std::make_pair(tokens[1], tokens[2]);
 			}
 			else if (directive == "upload_enable") // upload_enable on | off
 			{

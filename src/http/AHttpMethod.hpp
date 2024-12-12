@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AHttpMethod.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/06 13:42:17 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/09 14:19:28 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,13 @@ private:
 protected:
   const std::string _method;
   std::string _uri;
+  std::string _uri_old;
   const std::string _version;
+  
   bool _autoindex;
+  std::string _cgi_extension;
+  std::string _cgi_path;
+  std::string _cgi_relative_path;
 
   class MethodError : public std::exception {
   private:

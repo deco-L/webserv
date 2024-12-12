@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpGet.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/06 16:14:59 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/12 16:38:34 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,20 @@ HttpGet::~HttpGet() {
 void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const {
   int responseSize;
   (void)request;
+  
+  //if (this->getMethod() == "POST" && request.getBody().size())
+  //{
+  //  std::cout << "POST yeah" << std::endl;
+  //  std::cout << "body: " << request.getBody() << std::endl;
+  //}
 
-  if (this->_autoindex && mylib::isDirectory(this->_uri))
+  // cgiを実行する
+  if ((!this->_cgi_extension.empty() && !this->_cgi_path.empty()) || this->_uri_old.size())
+  {
+    std::cout << "CGI yeah" << std::endl;
+    responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_path, this->_cgi_extension, this->_uri_old, request.getBody());
+  }
+  else if (this->_autoindex && mylib::isDirectory(this->_uri))
     responseSize = response.createAutoindexMessage(this->_uri, config, this->_version);
   else
     responseSize = response.createResponseMessage(this->getMethod(), this->_uri, config, this->_version);
@@ -49,7 +61,8 @@ void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& reques
 }
 
 void HttpGet::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response) {
-  response = this->setResponseStatus(config);
+  if ((this->_cgi_extension.empty() || this->_cgi_path.empty()) || !this->_uri_old.empty())
+    response = this->setResponseStatus(config);
   if (300 <= response->getStatus() && response->getStatus() < 600)
     return ;
   this->setResponseMessage(config, request, *response);

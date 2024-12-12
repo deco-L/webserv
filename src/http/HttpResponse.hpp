@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
 /*   Updated: 2024/12/08 16:13:53 by csakamot         ###   ########.fr       */
@@ -89,6 +89,9 @@ private:
   int _createErrorResponseMessage(const ConfigServer& config, const std::string& version);
   void _createErrorResponse(const ConfigServer& config, int status);
   std::string _createAutoindexBody(std::string path);
+    
+  std::string _doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, std::string _body);
+  //int _judgeCgiCase(std::string str);
 
 public:
   HttpResponse(unsigned int status);
@@ -112,6 +115,7 @@ public:
   void setStatus(unsigned int status);
   int createResponseMessage(const std::string& method, std::string path, const ConfigServer& config, std::string version);
   int createAutoindexMessage(std::string path, const ConfigServer& config, std::string version);
+  int createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string body);
   void execute(Socket& socket);
 
   HttpResponse& operator=(const HttpResponse& obj);

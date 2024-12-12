@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
 /*   Updated: 2024/12/08 14:58:51 by csakamot         ###   ########.fr       */
@@ -75,6 +75,8 @@ void Socket::passive(std::string ipAddress, short int port, bool opt) {
   this->_sSockAddr.sin_family = AF_INET;
   this->_sSockAddr.sin_port = htons(static_cast<unsigned int>(this->_sPort));
   this->_sSockAddr.sin_addr.s_addr = inet_addr(ipAddress.c_str());
+  /// 僕の環境だと必要なやつ
+  this->_sSockAddr.sin_addr.s_addr = INADDR_ANY;
   this->_error = bind(this->_socket, (const struct sockaddr *) &this->_sSockAddr, sizeof(this->_sSockAddr));
   if (this->_error < 0)
     throw Socket::SocketError("bind error: " + std::string(strerror(errno)));
