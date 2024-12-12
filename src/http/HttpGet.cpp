@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpGet.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/12 16:38:34 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/13 03:32:24 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,7 @@ void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& reques
   //}
 
   // cgiを実行する
-  if ((!this->_cgi_extension.empty() && !this->_cgi_path.empty()) || this->_uri_old.size())
-  {
+  if (!this->_cgi_extension.empty() && !this->_cgi_path.empty()) {
     std::cout << "CGI yeah" << std::endl;
     responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_path, this->_cgi_extension, this->_uri_old, request.getBody());
   }
