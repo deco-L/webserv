@@ -1,3 +1,11 @@
+     ___    ___         ___        _    ___   ___        ___        __   ___   ___
+    |   |  |   |   .'|=|_.'   .'|=| `. |   |=|_.'   .'|=|_.'   .'|=|  | |   | |   |
+    |   |  |   | .'  |  ___ .'  | | .' `.  |      .'  |  ___ .'  | |  | |   | |   |
+    |   |  |   | |   |=|_.' |   |=|'.    `.|=|`.  |   |=|_.' |   |=|.'  |   | |   |
+    `.  |  |  .' |   |  ___ |   | |  |  ___  |  `.|   |  ___ |   |  |`. `.  | |  .'
+      `.|/\|.'   |___|=|_.' |___|=|_.'  `._|=|___||___|=|_.' |___|  |_|   `.|=|.'
+
+
 # Webserv
 
 ## Overview
@@ -5,8 +13,20 @@ A HTTP server in C++ 98
 
 ## Usage
 ```
+sudo docker build --no-cache -t 42tokyo ./
+docker run -v [full-path to current-directory]:/usr/src/app --name webserv -it 42tokyo
+```
+
+inside the container
+```
 make
 ./webserv [configuration file]
+```
+
+if rewrite the `Dockerfile`
+```
+sudo docker stop webserv
+sudo docker rm webserv
 ```
 
 ## Rule
@@ -31,4 +51,6 @@ write, waitpid, kill, signal, access, stat, open,
 opendir, readdir and closedir.
 ```
 
-
+# technology used
+![cplusplus](https://img.shields.io/badge/-Cplusplus-F34B7D.svg?logo=cplusplus&style=for-the-badge)
+![docker](https://img.shields.io/badge/-Docker-384D54.svg?logo=docker&style=for-the-badge)
