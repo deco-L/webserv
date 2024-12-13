@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parseConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/18 20:49:24 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2024/12/07 13:40:26 by kmiyazaw         ###   ########.fr       */
+/*   Updated: 2024/12/13 14:48:36 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,6 @@ void Config::parseConfig(void)
 			mode = MODE_LOCATION;
 			ConfigLocation location;
 			this->_servers.back().locations.push_back(location);
-
-			// location path
 			this->_servers.back().locations.back().path = tokens[1];
 		}
 
@@ -50,7 +48,6 @@ void Config::parseConfig(void)
 
 		if (mode == MODE_SERVER)
 		{
-			// 当初はlistenの重複をを追加としていたが上書きに変更
 			if (directive == "listen")
 			{
 				std::pair<std::string, std::string> new_pair;
@@ -66,12 +63,10 @@ void Config::parseConfig(void)
 
 				if (this->_servers.back().listen.empty())
 				{
-					// ベクターが空の場合、要素を追加
 					this->_servers.back().listen.push_back(new_pair);
 				}
 				else
 				{
-					// 最初の要素を上書き
 					this->_servers.back().listen[0] = new_pair;
 				}
 			}
@@ -174,7 +169,6 @@ void Config::parseConfig(void)
 				}
 			}
 			else if (directive == "cgi_extension") // cgi_extention extension path_to_cgi_executable
-			// vector<pair<string, string> > cgi_extension; // 拡張子とパス
 			{
 				if (this->_servers.back().locations.back().cgi_extension.empty())
 					this->_servers.back().locations.back().cgi_extension.push_back(std::make_pair(tokens[1], tokens[2]));

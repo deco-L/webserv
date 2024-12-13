@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/13 14:25:16 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/13 14:49:06 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,6 @@ void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& reques
   int responseSize;
   (void)request;
 
-  // cgiを実行する
   if (!this->_cgi_extension.empty() && !this->_cgi_path.empty()) {
     responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_path, this->_cgi_extension, this->_uri_old, request.getBody());
   }

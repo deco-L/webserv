@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/18 13:10:01 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2024/10/18 13:40:01 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/13 14:46:03 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "webserv.hpp"
 #include "Error.hpp"
 
-// ブロックの範囲を見つける
 static std::vector<std::pair<size_t, size_t> > findBlockRanges(const std::string& content, const std::string& keyword)
 {
 	std::vector<std::pair<size_t, size_t> > blockRanges;
@@ -22,7 +21,6 @@ static std::vector<std::pair<size_t, size_t> > findBlockRanges(const std::string
 
 	while (pos < content.size())
 	{
-		// キーワードを検索
 		size_t keywordPos = content.find(keyword, pos);
 
 		if (keywordPos == std::string::npos)
@@ -37,7 +35,6 @@ static std::vector<std::pair<size_t, size_t> > findBlockRanges(const std::string
 			pos = keywordPos + keyword.length();
 			continue;
 		}
-		// キーワードの後の '{' を見つける
 		size_t openBracePos = content.find('{', keywordPos + keyword.length());
 
 		if (openBracePos == std::string::npos)
@@ -45,7 +42,6 @@ static std::vector<std::pair<size_t, size_t> > findBlockRanges(const std::string
 			pos = keywordPos + keyword.length();
 			continue;
 		}
-		// 対応する閉じ中括弧をスタックで見つける
 		std::stack<char> braceStack;
 		size_t closeBracePos = openBracePos;
 
@@ -83,7 +79,6 @@ bool isValidNest(const std::string& content)
 	if (locationBlockRanges.empty())
 		return true;
 
-	// locationブロックがserverブロック内にネストされていることを確認
 	for (std::vector<std::pair<size_t, size_t> >::const_iterator locationIt = locationBlockRanges.begin();
 		locationIt != locationBlockRanges.end(); ++locationIt)
 	{
@@ -102,7 +97,6 @@ bool isValidNest(const std::string& content)
 			return false;
 	}
 
-	// serverブロックの中にserverブロックがネストされていないことを確認
 	for (std::vector<std::pair<size_t, size_t> >::const_iterator serverIt = serverBlockRanges.begin();
 		serverIt != serverBlockRanges.end(); ++serverIt)
 	{
@@ -114,7 +108,6 @@ bool isValidNest(const std::string& content)
 		}
 	}
 
-	// serverブロックの中にserverブロックがネストされていないことを確認
 	for (std::vector<std::pair<size_t, size_t> >::const_iterator serverIt = serverBlockRanges.begin();
 		serverIt != serverBlockRanges.end(); ++serverIt)
 	{

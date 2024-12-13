@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/13 14:24:59 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/13 14:49:01 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,23 +27,14 @@ AHttpMethod::AHttpMethod(std::string method, std::string uri, std::string versio
   this->_cgi_relative_path.clear();
   
   if (pos != std::string::npos) {
-      // pos + 3 が uri.size() を超えていないか確認
       if (pos + 3 <= uri.size()) {
-          // pos + 3 以降を _cgi_relative_path にセット
-          //this->_cgi_relative_path.clear();
-          //this->_cgi_relative_path = uri.substr(pos + 3, uri.size() - pos - 3);
-          // pos + 3 より前の部分を _uri にセット
           this->_uri = uri.substr(0, pos + 3);
           this->_uri_old = uri;
       } else {
-          // ".py" は見つかったが、その後ろに文字列が足りない場合
-          // 安全な対応策として、相対パスは空、_uriは元のuriで対処
-          //this->_cgi_relative_path.clear();
           this->_uri = uri;
       }
 
   } else {
-      // ".py" が見つからなかった場合は元のuriを使用
       this->_cgi_relative_path.clear();
       this->_uri = uri;
   }
