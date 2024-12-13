@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AHttpMethod.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/08 17:58:39 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/13 12:56:36 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,6 +156,9 @@ HttpResponse* AHttpMethod::_setPostResponseStatus(std::string& path, const Confi
     return (new HttpResponse(HTTP_METHOD_NOT_ALLOWED));
   else if (!location.upload_store.empty())
     path = path + location.upload_store + this->_uri;
+  else
+    path = path + this->_uri;
+  std::cout << "\033[38;5;120mpath\033[0m: " << path << std::endl;
   if (mylib::isDirectory(path) && path[path.size() - 1] != '/')
     return (new HttpResponse(HTTP_MOVED_PERMANENTLY, path));
   if (mylib::isDirectory(path) && !mylib::isPathValid(path))
