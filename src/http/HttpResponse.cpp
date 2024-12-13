@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/13 14:31:06 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/13 14:33:52 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -635,10 +635,7 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
     }
     close(pipeOut[1]);
     
-    std::cerr << "child dup2 pipeOut done" << std::endl;
-    
     if (cgiExtension == ".py") {
-      std::cerr << "child python3" << std::endl;
       char* argv[] = {
         const_cast<char*>("python3"),
         const_cast<char*>(_uri.c_str()),
@@ -649,7 +646,6 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
         _exit(EXIT_FAILURE);
       }
     } else {
-      std::cerr << "child else" << std::endl;
       char *argv[] = {
         (char *)_uri.c_str(),
         NULL};
@@ -704,7 +700,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
       if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1)
         {
-          std::cout << "kill error" << std::endl;
+          std::cerr << ERROR_COLOR << "kill error" << COLOR_RESET << std::endl;
           throw HttpResponse::HttpResponseError("kill");
         }
       }
@@ -716,7 +712,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
       if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1)
         {
-          std::cout << "kill error" << std::endl;
+          std::cerr << ERROR_COLOR << "kill error" << COLOR_RESET << std::endl;
           throw HttpResponse::HttpResponseError("kill");
         }
       }
