@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpPost.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/13 12:43:56 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/13 14:25:41 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,12 +49,6 @@ void HttpPost::setResponseMessage(const ConfigServer& config, HttpRequest& reque
   int responseSize;
   //(void)request;
   
-  if (this->getMethod() == "POST" && request.getBody().size())
-  {
-    std::cout << "POST yeah" << std::endl;
-    std::cout << "body: " << request.getBody() << std::endl;
-  }
-  
   // cgiを実行する
   if ((!this->_cgi_extension.empty() && !this->_cgi_path.empty()) || this->_cgi_relative_path.size())
   {
@@ -77,10 +71,6 @@ void HttpPost::execute(const ConfigServer& config, HttpRequest& request, HttpRes
     return ;
   if ((this->_cgi_extension.empty() || this->_cgi_path.empty()) || !this->_uri_old.size())
   {
-    std::cout << this->_cgi_extension << std::endl;
-    std::cout << this->_cgi_path << std::endl;
-    std::cout << this->_cgi_relative_path << std::endl;
-    std::cout << "in execute" << std::endl;
     if (!this->_uploadFile(request)) {
       response->setStatus(HTTP_INTERNAL_SERVER_ERROR);
       return ;

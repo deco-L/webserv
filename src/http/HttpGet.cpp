@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpGet.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/13 03:32:24 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/13 14:25:16 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,16 +36,9 @@ HttpGet::~HttpGet() {
 void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const {
   int responseSize;
   (void)request;
-  
-  //if (this->getMethod() == "POST" && request.getBody().size())
-  //{
-  //  std::cout << "POST yeah" << std::endl;
-  //  std::cout << "body: " << request.getBody() << std::endl;
-  //}
 
   // cgiを実行する
   if (!this->_cgi_extension.empty() && !this->_cgi_path.empty()) {
-    std::cout << "CGI yeah" << std::endl;
     responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_path, this->_cgi_extension, this->_uri_old, request.getBody());
   }
   else if (this->_autoindex && mylib::isDirectory(this->_uri))

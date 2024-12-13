@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AHttpMethod.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/13 12:56:36 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/13 14:24:59 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,6 @@ AHttpMethod::AHttpMethod(void) : _method("default"), _uri(""), _uri_old(""), _ve
 }
 
 AHttpMethod::AHttpMethod(std::string method, std::string uri, std::string version) : _method(method), _uri(uri), _uri_old(uri), _version(version), _autoindex(false), _cgi_extension(""), _cgi_path(""), _cgi_relative_path("") {
-  
-  // /cgi/cgi.py/usr/src/app/wsv/cgi
-  // /cgi/cgi.py + /usr/src/app/wsv/cgi
-  //<- uri , _cgi_relative_path ->
-  std::cout << "uri: " << uri << std::endl;
-
   std::string::size_type pos = uri.find(".py");
   
   std::string tmp = uri;
@@ -33,22 +27,14 @@ AHttpMethod::AHttpMethod(std::string method, std::string uri, std::string versio
   this->_cgi_relative_path.clear();
   
   if (pos != std::string::npos) {
-      std::cout << "pos: " << pos << std::endl;
-      std::cout << "uri.size(): " << uri.size() << std::endl;
-
       // pos + 3 が uri.size() を超えていないか確認
       if (pos + 3 <= uri.size()) {
           // pos + 3 以降を _cgi_relative_path にセット
           //this->_cgi_relative_path.clear();
           //this->_cgi_relative_path = uri.substr(pos + 3, uri.size() - pos - 3);
-          std::cout << uri.substr(pos + 3, uri.size() - pos - 3) << std::endl;
           // pos + 3 より前の部分を _uri にセット
-          std::cout << "here" << std::endl;
           this->_uri = uri.substr(0, pos + 3);
           this->_uri_old = uri;
-
-          std::cout << "uri: " << this->_uri << std::endl;
-          std::cout << "cgi_relative_path: " << this->_cgi_relative_path << std::endl;
       } else {
           // ".py" は見つかったが、その後ろに文字列が足りない場合
           // 安全な対応策として、相対パスは空、_uriは元のuriで対処
@@ -158,7 +144,6 @@ HttpResponse* AHttpMethod::_setPostResponseStatus(std::string& path, const Confi
     path = path + location.upload_store + this->_uri;
   else
     path = path + this->_uri;
-  std::cout << "\033[38;5;120mpath\033[0m: " << path << std::endl;
   if (mylib::isDirectory(path) && path[path.size() - 1] != '/')
     return (new HttpResponse(HTTP_MOVED_PERMANENTLY, path));
   if (mylib::isDirectory(path) && !mylib::isPathValid(path))
@@ -224,21 +209,9 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
 
       if (location.cgi_extension.size())
       {
-      // cgi_extension .py /usr/bin/python3
-        // std::cout << location.cgi_extension[0].second << std::endl;
-        // std::cout << "location.cgi_extension.empty()" << std::endl;
         this->_cgi_extension = location.cgi_extension[0].first;
         this->_cgi_path = location.cgi_extension[0].second;
-        // std::cout << "this->_cgi_extension: " << this->_cgi_extension << std::endl;
-        // std::cout << "this->_cgi_path: " << this->_cgi_path << std::endl;
       }
-      
-      // ここは、/cig/cgi.py/usr/src/app/wsv/cgiとかに対応するやつ
-      //if (this->_uri.find(this->_cgi_extension) != std::string::npos || (!this->_cgi_extension.empty() && !this->_cgi_path.empty()))
-      //{
-      //  this->_cgi_relative_path = this->_uri.substr(this->_uri.find(this->_cgi_extension) + this->_cgi_extension.length());
-      //  this->_uri = this->_uri.substr(0, this->_uri.find(this->_cgi_extension) + this->_cgi_extension.length());
-      //}
     }
   }
   if ((location.path.empty() && config.root.empty()) || (!location.path.empty() && config.root.empty()))

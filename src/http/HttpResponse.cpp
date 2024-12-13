@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/08 16:21:02 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/13 14:31:06 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -524,14 +524,12 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
   int pipeFd[2];
   int status;
   
-  //(void)cgiRelativePath;
   (void)_uri;
   (void)_uri_old;
-  //std::cout << _uri << std::endl;
   
   if (pipe(pipeFd) == -1)
   {
-    std::cout << "pipe error" << std::endl;
+    perror("pipe");
     return (-1);
   }
   
@@ -597,7 +595,7 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
   
   if (pipe(pipeIn) == -1)
   {
-    std::cout << "pipe error" << std::endl;
+    perror("pipe");
     return (-1);
   }
   
@@ -605,10 +603,9 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
   {
     close(pipeIn[0]);
     close(pipeIn[1]);
-    std::cout << "pipe error" << std::endl;
+    perror("pipe");
     return (-1);
   }
-  std::cout << "pipe done" << std::endl;
   
   pid = fork();
   if (pid == -1)
@@ -620,14 +617,8 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
     return (-1);
   }
   
-  if (pid == 0)
-    std::cout << "fork done (child)" << std::endl;
-  else
-    std::cout << "fork done (parent)" << std::endl;
-  
   // child
   if (pid == 0) {
-    std::cout << "child start" << std::endl;
     close(pipeIn[1]);
     if (dup2(pipeIn[0], STDIN_FILENO) == -1)
     {
@@ -635,11 +626,6 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
       _exit(EXIT_FAILURE);
     }
     close(pipeIn[0]);
-    
-    std::cout << "child dup2 pipeIn done" << std::endl;
-    
-    //std::cout << "pipeOut[0]: " << pipeOut[0] << std::endl;
-    //std::cout << _uri << std::endl;
     
     close(pipeOut[0]);
     if (dup2(pipeOut[1], STDOUT_FILENO) == -1)
@@ -676,22 +662,14 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
   }
   else // parent
   {
-    std::cout << "parent start" << std::endl;
     close(pipeIn[0]);
-    
-    //sleep(1);
-    std::cout << body.length() << std::endl;
-    // body.size() == 1048415 <- 異常
 
     body = body.substr(0, body.find_last_not_of('\0') + 1);
     
     write(pipeIn[1], body.data(), body.length());
-    //write(stdout, body.c_str(), body.length());
-    //write(1, body.c_str(), body.length());
     
-    std::cout << "write done" << std::endl;
     close(pipeIn[1]);
-    std::cout << "send EOF" << std::endl;
+    
     
     close(pipeOut[1]);
     readFd = pipeOut[0];
@@ -701,7 +679,6 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
       return (-1);
     }
   }
-  std::cout << "end" << std::endl;
   return (0);
 }
 
@@ -717,15 +694,12 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
   }
   env_cstrs.push_back(NULL); // NULL 終端を追加
   
-  std::cout << "env done" << std::endl;
-  
   int readFd;
   //int writeFd;
   pid_t pid;
   
 
   if (!method.compare("GET")) {
-    std::cout << "cgi start" << std::endl; 
     if (cgiExecGet(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri) < 0) {
       if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1)
@@ -739,7 +713,6 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
     }
   } else if (!method.compare("POST")) {
     if (cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri, _body) < 0) {
-    std::cout << "cgi start" << std::endl;
       if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1)
         {
@@ -753,7 +726,6 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
     
   }
   if (readFd != -1) {
-    std::cout << "start read ===" << std::endl;
     char buf[1024];
     int len;
     while ((len = read(readFd, buf, 1024)) > 0) {
@@ -762,7 +734,6 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
     close(readFd);
   }
 
-  // std::cout << "body: " << body << std::endl;
   return (body);
 }
 
@@ -846,16 +817,11 @@ int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, 
   header = makeCgiHeader(tmp);
   body = tmp.substr(tmp.find("\n\n") + 2);
 
-  // this->setStatus(HTTP_NOT_FOUND);
-  // std::cout << "body: " << body << std::endl;
   this->_createStatusLine(version);
-  // this->_createHeaderLine(config, body.length());
-  // std::cout << this->_response << std::endl;
   this->_response.append(header);
   this->_response.append(CRLF);
   this->_response.append(CRLF);
   this->_response.append(body);
-  // std::cout << "response: " << this->_response << std::endl;
   responseSize = this->_response.length();
   return (responseSize);
 }
