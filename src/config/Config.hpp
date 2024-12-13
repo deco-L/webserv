@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/06 16:26:27 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/13 14:41:34 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,30 +16,12 @@
 #include <string>
 #include "webserv.hpp"
 
-// パースのモードを表す列挙型
+// パースのネストの段階を表すenum
 enum ParseMode {
     MODE_GLOBAL = 0,
     MODE_SERVER = 1,
     MODE_LOCATION = 2
 };
-
-//- server
-//  - listen
-//  - server_name
-//  - error_page
-//  - client_max_body_size
-//  - root
-//  - index
-//  - autoindex
-//  - location
-//    - root
-//    - methods
-//    - return
-//    - autoindex
-//    - index
-//    - cgi_extension
-//    - upload_enable
-//    - upload_store
 
 struct ConfigLocation {
     std::string path;
@@ -48,7 +30,7 @@ struct ConfigLocation {
     std::pair<int, std::string> return_;
     bool autoindex;
     std::vector<std::string> index;
-    std::vector<std::pair<std::string, std::string> > cgi_extension; // 拡張子とパス
+    std::vector<std::pair<std::string, std::string> > cgi_extension;
     bool upload_enable;
     std::string upload_store;
     
@@ -56,10 +38,10 @@ struct ConfigLocation {
 };
 
 struct ConfigServer {
-    std::vector<std::pair<std::string, std::string> > listen; // IPアドレスとポート番号
+    std::vector<std::pair<std::string, std::string> > listen;
     std::vector<std::string> server_name;
-    std::vector<std::pair<int, std::string> > error_page; // ステータスコードとパス
-    unsigned long client_max_body_size; // 0~1024GB 0=無制限
+    std::vector<std::pair<int, std::string> > error_page;
+    unsigned long client_max_body_size;
     std::string root;
     std::vector<std::string> index;
     bool autoindex;

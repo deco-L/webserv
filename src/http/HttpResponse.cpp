@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/13 14:33:52 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/13 14:51:42 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -487,30 +487,13 @@ static std::vector<std::string> createEnvs(const ConfigServer& config, std::stri
 {
   std::vector<std::string> envs;
   
-  //(void)_uri;
   (void)cgiExtension;
   
-  //envs = config.getEnvp();
-  //PATH_INFO	パス情報。たとえば、「cgi-bin/xxx.cgi/taro/xxx.htm」というURLでCGIスクリプトを呼び出した場合、PATH_INFOには「/taro/xxx.htm」が格納される。
-  //cgiExtensionがある部分より右側の部分を取得する
-  if (_uri != _uri_old)
+  if (_uri != _uri_old) // /cgi/cgi.py/usr/ -> /usr
   {
     envs.push_back("PATH_INFO=" + _uri_old.substr(_uri_old.find(cgiExtension) + cgiExtension.length()));
   }
   envs.push_back("SCRIPT_NAME=" + cgiPath);
-  
-  
-  
-  //if (_uri.find("?") == std::string::npos) //_uriに?が含まれいない場合
-  //{
-  //  envs.push_back("PATH_INFO=" + _uri.substr(_uri.find(cgiExtension) + cgiExtension.length()));
-  //  envs.push_back("SCRIPT_NAME=" + cgiPath);
-  //} else { //_uriに?が含まれる場合
-  //  envs.push_back("PATH_INFO=" + _uri.substr(_uri.find(cgiExtension) + cgiExtension.length(), _uri.find("?") - _uri.find(cgiExtension) - cgiExtension.length()));
-  //  envs.push_back("SCRIPT_NAME=" + cgiPath + _uri.substr(0, _uri.find("?")));
-  //  envs.push_back("QUERY_STRING=" + _uri.substr(_uri.find("?") + 1));
-  //  std::cout << "QUERY_STRING: " << _uri.substr(_uri.find("?") + 1) << std::endl;
-  //}
   envs.push_back("SERVER_NAME=" + config.server_name.front());
   envs.push_back("SERVER_PORT=" + config.listen.front().first);
   envs.push_back("REQUEST_METHOD=" + method);
@@ -581,8 +564,7 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
 }
 
 
-//POSTのCGIは、requestのbodyをCGIのstdinに書き込む
-/// この関数
+
 int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string _uri, std::string body) {
   int pipeIn[2]; // parent -> child
   int pipeOut[2]; // child -> parent
@@ -688,13 +670,11 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
   for (size_t i = 0; i < envs.size(); ++i) {
       env_cstrs.push_back(const_cast<char*>(envs[i].c_str()));
   }
-  env_cstrs.push_back(NULL); // NULL 終端を追加
+  env_cstrs.push_back(NULL);
   
   int readFd;
-  //int writeFd;
   pid_t pid;
   
-
   if (!method.compare("GET")) {
     if (cgiExecGet(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri) < 0) {
       if (pid != 0 && kill(pid, 0) == 0) {
@@ -733,26 +713,8 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
   return (body);
 }
 
-
-//int HttpResponse::_judgeCgiCase(std::string body) {
-//  if (body.find("Location: ") != std::string::npos) {
-//    this->setStatus(HTTP_MOVED_TEMPORARILY);
-//    if (body.find("Content-Type: text/html") != std::string::npos)
-//      return (3);
-//    return (2);
-//  }
-//  if (body.find("Content-Type: text/html") != std::string::npos)
-//  {
-//    this->setStatus(HTTP_OK);
-//    return (0);
-//  }
-//  this->setStatus(HTTP_OK);
-//  return (1);
-//}
-
 std::string makeCgiHeader(std::string str) {
   std::string header;
-  //std::string status;
   std::string location;
   std::string contentType;
   std::string contentLength;
@@ -760,12 +722,9 @@ std::string makeCgiHeader(std::string str) {
   contentType = str.substr(str.find("Content-Type: ") + 14, str.find("\n", str.find("Content-Type: ")) - str.find("Content-Type: ") - 14);
   contentType = "Content-Type: " + contentType;
 
-  //contentTypeの部分を削除
   str = str.substr(str.find("\n", str.find("Content-Type: ")) + 1);
-  //先頭の改行を削除
   str = str.substr(1);
 
-  // contentType = "Content-Type: text/html";
   contentLength = "Content-Length: " + mylib::nbrToS(str.length());
   
   
@@ -775,23 +734,6 @@ std::string makeCgiHeader(std::string str) {
   return (header);
 }
 
-//std::string makeCgiBody(std::string str, int cgiCase) {
-//  std::string body;
-
-//  str = str.substr(str.find("\n\n") + 2);
-
-//  if (cgiCase == 0) {
-//    body = str;
-//  } else if (cgiCase == 1) {
-//    body = str;
-//  } else if (cgiCase == 2) {
-//    body = str;
-//  } else if (cgiCase == 3) {
-//    body = str.substr(str.find("\n\n") + 2);
-//  }
-//  return (body);
-//}
-
 int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string _body) {
   int responseSize;
   std::string body;
@@ -800,16 +742,6 @@ int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, 
 
   tmp = this->_doCgi(method, _uri, config, cgiPath, cgiExtension, _uri_old, version, _body);
 
-
-  
-  //int cgiCase;
-  // 0: Document Response <= これのみ実装
-  // 1: Local Redirect Response
-  // 2: Client Redirect Response
-  // 3: Client Ridirect Response with Document
-  
-  //Only Document Response
-  //cgiCase = this->_judgeCgiCase(tmp); // ないぶで判定して、ステータスを変更する　
   header = makeCgiHeader(tmp);
   body = tmp.substr(tmp.find("\n\n") + 2);
 

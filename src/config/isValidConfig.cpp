@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/15 22:47:46 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2024/10/18 20:47:35 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/13 14:52:56 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ static bool isValidDirective(const std::vector<std::string>& lines)
 			}
 		}
 		if (!isValid)
-			return false; // 未知のディレクティブが見つかりました
+			return false;
 	}
 	return true;
 }
@@ -146,26 +146,23 @@ bool isValidBracketFormat(const std::string& content);
 bool isValidNest(const std::string& content);
 bool isValidDirectiveArguments(const std::vector<std::string>& lines);
 
-/* =================
+/* ====================
 file_contentが有効な設定ファイルの内容であるかを確認するメソッド
-================= */
+==================== */
 // MARK: isValidConfig
 
 bool Config::isValidConfig(std::string file_content)
 {
-	// ファイルが空でないことを確認
 	if (file_content.empty())
 	{
 		outputError("Error: Configuration file is empty.");
 		return false;
 	}
-	// 括弧の閉じ忘れをチェック
 	if (isValidBracketFormat(file_content) == false)
 	{
 		outputError("Error: Invalid bracket format in the configuration file.");
 		return false;
 	}
-	// ネストが正しいことを確認
 	if (isValidNest(file_content) == false)
 	{
 		outputError("Error: Invalid nesting in the configuration file.");
@@ -174,19 +171,16 @@ bool Config::isValidConfig(std::string file_content)
 
 	std::vector<std::string> lines = mylib::split(file_content, "\n");
 
-	// 未知のディレクティブがないことを確認
 	if (isValidDirective(lines) == false)
 	{
 		outputError("Error: Invalid directive in the configuration file.");
 		return false;
 	}
-	// 必須ディレクティブが存在することを確認
 	if (hasRequiredDirectives(lines) == false)
 	{
 		outputError("Error: Missing required directives in the configuration file.");
 		return false;
 	}
-	// ディレクティブの引数が正しいことを確認
 	if (isValidDirectiveArguments(lines) == false)
 		return false;
 	return true;
