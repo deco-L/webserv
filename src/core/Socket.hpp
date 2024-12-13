@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/16 18:00:14 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/13 21:13:41 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ public:
 
   bool isSocketOpen(void);
   void create(void);
-  void passive(std::string ipAddress, short int port, bool opt);
+  void passive(short int port, bool opt);
   void accept(Socket& cSocket);
   int recv(void);
   void send(std::string buf, size_t len);

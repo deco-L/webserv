@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/01 23:51:48 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/13 21:14:49 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ void socketMain(std::vector<Socket>& sockets, const std::vector<ConfigServer>& c
   try {
     for (std::vector<ConfigServer>::const_iterator it = config.begin(); it != config.end(); it++) {
       tmpSocket.create();
-      tmpSocket.passive(it->listen.begin()->first, mylib::stringToShort(it->listen.begin()->second), REUSE_PORT);
+      tmpSocket.passive(mylib::stringToShort(it->listen.begin()->second), REUSE_PORT);
       sockets.push_back(tmpSocket);
     }
   } catch (const std::exception& e) {
