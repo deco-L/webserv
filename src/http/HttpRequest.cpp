@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/09 22:37:52 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/13 14:25:46 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,6 @@ void HttpRequest::setBody(std::vector<std::string>::iterator& it, std::vector<st
     it++;
   }
   this->_bodySize = this->_body.length();
-  std::cout << "BODY SIZE::: " << this->_bodySize << std::endl;
   return ;
 }
 

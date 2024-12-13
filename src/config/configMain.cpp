@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configMain.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/01 20:37:15 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/13 14:23:30 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,6 @@ void configMain(Config& config, int argc, char **argv)
   config.checkNbrArg(); // check the number of arguments
   config.checkConfig(); // check the configuration file
   config.parseConfig(); // parse the configuration file
-
-  // config._serversには設定ファイルの内容が格納されている
-  std::cout << "parse done." << std::endl;
 
   // config._serversをすべて表示する
   if (DEBUG)
