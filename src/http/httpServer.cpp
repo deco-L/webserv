@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpServer.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/09 21:52:56 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/18 15:53:16 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll) {
         throw Http::HttpError("HTTP_REQUEST_ENTITY_TOO_LARGE");
       }
       showRequestMessage(http);
-      std::memset((void* )cSocket._outBuf.c_str(), 0, cSocket._outBuf.length());
+      cSocket._outBuf.clear();
       if (!http.createMethod())
         throw Http::HttpError("HTTP_BAD_REQUEST");
       http.executeMethod(config);
@@ -62,8 +62,8 @@ void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll) {
     catch(const std::exception& e) {
       std::string error(e.what());
 
-      std::cout << error << std::endl;
-      if (!error.compare("accept"))
+      // std::cout << ERROR_COLOR << error << COLOR_RESET << std::endl;
+      if (!error.compare("recv"))
         break ;
       http.createResponseMessage(config);
       showResponseMessage(http);

@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/06 21:18:02 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/17 14:02:29 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,6 @@ void eventLoop(std::vector<Socket>& sockets, const std::vector<ConfigServer>& co
       Socket cSocket;
       try {
         it->accept(cSocket);
-        std::cout << "accept" << std::endl;
       }
       catch(const std::exception& e) {
         if (mylib::strlen(e.what()))

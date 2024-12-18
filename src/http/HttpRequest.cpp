@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/13 14:25:46 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/18 15:50:37 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ HttpRequest::~HttpRequest() {
   return ;
 }
 
-std::map<std::string, std::string> HttpRequest::getHeader(void) const {
+const std::map<std::string, std::string>& HttpRequest::getHeader(void) const {
   return (this->_headers);
 }
 
@@ -43,7 +43,7 @@ const std::string& HttpRequest::getVersion(void) const {
   return (this->_version);
 }
 
-unsigned long HttpRequest::getBodySize(void) const {
+long long HttpRequest::getBodySize(void) const {
   return (this->_bodySize);
 }
 
@@ -77,16 +77,36 @@ void HttpRequest::setHeaders(std::vector<std::string>::iterator& it, std::vector
     std::getline(stream, element);
     if (!element.length())
       break ;
-    this->_headers[header] = element.substr(1, element.length());
+    this->_headers[header] = element.substr(1, element.length() - 2);
     it++;
   }
   return ;
 }
 
+void HttpRequest::setChunkedBody(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end) {
+  std::vector<std::string>::iterator begin = it;
+  int size = 0;
+
+  while (it != end) {
+    if ((it - begin) % 2)
+      this->_body.append(it->substr(0, size));
+    else
+      size = mylib::stringToSize(*it);
+    if (size == 0)
+      break ;
+    else if (size == -1) {
+      this->_bodySize = size;
+      return ;
+    }
+    it++;
+  }
+  this->_bodySize = this->_body.length();
+  return ;
+}
+
 void HttpRequest::setBody(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end) {
   while (it != end) {
-    std::istringstream stream(*it);
-    this->_body.append(stream.str());
+    this->_body.append(*it);
     it++;
   }
   this->_bodySize = this->_body.length();

@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/13 21:13:32 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/17 19:47:37 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ _addrLen(sizeof(_sSockAddr)),
 _bufFlag(1),
 _socket(-1),
 _error(0),
-_outBuf(std::string(MAX_SOCK_BUFFER, 0)),
+_outBuf(""),
 _peerIpName(""),
 _peerIp(""),
 _timeOut(60) {
@@ -102,17 +102,35 @@ void Socket::accept(Socket& cSocket) {
   return ;
 }
 
-int Socket::recv(void) {
-  int size;
-  size = ::recv(this->_socket, (char *) this->_outBuf.c_str(), MAX_SOCK_BUFFER, 0);
-  if (size < 0)
-    this->_error = size;
-  else if (size == MAX_SOCK_BUFFER) {
-    std::string tmp;
-    size = ::recv(this->_socket, (char *) tmp.c_str(), 1, 0);
-    return (MAX_SOCK_BUFFER + size);
+// int Socket::recv(size_t size) {
+//   int size;
+//   this->_outBuf = std::string(size, 0);
+
+//   size = ::recv(this->_socket, (char *) this->_outBuf.c_str(), size, 0);
+//   if (size < 0)
+//     this->_error = size;
+//   else if (size == size) {
+//     std::string tmp;
+//     size = ::recv(this->_socket, (char *) tmp.c_str(), 1, 0);
+//     return (size + size);
+//   }
+//   this->_outBuf.substr(0, size);
+//   return (size);
+// }
+
+size_t Socket::recv(void) {
+  size_t size;
+
+  size = 0;
+  while (true) {
+    std::string tmp(10, 0);
+    this->_error = ::recv(this->_socket, (char *)tmp.c_str(), 10, 0);
+    if (this->_error == -1 || this->_error == 0)
+      break ;
+    size += this->_error;
+    this->_outBuf.append(tmp);
+    tmp.clear();
   }
-  this->_outBuf.substr(0, size);
   return (size);
 }
 
@@ -126,23 +144,17 @@ void Socket::send(std::string buf, size_t len) {
 
 void Socket::sendText(std::string fileName) {
   std::ifstream inFile;
-  char buf[GETLINE_BUFFER];
+  std::string line;
 
   inFile.open(fileName.c_str());
   if (!inFile)
     throw Socket::SocketError("open error: " + std::string(strerror(errno)));
   this->_error = 0;
-  while (true) {
-    mylib::bzero(buf, GETLINE_BUFFER);
-    inFile.getline(buf, GETLINE_BUFFER, '\n');
-    if (inFile.gcount() == 0) {
-        if (inFile.eof())
-          break;
-        else
-          throw Socket::SocketError("getline error: " + std::string(strerror(errno)));
-    }
-    this->_error += ::send(this->_socket, buf, inFile.gcount(), 0);
-    this->_error += ::send(this->_socket, CRLF, mylib::strlen(CRLF), 0);
+  while (std::getline(inFile, line) && this->_error != -1) {
+    line += '\n';
+    this->_error = ::send(this->_socket, line.c_str(), line.size(), 0);
+    if (inFile.bad())
+      throw Socket::SocketError("getline error: " + std::string(strerror(errno)));
   }
   inFile.close();
   return ;
@@ -150,14 +162,16 @@ void Socket::sendText(std::string fileName) {
 
 void Socket::sendBinary(std::string fileName) {
   std::ifstream inBinary;
-  char buf[GETLINE_BUFFER];
+  std::string line;
 
   inBinary.open(fileName.c_str(), std::ios::binary);
   if (!inBinary)
     throw Socket::SocketError("open error: " + std::string(strerror(errno)));
-  while (!inBinary.eof()) {
-    inBinary.read(buf, GETLINE_BUFFER);
-    this->_error = ::send(this->_socket, buf, inBinary.gcount(), 0);
+  while (std::getline(inBinary, line)) {
+    line += '\n';
+    this->_error = ::send(this->_socket, line.c_str(), line.size(), 0);
+    if (inBinary.bad())
+      throw Socket::SocketError("getline error: " + std::string(strerror(errno)));
   }
   inBinary.close();
   return ;

@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/13 21:13:41 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/17 19:48:13 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
-#define MAX_SOCK_BUFFER 1048576
-#define SENDFILE_MAX_CHUNK 2097152
-#define GETLINE_BUFFER 4096
 #define NO_EOL 1
 #define REUSE_PORT 1
 
@@ -62,7 +59,7 @@ public:
   void create(void);
   void passive(short int port, bool opt);
   void accept(Socket& cSocket);
-  int recv(void);
+  size_t recv(void);
   void send(std::string buf, size_t len);
   void sendText(std::string fileName);
   void sendBinary(std::string fileName);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/13 14:34:18 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/18 14:12:41 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,7 @@
 
 #define WSV_OK    0
 #define WSV_ERROR 1
+#define KILOBYTE 1024
 
 #define DEBUG 0
 
@@ -129,6 +130,7 @@ namespace mylib {
   short stringToShort(const std::string &str);
   int stringToInt(const std::string &str);
   unsigned long stringToULong(const std::string &str);
+  size_t stringToSize(const std::string& str);
   PathType getPathType(const std::string& path);
   template <typename T>
   std::string to_string(const T& n);

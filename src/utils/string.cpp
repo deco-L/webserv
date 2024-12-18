@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/01 17:19:45 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/18 14:12:22 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,15 @@ namespace mylib{
     iss >> number;
     if (iss.fail())
       return -1; // 変換エラーを示す
+    return number;
+  }
+
+  size_t stringToSize(const std::string& str) {
+    std::istringstream iss(str);
+    size_t number = 0;
+    iss >> number;
+    if (iss.fail())
+      return -1;
     return number;
   }
 
