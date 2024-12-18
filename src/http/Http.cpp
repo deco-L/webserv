@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Http.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/09 22:51:48 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/18 15:51:39 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,7 @@ void Http::setHttpResponse(unsigned int status) {
 void Http::recvRequestMessage(Socket& socket) {
   this->_requestSize = socket.recv();
   if (this->_requestSize < 0)
-    throw Http::HttpError("accept");
+    throw Http::HttpError("recv");
   else if (this->_requestSize == 0)
     std::cout << NORMA_COLOR << "connection end." << COLOR_RESET << std::endl;
   socket._error = this->_requestSize;
@@ -117,7 +117,20 @@ void Http::parseRequestMessage(Socket& socket) {
   this->_httpRequest.setHeaders(it, end);
   if (it != end)
     it++;
-  this->_httpRequest.setBody(it, end);
+  if (this->_httpRequest.getHeader().find("Transfer-Encoding") != this->_httpRequest.getHeader().end())
+    std::cout << this->_httpRequest.getHeader().at("Transfer-Encoding") << "?????" << std::endl;
+  if (
+    this->_httpRequest.getHeader().find("Transfer-Encoding") !=
+    this->_httpRequest.getHeader().end() &&
+    this->_httpRequest.getHeader().at("Transfer-Encoding") == "chunked"
+  ) {
+    this->_httpRequest.setChunkedBody(it, end);
+  }
+  else {
+    this->_httpRequest.setBody(it, end);
+  }
+  if (this->_httpRequest.getBodySize() == -1)
+    Http::HttpError("stringstream error");
   return ;
 }
 
