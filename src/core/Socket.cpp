@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/17 19:47:37 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/22 15:58:16 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,14 +123,15 @@ size_t Socket::recv(void) {
 
   size = 0;
   while (true) {
-    std::string tmp(10, 0);
-    this->_error = ::recv(this->_socket, (char *)tmp.c_str(), 10, 0);
+    std::string tmp(8 * KILOBYTE, 0);
+    this->_error = ::recv(this->_socket, (char *)tmp.c_str(), 8 * KILOBYTE, 0);
     if (this->_error == -1 || this->_error == 0)
       break ;
     size += this->_error;
     this->_outBuf.append(tmp);
     tmp.clear();
   }
+  this->_outBuf.resize(size);
   return (size);
 }
 
