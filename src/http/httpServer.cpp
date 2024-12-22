@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/18 15:53:16 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/22 15:27:31 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,11 +47,11 @@ void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll) {
         break ;
       }
       http.parseRequestMessage(cSocket);
+      showRequestMessage(http);
       if (config.client_max_body_size != 0 && http.getRequestBodySize() > config.client_max_body_size) {
         http.setHttpResponse(HTTP_REQUEST_ENTITY_TOO_LARGE);
         throw Http::HttpError("HTTP_REQUEST_ENTITY_TOO_LARGE");
       }
-      showRequestMessage(http);
       cSocket._outBuf.clear();
       if (!http.createMethod())
         throw Http::HttpError("HTTP_BAD_REQUEST");
@@ -62,7 +62,7 @@ void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll) {
     catch(const std::exception& e) {
       std::string error(e.what());
 
-      // std::cout << ERROR_COLOR << error << COLOR_RESET << std::endl;
+      std::cout << ERROR_COLOR << error << COLOR_RESET << std::endl;
       if (!error.compare("recv"))
         break ;
       http.createResponseMessage(config);
