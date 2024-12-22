@@ -6,7 +6,7 @@
 #    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2024/12/06 14:18:51 by csakamot         ###   ########.fr        #
+#    Updated: 2024/12/22 16:36:57 by csakamot         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -77,8 +77,16 @@ RATE		= 0.0
 BAR			= 70
 ##-----------------------------##
 
+##------------debug------------##
+ifeq ($(MAKECMDGOALS), debug)
+	CFLAGS += -D DEBUG
+endif
+##-----------------------------##
+
 ##--------Makefile rule--------##
 all:prev ${NAME}
+
+debug:re
 
 prev:
 				@$(eval FILES = $(shell find . -name "*.cpp" | wc -l))

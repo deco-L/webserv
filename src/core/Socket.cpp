@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/17 19:47:37 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/22 16:08:36 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,35 +102,20 @@ void Socket::accept(Socket& cSocket) {
   return ;
 }
 
-// int Socket::recv(size_t size) {
-//   int size;
-//   this->_outBuf = std::string(size, 0);
-
-//   size = ::recv(this->_socket, (char *) this->_outBuf.c_str(), size, 0);
-//   if (size < 0)
-//     this->_error = size;
-//   else if (size == size) {
-//     std::string tmp;
-//     size = ::recv(this->_socket, (char *) tmp.c_str(), 1, 0);
-//     return (size + size);
-//   }
-//   this->_outBuf.substr(0, size);
-//   return (size);
-// }
-
 size_t Socket::recv(void) {
   size_t size;
 
   size = 0;
   while (true) {
-    std::string tmp(10, 0);
-    this->_error = ::recv(this->_socket, (char *)tmp.c_str(), 10, 0);
+    std::string tmp(8 * KILOBYTE, 0);
+    this->_error = ::recv(this->_socket, (char *)tmp.c_str(), 8 * KILOBYTE, 0);
     if (this->_error == -1 || this->_error == 0)
       break ;
     size += this->_error;
     this->_outBuf.append(tmp);
     tmp.clear();
   }
+  this->_outBuf.resize(size);
   return (size);
 }
 

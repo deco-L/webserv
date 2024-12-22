@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   checkConfig.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/15 22:40:46 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2024/12/13 14:40:57 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/22 16:48:08 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,12 +113,11 @@ void Config::checkConfig(void)
 	file_content = removeUnnecessaryLines(file_content);
 	this->_file_content = file_content;
 
-	if (DEBUG)
-	{
+	#ifdef DEBUG
 		std::cout << "File content: ======================="
 		<< std::endl << file_content
 		<< "===============================" << std::endl;
-	}
+	#endif
 
 	if (isValidConfig(file_content) == false)
 		std::exit(0);
