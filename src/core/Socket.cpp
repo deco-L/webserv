@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/22 15:58:16 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/22 16:08:36 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,22 +101,6 @@ void Socket::accept(Socket& cSocket) {
   cSocket._peerIp = mylib::to_string(ntohs(cSocket._cSockAddr.sin_port));
   return ;
 }
-
-// int Socket::recv(size_t size) {
-//   int size;
-//   this->_outBuf = std::string(size, 0);
-
-//   size = ::recv(this->_socket, (char *) this->_outBuf.c_str(), size, 0);
-//   if (size < 0)
-//     this->_error = size;
-//   else if (size == size) {
-//     std::string tmp;
-//     size = ::recv(this->_socket, (char *) tmp.c_str(), 1, 0);
-//     return (size + size);
-//   }
-//   this->_outBuf.substr(0, size);
-//   return (size);
-// }
 
 size_t Socket::recv(void) {
   size_t size;

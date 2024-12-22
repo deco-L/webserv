@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/18 14:12:41 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/22 16:38:09 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,8 +73,6 @@
 #define WSV_OK    0
 #define WSV_ERROR 1
 #define KILOBYTE 1024
-
-#define DEBUG 0
 
 #define LF    (u_char) '\n'
 #define CR    (u_char) '\r'

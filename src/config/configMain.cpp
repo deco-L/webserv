@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configMain.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/13 14:42:07 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/22 16:48:43 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,7 @@ void configMain(Config& config, int argc, char **argv)
   config.checkConfig();
   config.parseConfig();
 
-  if (DEBUG)
-  {
+  #ifdef DEBUG
     const std::vector<ConfigServer>& servers = config.getServers();
 
     std::cout << "Servers: ===========================================================================" << std::endl;
@@ -91,5 +90,5 @@ void configMain(Config& config, int argc, char **argv)
         std::cout << "Upload store: " << location.upload_store << std::endl;
       }
     }
-  }
+  #endif
 }

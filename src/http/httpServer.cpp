@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/22 15:27:31 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/22 16:42:40 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,9 @@ void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll) {
         break ;
       }
       http.parseRequestMessage(cSocket);
-      showRequestMessage(http);
+      #ifdef DEBUG
+        showRequestMessage(http);
+      #endif
       if (config.client_max_body_size != 0 && http.getRequestBodySize() > config.client_max_body_size) {
         http.setHttpResponse(HTTP_REQUEST_ENTITY_TOO_LARGE);
         throw Http::HttpError("HTTP_REQUEST_ENTITY_TOO_LARGE");
@@ -56,7 +58,9 @@ void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll) {
       if (!http.createMethod())
         throw Http::HttpError("HTTP_BAD_REQUEST");
       http.executeMethod(config);
-      showResponseMessage(http);
+      #ifdef DEBUG
+        showResponseMessage(http);
+      #endif
       http.sendResponse(cSocket);
     }
     catch(const std::exception& e) {
