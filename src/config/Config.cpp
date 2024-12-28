@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/01 17:04:04 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/28 16:56:41 by kmiyazaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,14 +34,14 @@ const std::vector<ConfigServer>& Config::getServers(void) const {
   return (this->_servers);
 }
 
-void Config::checkNbrArg(void) const {
-  if (this->_argc != 2)
-    return (
-      outputError("Error: Invalid number of arguments."),
-      std::exit(EXIT_FAILURE)
-      );
-  return ;
-}
+// void Config::checkNbrArg(void) const {
+//   if (this->_argc != 2)
+//     return (
+//       outputError("Error: Invalid number of arguments."),
+//       std::exit(EXIT_FAILURE)
+//       );
+//   return ;
+// }
 
 Config& Config::operator=(const Config& obj) {
   if (this != &obj) {

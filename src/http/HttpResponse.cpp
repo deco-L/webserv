@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/18 15:01:32 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/28 17:36:37 by kmiyazaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -388,7 +388,7 @@ int HttpResponse::_createRedirectResponseMessage(const std::string& uri, const C
 }
 
 int HttpResponse::_createErrorResponseMessage(const ConfigServer& config, const std::string& version) {
-  int responseSize;
+  int responseSize = 0;
   int bodySize = 0;
   std::vector<std::pair<int, std::string> >::const_iterator it;
 
@@ -672,7 +672,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
   }
   env_cstrs.push_back(NULL);
   
-  int readFd;
+  int readFd = -1;
   pid_t pid;
   
   if (!method.compare("GET")) {
