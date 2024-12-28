@@ -6,7 +6,7 @@
 #    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2024/12/22 16:36:57 by csakamot         ###   ########.fr        #
+#    Updated: 2024/12/28 12:29:32 by csakamot         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -86,7 +86,7 @@ endif
 ##--------Makefile rule--------##
 all:prev ${NAME}
 
-debug:re
+debug: all
 
 prev:
 				@$(eval FILES = $(shell find . -name "*.cpp" | wc -l))
