@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/22 16:42:40 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/28 10:10:53 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,20 +17,22 @@
 #include "Epoll.hpp"
 #include "Error.hpp"
 
-static void showRequestMessage(Http& http) {
-  std::cout << NORMA_COLOR << "request message" << COLOR_RESET << std::endl;
-  http.showRequestLine();
-  http.showRequestHeaders();
-  std::cout << "\r\n";
-  http.showRequestBody();
-  return ;
-}
+#ifdef DEBUG
+  static void showRequestMessage(Http& http) {
+    std::cout << NORMA_COLOR << "request message" << COLOR_RESET << std::endl;
+    http.showRequestLine();
+    http.showRequestHeaders();
+    std::cout << "\r\n";
+    http.showRequestBody();
+    return ;
+  }
 
-static void showResponseMessage(Http& http) {
-  std::cout << NORMA_COLOR << "response message" << COLOR_RESET << std::endl;
-  http.showResponseMessage();
-  return ;
-}
+  static void showResponseMessage(Http& http) {
+    std::cout << NORMA_COLOR << "response message" << COLOR_RESET << std::endl;
+    http.showResponseMessage();
+    return ;
+  }
+#endif
 
 void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll) {
   while (true) {
@@ -70,7 +72,9 @@ void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll) {
       if (!error.compare("recv"))
         break ;
       http.createResponseMessage(config);
-      showResponseMessage(http);
+      #ifdef DEBUG
+        showResponseMessage(http);
+      #endif
       http.sendResponse(cSocket);
     }
   }

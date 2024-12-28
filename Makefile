@@ -6,7 +6,7 @@
 #    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2024/12/22 16:36:57 by csakamot         ###   ########.fr        #
+#    Updated: 2024/12/28 10:09:01 by csakamot         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -79,7 +79,7 @@ BAR			= 70
 
 ##------------debug------------##
 ifeq ($(MAKECMDGOALS), debug)
-	CFLAGS += -D DEBUG
+	CFLAGS += -Wall -Werror -Wextra -D DEBUG
 endif
 ##-----------------------------##
 
