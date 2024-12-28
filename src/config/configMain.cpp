@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configMain.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/22 16:48:43 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/28 16:56:36 by kmiyazaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ void configMain(Config& config, int argc, char **argv)
 {
   std::string file_path((argc >= 2) ? std::string(argv[1]) : std::string(DEFOULT_CONF));
   config = Config(argc, file_path);
-  config.checkNbrArg();
+  // config.checkNbrArg();
   config.checkConfig();
   config.parseConfig();
 
