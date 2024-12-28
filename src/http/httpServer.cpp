@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpServer.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/22 16:42:40 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/28 11:41:35 by kmiyazaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include "Epoll.hpp"
 #include "Error.hpp"
 
+#ifdef DEBUG
 static void showRequestMessage(Http& http) {
   std::cout << NORMA_COLOR << "request message" << COLOR_RESET << std::endl;
   http.showRequestLine();
@@ -25,6 +26,7 @@ static void showRequestMessage(Http& http) {
   http.showRequestBody();
   return ;
 }
+#endif
 
 static void showResponseMessage(Http& http) {
   std::cout << NORMA_COLOR << "response message" << COLOR_RESET << std::endl;
