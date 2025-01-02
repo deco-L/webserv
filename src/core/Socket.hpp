@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/17 19:48:13 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/31 17:24:47 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ protected:
 
 public:
   int _socket;
-  int _error;
+  ssize_t _error;
   std::string _outBuf;
   std::string _peerIpName;
   std::string _peerIp;
@@ -59,7 +59,7 @@ public:
   void create(void);
   void passive(short int port, bool opt);
   void accept(Socket& cSocket);
-  size_t recv(void);
+  ssize_t recv(void);
   void send(std::string buf, size_t len);
   void sendText(std::string fileName);
   void sendBinary(std::string fileName);

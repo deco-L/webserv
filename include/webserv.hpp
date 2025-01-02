@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/22 16:38:09 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/30 18:01:55 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,6 +102,7 @@ void configMain(Config& config, int argc, char **argv);
 void socketMain(std::vector<Socket>& sockets, const std::vector<ConfigServer>& config);
 void socketEnd(std::vector<Socket>& Sockets);
 void eventLoop(std::vector<Socket>& sSockets, const std::vector<ConfigServer>& config);
+void execEvent(Epoll& epoll, const std::vector<ConfigServer>& configs, std::vector<Socket>& sockets);
 void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll);
 
 namespace mylib {

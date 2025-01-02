@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/22 16:08:36 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/02 10:43:04 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ _sPort(0),
 _cPort(0),
 _addrLen(sizeof(_sSockAddr)),
 _bufFlag(1),
-_socket(-1),
+_socket(0),
 _error(0),
 _outBuf(""),
 _peerIpName(""),
@@ -89,41 +89,35 @@ void Socket::passive(short int port, bool opt) {
 void Socket::accept(Socket& cSocket) {
   mylib::bzero(&this->_cSockAddr, this->_addrLen);
   cSocket._socket = ::accept(this->_socket, (struct sockaddr *) &cSocket._cSockAddr, (unsigned int *) &cSocket._addrLen);
-  if (cSocket._socket < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-    this->_error = cSocket._socket;
-    throw Socket::SocketError("");
-  } else if(cSocket._socket < 0) {
-    this->_error = cSocket._socket;
-    throw Socket::SocketError("accept error: " + std::string(strerror(errno)));
-  }
-  if (mylib::nonBlocking(cSocket._socket) < 0)
-    throw Socket::SocketError("fcntl error: " + std::string(strerror(errno)));
+  if (cSocket._socket ==  -1)
+    return ;
   cSocket._peerIp = mylib::to_string(ntohs(cSocket._cSockAddr.sin_port));
+  if (mylib::nonBlocking(cSocket._socket) < 0)
+    throw Socket::SocketError("fcntl error");
   return ;
 }
 
-size_t Socket::recv(void) {
-  size_t size;
+ssize_t Socket::recv(void) {
+  ssize_t size;
 
-  size = 0;
-  while (true) {
-    std::string tmp(8 * KILOBYTE, 0);
-    this->_error = ::recv(this->_socket, (char *)tmp.c_str(), 8 * KILOBYTE, 0);
-    if (this->_error == -1 || this->_error == 0)
-      break ;
-    size += this->_error;
-    this->_outBuf.append(tmp);
-    tmp.clear();
-  }
+  size = this->_outBuf.length();
+  std::string tmp(8 * KILOBYTE, 0);
+  this->_error = ::recv(this->_socket, (char *)tmp.c_str(), 8 * KILOBYTE, 0);
+  std::cout << "recv size: " << this->_error << std::endl;
+  if (this->_error == -1)
+    return (this->_error);
+  size += this->_error;
+  this->_outBuf.append(tmp);
+  tmp.clear();
   this->_outBuf.resize(size);
-  return (size);
+  return (this->_error);
 }
 
 void Socket::send(std::string buf, size_t len) {
   const char* tmp = buf.c_str();
   this->_error = ::send(this->_socket, (char *)tmp, len, 0);
   if (this->_error < 0)
-    throw Socket::SocketError("send error: " + std::string(strerror(errno)));
+    throw Socket::SocketError("send error");
   return ;
 }
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpServer.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/28 11:41:35 by kmiyazaw         ###   ########.fr       */
+/*   Updated: 2024/12/31 21:54:56 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,13 +26,13 @@ static void showRequestMessage(Http& http) {
   http.showRequestBody();
   return ;
 }
-#endif
 
 static void showResponseMessage(Http& http) {
   std::cout << NORMA_COLOR << "response message" << COLOR_RESET << std::endl;
   http.showResponseMessage();
   return ;
 }
+#endif
 
 void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll) {
   while (true) {
@@ -50,7 +50,7 @@ void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll) {
       }
       http.parseRequestMessage(cSocket);
       #ifdef DEBUG
-        showRequestMessage(http);
+      showRequestMessage(http);
       #endif
       if (config.client_max_body_size != 0 && http.getRequestBodySize() > config.client_max_body_size) {
         http.setHttpResponse(HTTP_REQUEST_ENTITY_TOO_LARGE);
@@ -72,7 +72,9 @@ void httpServer(Socket& cSocket, const ConfigServer& config, Epoll& epoll) {
       if (!error.compare("recv"))
         break ;
       http.createResponseMessage(config);
+      #ifdef DEBUG
       showResponseMessage(http);
+      #endif
       http.sendResponse(cSocket);
     }
   }
