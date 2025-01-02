@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/02 10:48:39 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/02 12:27:12 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,12 +37,14 @@ static void showResponseMessage(Http& http) {
 
 
 void execEvent(Epoll& epoll, const epoll_event& event, std::vector<Event>& events) {
+  (void) event;
   std::vector<Event> tmp = events;
 
+  std::cout << "===========================" << std::endl;
   for (std::vector<Event>::iterator it = tmp.begin(); it != tmp.end(); it++) {
-    if ((event.events & (EPOLLIN | EPOLLET)) == (EPOLLIN | EPOLLET))
+    if ((it->event & (EPOLLIN | EPOLLET)) == (EPOLLIN | EPOLLET))
       std::cout << "EPOLLIN | EPOLLET" << std::endl;
-    else if ((event.events & EPOLLIN) == EPOLLIN)
+    else if ((it->event & EPOLLIN) == EPOLLIN)
       std::cout << "EPOLLIN" << std::endl;
     if ((it->event & EPOLLIN) == EPOLLIN)
       it->func(epoll, events, it->socket, *it->config);
@@ -51,8 +53,9 @@ void execEvent(Epoll& epoll, const epoll_event& event, std::vector<Event>& event
     else if ((it->event & (EPOLLOUT)) == EPOLLOUT)
       it->func(epoll, events, it->socket, *it->config);
   }
-  // std::cout << events.size() << std::endl;
-  for (std::vector<Event>::iterator it = events.begin(); it != events.end(); it++) {
+  tmp = events;
+  std::cout << "size: " << tmp.size() << std::endl;
+  for (std::vector<Event>::iterator it = tmp.begin(); it != tmp.end(); it++) {
     if ((it->event & EPOLLOUT) == EPOLLOUT)
         std::cout << "EPOLLOUT" << std::endl;
     if ((it->event & EPOLLOUT) == EPOLLOUT)
@@ -76,7 +79,6 @@ void connectHandler(Epoll& epoll, std::vector<Event>& evnents, Socket& socket, c
 
 void readHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const ConfigServer& config) {
   ssize_t size;
-  std::string tmp(8 * KILOBYTE, 0);
 
   size = socket.recv();
   if (size == -1)
@@ -84,11 +86,12 @@ void readHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const
   else if (size < 8 * KILOBYTE && socket._outBuf.length()) {
     std::vector<Event>::iterator it;
 
+    std::cout << "recv size: " << size << std::endl;
     it = std::find_if(events.begin(), events.end(), FindByFd(socket._socket));
-
     events.erase(it);
 
     Event tmp(socket._socket, EPOLLOUT, &config, socket, writeHandler);
+
     events.push_back(tmp);
     epoll.modEvent(socket, EPOLLOUT);
   }
@@ -96,7 +99,6 @@ void readHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const
     std::vector<Event>::iterator it;
 
     it = std::find_if(events.begin(), events.end(), FindByFd(socket._socket));
-
     epoll.delEvent(socket);
     events.erase(it);
     socket.close();

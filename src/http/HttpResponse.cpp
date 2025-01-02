@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/18 15:01:32 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/02 10:59:09 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,6 +198,8 @@ int HttpResponse::_createHeaderLine(const ConfigServer& config, int bodySIze) {
 
   std::string tmp = "Content-Length: ";
   tmp.append(mylib::nbrToS(bodySIze));
+  tmp.append(CRLF);
+  tmp.append("Connection: close");
   tmp.append(CRLF);
   size += tmp.length();
   this->_response.append(tmp);

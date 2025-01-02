@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/02 10:43:04 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/02 11:55:25 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,12 +98,11 @@ void Socket::accept(Socket& cSocket) {
 }
 
 ssize_t Socket::recv(void) {
+  std::string tmp(8 * KILOBYTE, 0);
   ssize_t size;
 
   size = this->_outBuf.length();
-  std::string tmp(8 * KILOBYTE, 0);
   this->_error = ::recv(this->_socket, (char *)tmp.c_str(), 8 * KILOBYTE, 0);
-  std::cout << "recv size: " << this->_error << std::endl;
   if (this->_error == -1)
     return (this->_error);
   size += this->_error;
@@ -116,8 +115,6 @@ ssize_t Socket::recv(void) {
 void Socket::send(std::string buf, size_t len) {
   const char* tmp = buf.c_str();
   this->_error = ::send(this->_socket, (char *)tmp, len, 0);
-  if (this->_error < 0)
-    throw Socket::SocketError("send error");
   return ;
 }
 
@@ -150,7 +147,7 @@ void Socket::sendBinary(std::string fileName) {
     line += '\n';
     this->_error = ::send(this->_socket, line.c_str(), line.size(), 0);
     if (inBinary.bad())
-      throw Socket::SocketError("getline error: " + std::string(strerror(errno)));
+      throw Socket::SocketError("send error: " + std::string(strerror(errno)));
   }
   inBinary.close();
   return ;
