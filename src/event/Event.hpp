@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/01 22:19:27 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/02 18:12:43 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 
 class Epoll;
 class Socket;
-class ConfigServer;
+struct ConfigServer;
 
 struct Event {
   int fd;
