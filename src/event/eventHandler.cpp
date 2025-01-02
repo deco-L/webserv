@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/02 12:27:12 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/02 12:46:29 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,29 +110,39 @@ void readHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const
 void writeHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const ConfigServer& config) {
   Http http;
 
-  http.parseRequestMessage(socket);
-  #ifdef DEBUG
-  showRequestMessage(http);
-  #endif
-  if (config.client_max_body_size != 0 && http.getRequestBodySize() > config.client_max_body_size) {
-    http.setHttpResponse(HTTP_REQUEST_ENTITY_TOO_LARGE);
-    throw Http::HttpError("HTTP_REQUEST_ENTITY_TOO_LARGE");
+  try {
+    http.parseRequestMessage(socket);
+    #ifdef DEBUG
+    showRequestMessage(http);
+    #endif
+    if (config.client_max_body_size != 0 && http.getRequestBodySize() > config.client_max_body_size) {
+      http.setHttpResponse(HTTP_REQUEST_ENTITY_TOO_LARGE);
+      throw Http::HttpError("HTTP_REQUEST_ENTITY_TOO_LARGE");
+    }
+    socket._outBuf.clear();
+    if (!http.createMethod())
+      throw Http::HttpError("HTTP_BAD_REQUEST");
+    http.executeMethod(config);
+    #ifdef DEBUG
+    showResponseMessage(http);
+    #endif
+    http.sendResponse(socket);
   }
-  socket._outBuf.clear();
-  if (!http.createMethod())
-    throw Http::HttpError("HTTP_BAD_REQUEST");
-  http.executeMethod(config);
-  #ifdef DEBUG
-  showResponseMessage(http);
-  #endif
-  http.sendResponse(socket);
+    catch(const std::exception& e) {
+      std::string error(e.what());
+
+      std::cout << ERROR_COLOR << error << COLOR_RESET << std::endl;
+      http.createResponseMessage(config);
+      #ifdef DEBUG
+      showResponseMessage(http);
+      #endif
+      http.sendResponse(socket);
+    }
 
   std::vector<Event>::iterator it;
 
   it = std::find_if(events.begin(), events.end(), FindByFd(socket._socket));
-
   events.erase(it);
-
   Event tmp(socket._socket, EPOLLIN | EPOLLET, &config, socket, readHandler);
   events.push_back(tmp);
   epoll.modEvent(socket, EPOLLIN | EPOLLET);
