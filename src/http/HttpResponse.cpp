@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/02 10:59:09 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/02 18:11:29 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -390,7 +390,7 @@ int HttpResponse::_createRedirectResponseMessage(const std::string& uri, const C
 }
 
 int HttpResponse::_createErrorResponseMessage(const ConfigServer& config, const std::string& version) {
-  int responseSize;
+  int responseSize = 0;
   int bodySize = 0;
   std::vector<std::pair<int, std::string> >::const_iterator it;
 
@@ -501,6 +501,8 @@ static std::vector<std::string> createEnvs(const ConfigServer& config, std::stri
   envs.push_back("REQUEST_METHOD=" + method);
   envs.push_back("SERVER_PROTOCOL=" + version);
   envs.push_back("SERVER_SOFTWARE=webserv");
+  
+  envs.push_back("PWD=" + _uri.substr(0, _uri.find_last_of('/')));
   return (envs);
 }
 
@@ -509,8 +511,12 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
   int pipeFd[2];
   int status;
   
-  (void)_uri;
+  //(void)_uri;
   (void)_uri_old;
+  
+  // chdir用のpathを作成
+  std::string path_chdir = _uri;
+  path_chdir = path_chdir.substr(0, path_chdir.find_last_of('/'));
   
   if (pipe(pipeFd) == -1)
   {
@@ -533,6 +539,12 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
       _exit(EXIT_FAILURE);
     }
     close(pipeFd[1]);
+    
+    if (chdir(path_chdir.c_str()) == -1)
+    {
+      perror("chdir");
+      _exit(EXIT_FAILURE);
+    }
 
     if (cgiExtension == ".py") {
       char* argv[] = {
@@ -573,8 +585,10 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
   
   int status;
   
+  std::string path_chdir = _uri;
+  path_chdir = path_chdir.substr(0, path_chdir.find_last_of('/'));
   
-  (void)_uri;
+  //(void)_uri;
   (void)_uri_old;
   
   if (pipe(pipeIn) == -1)
@@ -618,6 +632,12 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
       _exit(EXIT_FAILURE);
     }
     close(pipeOut[1]);
+    
+    if (chdir(path_chdir.c_str()) == -1)
+    {
+      perror("chdir");
+      _exit(EXIT_FAILURE);
+    }
     
     if (cgiExtension == ".py") {
       char* argv[] = {
@@ -674,7 +694,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
   }
   env_cstrs.push_back(NULL);
   
-  int readFd;
+  int readFd = -1;
   pid_t pid;
   
   if (!method.compare("GET")) {

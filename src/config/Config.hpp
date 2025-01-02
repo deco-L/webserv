@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/13 14:41:34 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2024/12/28 16:56:47 by kmiyazaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ public:
   int         getArgc(void) const;
   std::string getFileName(void) const;
   const std::vector<ConfigServer>& getServers(void) const;
-  void        checkNbrArg(void) const;
+  // void        checkNbrArg(void) const;
   void        checkConfig(void);
   bool        isValidConfig(std::string file_content);
   void        parseConfig(void);

@@ -6,7 +6,7 @@
 #    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2025/01/02 12:48:51 by csakamot         ###   ########.fr        #
+#    Updated: 2025/01/02 18:10:52 by csakamot         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -49,7 +49,7 @@ OBJS		= ${subst ${SRCDIR}, $(OBJDIR), ${SRCS:.cpp=.o}}
 ##-----------------------------##
 
 ##----------conpiler-----------##
-CC			= g++
+CC			= c++
 CFLAGS	= -Wall -Wextra -Werror -std=c++98 -g -O0 -fsanitize=address
 ##-----------------------------##
 

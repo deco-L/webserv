@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/30 18:01:55 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/02 18:11:08 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ enum PathType {
 class Config;
 class Socket;
 class Epoll;
-class ConfigServer;
+struct ConfigServer;
 
 void configMain(Config& config, int argc, char **argv);
 void socketMain(std::vector<Socket>& sockets, const std::vector<ConfigServer>& config);
