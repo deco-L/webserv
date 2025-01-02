@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/02 15:11:52 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/31 18:34:34 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ class Epoll {
 private:
   int _epollFd;
   int _wait;
-  struct epoll_event _ev;
   struct epoll_event _events[FD_SETSIZE];
 
   Epoll(const Epoll& ovj);
@@ -45,10 +44,11 @@ public:
 
   int getEpollFd(void) const;
   int getWait(void) const;
-  const struct epoll_event getEv(void) const;
   const struct epoll_event* getEvents(void) const;
   void epollCreate(void);
   void setEvent(const Socket& socket, unsigned int flag);
+  void modEvent(const Socket& socket, unsigned int flag);
+  void delEvent(const Socket& socket);
   void epollWait(int time);
   void epollCrose(void);
 };

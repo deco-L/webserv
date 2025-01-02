@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/11/02 17:28:47 by csakamot         ###   ########.fr       */
+/*   Updated: 2024/12/31 18:36:34 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "webserv.hpp"
 #include "Socket.hpp"
 
-Epoll::Epoll(void): _epollFd(0), _wait(0), _ev(), _events() {
+Epoll::Epoll(void): _epollFd(0), _wait(0), _events() {
   return ;
 }
 
@@ -49,10 +49,6 @@ int Epoll::getWait(void) const {
   return (this->_wait);
 }
 
-const struct epoll_event Epoll::getEv(void) const {
-  return (this->_ev);
-}
-
 const struct epoll_event* Epoll::getEvents(void) const {
   return (this->_events);
 }
@@ -66,9 +62,26 @@ void Epoll::epollCreate(void) {
 
 void Epoll::setEvent(const Socket& socket, unsigned int flag) {
   struct epoll_event event;
+
   event.events = flag;
   event.data.fd = socket._socket;
   if (epoll_ctl(this->_epollFd, EPOLL_CTL_ADD, socket._socket, &event) == -1)
+    throw Epoll::EpollError("Error: epoll_ctl error.");
+  return ;
+}
+
+void Epoll::modEvent(const Socket& socket, unsigned int flag) {
+  struct epoll_event event;
+  
+  event.events = flag;
+  event.data.fd = socket._socket;
+  if (epoll_ctl(this->_epollFd, EPOLL_CTL_MOD, socket._socket, &event) == -1)
+    throw Epoll::EpollError("Error: epoll_ctl error.");
+  return ;
+}
+
+void Epoll::delEvent(const Socket& socket) {
+  if (epoll_ctl(this->_epollFd, EPOLL_CTL_DEL, socket._socket, NULL) == -1)
     throw Epoll::EpollError("Error: epoll_ctl error.");
   return ;
 }
