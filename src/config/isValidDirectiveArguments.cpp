@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/18 13:14:30 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2024/12/13 14:47:37 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/01/03 18:39:46 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -431,6 +431,49 @@ static bool hasValidPaths(const std::vector<std::string>& lines)
 				return false;
 			if (access(tokens[1].c_str(), W_OK) != 0)
 				return false;
+		}
+		
+		if (directive == "return")
+		{
+			// check tokens[2] (ない可能性もある)
+			if (tokens.size() == 3)
+			{
+				// tokens[2] は location path か url か. start from '/' or 'http://' or 'https://'
+				if (tokens[2][0] == '/')
+				{
+					std::string return_path(server_root_path + tokens[2]);
+					if (mylib::getPathType(return_path) != IS_FILE)
+						return false;
+					if (access(return_path.c_str(), R_OK) != 0)
+						return false;
+				}
+				else if (tokens[2].find("http://") == 0 || tokens[2].find("https://") == 0)
+				{
+					std::string::size_type pos = 0;
+					if (tokens[2].find("http://"))
+						pos = 8;
+					else if (tokens[2].find("https://"))
+						pos = 9;
+					std::string::size_type startpos = pos;
+					for (; pos < tokens[2].length(); ++pos)
+					{
+						if (tokens[2][pos] == ':' || tokens[2][pos] == '/' || tokens[2][pos] == '?' || tokens[2][pos] == '#')
+							break;
+					}
+					
+					std::string hostname = tokens[2].substr(startpos, pos - startpos);
+					if (hostname == "")
+						return false;
+					for (std::size_t i = 0; i < hostname.length(); ++i)
+					{
+						//許可: 英数字, '.', '-'
+						if (!std::isalnum(hostname[i]) && hostname[i] != '.' && hostname[i] != '-')
+							return false;
+					}
+				}
+				else
+					return false;
+			}
 		}
 
 		if (directive == "cgi_extension")
