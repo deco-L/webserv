@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/31 15:55:43 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/01/02 18:11:29 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,6 +198,8 @@ int HttpResponse::_createHeaderLine(const ConfigServer& config, int bodySIze) {
 
   std::string tmp = "Content-Length: ";
   tmp.append(mylib::nbrToS(bodySIze));
+  tmp.append(CRLF);
+  tmp.append("Connection: close");
   tmp.append(CRLF);
   size += tmp.length();
   this->_response.append(tmp);

@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/22 15:02:49 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/02 10:29:36 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,15 +117,12 @@ void Http::parseRequestMessage(Socket& socket) {
   this->_httpRequest.setHeaders(it, end);
   if (it != end)
     it++;
-  if (this->_httpRequest.getHeader().find("Transfer-Encoding") != this->_httpRequest.getHeader().end())
-    std::cout << this->_httpRequest.getHeader().at("Transfer-Encoding") << "?????" << std::endl;
   if (
     this->_httpRequest.getHeader().find("Transfer-Encoding") !=
     this->_httpRequest.getHeader().end() &&
     this->_httpRequest.getHeader().at("Transfer-Encoding") == "chunked"
-  ) {
+  )
     this->_httpRequest.setChunkedBody(it, end);
-  }
   else {
     this->_httpRequest.setBody(it, end);
   }
