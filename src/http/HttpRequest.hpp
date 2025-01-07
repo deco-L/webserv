@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/18 15:50:45 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/07 21:32:37 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,9 @@
 #include <sstream>
 #include <map>
 #include <vector>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 class HttpRequest {
 private:
@@ -26,6 +29,7 @@ private:
   std::map<std::string, std::string> _headers;
   std::string _body;
   long long _bodySize;
+  struct in_addr _ip;
 
   HttpRequest(const HttpRequest& obj);
   HttpRequest& operator=(const HttpRequest& obj);
@@ -45,6 +49,8 @@ public:
   void setHeaders(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
   void setBody(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
   void setChunkedBody(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
+  void setIp(struct in_addr ip);
+  struct in_addr getIp(void) const;
   std::string getBody(void) const;
   void showHeaders(void) const;
 };

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/22 15:58:26 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/07 21:34:00 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,11 @@
 #include "Error.hpp"
 #include "webserv.hpp"
 
-HttpRequest::HttpRequest(void): _method(""), _uri(""), _version(""), _body(""), _bodySize(0) {
+HttpRequest::HttpRequest(void): _method(""), _uri(""), _version(""), _body(""), _bodySize(0), _ip() {
   return ;
 }
 
-HttpRequest::HttpRequest(const HttpRequest& obj): _method(""), _uri(""), _version(""), _body(""), _bodySize(0) {
+HttpRequest::HttpRequest(const HttpRequest& obj): _method(""), _uri(""), _version(""), _body(""), _bodySize(0), _ip() {
   *this = obj;
   return ;
 }
@@ -102,6 +102,15 @@ void HttpRequest::setChunkedBody(std::vector<std::string>::iterator& it, std::ve
   }
   this->_bodySize = this->_body.length();
   return ;
+}
+
+void HttpRequest::setIp(struct in_addr ip) {
+  this->_ip = ip;
+  return ;
+}
+
+struct in_addr HttpRequest::getIp(void) const {
+  return this->_ip;
 }
 
 void HttpRequest::setBody(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end) {

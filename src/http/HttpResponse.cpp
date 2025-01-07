@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/07 17:13:58 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/01/07 21:36:52 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -715,7 +715,9 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
     envs.push_back("QUERY_STRING=" + _uri_old.substr(_uri_old.find('?') + 1));
   
   // REMOTE_ADDR
-  // requestのIPアドレス ///ここがわからないので後でやる。///
+  // requestのIPアドレス
+  char* cIp = inet_ntoa(request.getIp());
+  envs.push_back("REMOTE_ADDR=" + std::string(cIp));
   
   // REMOTE_HOST
   envs.push_back("REMOTE_HOST="); //逆引きDNSができないので空文字列
