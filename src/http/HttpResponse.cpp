@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/07 16:44:32 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/01/07 17:13:58 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -479,11 +479,7 @@ bool FindNbrInVector::operator()(const std::pair<int, std::string>& p) const {
   return (p.first == target);
 }
 
-
-
-
-
-
+// Authorization: Basic のデコード
 std::string decodeBase64(const std::string &input)
 {
     // Base64 の変換テーブルに従って値を取り出すためのマップを作成
@@ -572,6 +568,7 @@ std::string decodeBase64(const std::string &input)
     return output;
 }
 
+// Authorization: Digest のパース
 bool parseDigestAuthHeader(const std::string &authHeader,
                            std::map<std::string, std::string> &outParams)
 {
@@ -689,13 +686,6 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
   (void)method;
   (void)cgiPath;
   
-  // きているリクエストが該当する仮想サーバーのconfigの情報を取得
-  //std::string root = config.root;
-  //std::cout << "root: " << root << std::endl;
-  
-  
-  
-  
   std::map<std::string, std::string> headers = request.getHeader();
   
   // AUTH_TYPE
@@ -731,7 +721,6 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
   envs.push_back("REMOTE_HOST="); //逆引きDNSができないので空文字列
   // REMOTE_IDENT
   envs.push_back("REMOTE_IDENT="); //必要ないので空文字列
-  
   // REMOTE_USER
   if (headers.find("Authorization") != headers.end())
   {
@@ -752,7 +741,6 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
       throw Http::HttpError("HTTP_INTERNAL_SERVER_ERROR");
     }
   }
-  
   // REQUEST_METHOD
   envs.push_back("REQUEST_METHOD=" + method);
   // SCRIPT_NAME
@@ -776,19 +764,10 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
       }
     }
   }
-  
   // SERVER_PROTOCOL
   envs.push_back("SERVER_PROTOCOL=" + version);
   // SERVER_SOFTWARE
   envs.push_back("SERVER_SOFTWARE=webserv/1.0"); /// ここは自由
-  
-    
-  //  HTTP_ACCEPT	ブラウザがサポートする Content-type: のリスト。すべてを許可する場合、*/* となる。
-  //HTTP_FORWARDED	この要求をフォワードしたプロキシサーバーの情報。送信されない場合もある。
-  //HTTP_REFERER	そのCGIを呼び出したページのURL。送信されない場合や、たまに、全く別のURLを差していることもある。
-  //HTTP_USER_AGENT	ブラウザに関する情報(Mozilla/4.01 [ja] (Win95; I) など)
-  //HTTP_X_FORWARDED_FOR	この要求をフォワードしたプロキシサーバーのIPアドレス
-    
   // HTTP_ACCEPT
   if (headers.find("Accept") != headers.end())
     envs.push_back("HTTP_ACCEPT=" + headers["Accept"]);
@@ -804,11 +783,6 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
   // HTTP_X_FORWARDED_FOR
   if (headers.find("X-Forwarded-For") != headers.end())
     envs.push_back("HTTP_X_FORWARDED_FOR=" + headers["X-Forwarded-For"]);
-    
-  
-  //場合によって設定する必要があるやつ
-  //CONTENT_LENGTH
-  //CONTENT_TYPE
   
   envs.push_back("PWD=" + _uri.substr(0, _uri.find_last_of('/')));
   return (envs);
