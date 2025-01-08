@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Http.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/02 10:29:36 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/07 21:29:35 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,6 +126,7 @@ void Http::parseRequestMessage(Socket& socket) {
   else {
     this->_httpRequest.setBody(it, end);
   }
+  this->_httpRequest.setIp(socket.getCSockAddr().sin_addr);
   if (this->_httpRequest.getBodySize() == -1)
     Http::HttpError("stringstream error");
   return ;
