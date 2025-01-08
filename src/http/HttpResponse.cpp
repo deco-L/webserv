@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/08 23:14:15 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/01/09 00:01:32 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -863,7 +863,6 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
     for (int i = 0; i < CGI_TIMEOUT_ITERATION; ++i) {
         pid_t result = waitpid(pid, &status, WNOHANG);
         if (result == -1) {
-            std::cerr << "waitpid error: " << strerror(errno) << std::endl;
             close(readFd);
             return (-1);
         }
@@ -992,7 +991,6 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
     for (int i = 0; i < CGI_TIMEOUT_ITERATION; ++i) {
         pid_t result = waitpid(pid, &status, WNOHANG);
         if (result == -1) {
-            std::cerr << "waitpid error: " << strerror(errno) << std::endl;
             close(readFd);
             return (-1);
         }
