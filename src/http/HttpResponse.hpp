@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/07 15:48:29 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/01/09 00:07:50 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,8 @@
 #define HTTP_SERVICE_UNAVAILABLE            503
 #define HTTP_GATEWAY_TIME_OUT               504
 #define HTTP_VERSION_NOT_SUPPORTED          505
+
+#define CGI_TIMEOUT_ITERATION 10000000
 
 struct ConfigServer;
 class Socket;

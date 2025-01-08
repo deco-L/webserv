@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/09 00:01:32 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/01/09 00:08:00 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -857,7 +857,6 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
     close(pipeFd[1]);
     readFd = pipeFd[0];
     
-    const int CGI_TIMEOUT_ITERATION = 10000000;
     // タイムアウト処理: ポーリングループ
     bool finished = false;
     for (int i = 0; i < CGI_TIMEOUT_ITERATION; ++i) {
@@ -985,7 +984,6 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
     
     close(pipeOut[1]);
     readFd = pipeOut[0];
-    const int CGI_TIMEOUT_ITERATION = 10000000;
     // タイムアウト処理: ポーリングループ
     bool finished = false;
     for (int i = 0; i < CGI_TIMEOUT_ITERATION; ++i) {
