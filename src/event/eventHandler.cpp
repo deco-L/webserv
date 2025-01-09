@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/07 15:04:42 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/10 00:11:48 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,6 @@ void readHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const
   else if (size < 8 * KILOBYTE && socket._outBuf.length()) {
     std::vector<Event>::iterator it;
 
-    std::cout << "recv size: " << size << std::endl;
     it = std::find_if(events.begin(), events.end(), FindByFd(socket._socket));
     events.erase(it);
 

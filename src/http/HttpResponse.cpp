@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/09 23:52:40 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/10 00:11:05 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -536,7 +536,6 @@ std::string decodeBase64(const std::string &input)
     while (i < input.size()) {
         // 4文字バッファ
         int values[4];
-        int validCount = 0;
 
         // 4文字読み取る
         for (int j = 0; j < 4; ++j) {
@@ -549,7 +548,6 @@ std::string decodeBase64(const std::string &input)
                 // ここではそのまま処理
                 if (decodeMap[c] >= 0) {
                     values[j] = decodeMap[c];
-                    validCount++;
                 } else if (c == '=') {
                     // パディングとみなして -2 とする
                     values[j] = -2;
