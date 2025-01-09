@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/07 21:36:52 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/01/09 00:08:00 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -769,7 +769,7 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
   // SERVER_PROTOCOL
   envs.push_back("SERVER_PROTOCOL=" + version);
   // SERVER_SOFTWARE
-  envs.push_back("SERVER_SOFTWARE=webserv/1.0"); /// ここは自由
+  envs.push_back("SERVER_SOFTWARE=webserv/1.0");
   // HTTP_ACCEPT
   if (headers.find("Accept") != headers.end())
     envs.push_back("HTTP_ACCEPT=" + headers["Accept"]);
@@ -816,7 +816,7 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
     close(pipeFd[1]);
     return (-1);
   }
-  if (pid == 0) {
+  else if (pid == 0) {
     close(pipeFd[0]);
     if (dup2(pipeFd[1], 1) == -1)
     {
@@ -852,12 +852,33 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
       }
     }
   }
-  close(pipeFd[1]);
-  readFd = pipeFd[0];
-  if (waitpid(pid, &status, 0) == -1)
+  else 
   {
-    perror("waitpid");
-    return (-1);
+    close(pipeFd[1]);
+    readFd = pipeFd[0];
+    
+    // タイムアウト処理: ポーリングループ
+    bool finished = false;
+    for (int i = 0; i < CGI_TIMEOUT_ITERATION; ++i) {
+        pid_t result = waitpid(pid, &status, WNOHANG);
+        if (result == -1) {
+            close(readFd);
+            return (-1);
+        }
+        else if (result > 0) { // 子プロセスが終了
+            finished = true;
+            break;
+        }
+    }
+
+    if (!finished) { // タイムアウト発生
+        std::cerr << "CGI script timed out." << std::endl;
+        kill(pid, SIGKILL); // 子プロセスを強制終了
+        waitpid(pid, &status, 0); // 終了ステータスを回収
+        close(readFd);
+        readFd = -1;
+        return (-2); // タイムアウトエラーコード
+    }
   }
   return (0);
 }
@@ -899,9 +920,8 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
     close(pipeOut[1]);
     return (-1);
   }
-  
-  // child
-  if (pid == 0) {
+  else if (pid == 0)// child
+  {
     close(pipeIn[1]);
     if (dup2(pipeIn[0], STDIN_FILENO) == -1)
     {
@@ -951,17 +971,40 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
 
     body = body.substr(0, body.find_last_not_of('\0') + 1);
     
-    write(pipeIn[1], body.data(), body.length());
+    ssize_t write_ret = write(pipeIn[1], body.data(), body.length());
+    if (write_ret == -1)
+    {
+      close(pipeIn[1]);
+      close(pipeOut[1]);
+      close(pipeOut[0]);
+      return (-1);
+    }
     
     close(pipeIn[1]);
     
-    
     close(pipeOut[1]);
     readFd = pipeOut[0];
-    if (waitpid(pid, &status, 0) == -1)
-    {
-      perror("waitpid");
-      return (-1);
+    // タイムアウト処理: ポーリングループ
+    bool finished = false;
+    for (int i = 0; i < CGI_TIMEOUT_ITERATION; ++i) {
+        pid_t result = waitpid(pid, &status, WNOHANG);
+        if (result == -1) {
+            close(readFd);
+            return (-1);
+        }
+        else if (result > 0) { // 子プロセスが終了
+            finished = true;
+            break;
+        }
+    }
+    
+    if (!finished) { // タイムアウト発生
+        std::cerr << "CGI script timed out." << std::endl;
+        kill(pid, SIGKILL); // 子プロセスを強制終了
+        waitpid(pid, &status, 0); // 終了ステータスを回収
+        close(readFd);
+        readFd = -1;
+        return (-2); // タイムアウトエラーコード
     }
   }
   return (0);
@@ -983,8 +1026,21 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
   pid_t pid;
   
   if (!method.compare("GET")) {
-    if (cgiExecGet(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri) < 0) {
-      if (pid != 0 && kill(pid, 0) == 0) {
+    int execResult = cgiExecGet(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri);
+    if (execResult < 0) {
+      if (execResult == -2) {
+        if (pid != 0 && kill(pid, 0) == 0) {
+          if (kill(pid, SIGTERM) == -1)
+          {
+            std::cerr << ERROR_COLOR << "kill error" << COLOR_RESET << std::endl;
+            throw HttpResponse::HttpResponseError("kill");
+          }
+        }
+        this->_response.clear();
+        this->setStatus(HTTP_GATEWAY_TIME_OUT);
+        throw HttpResponse::HttpResponseError("CGI script timed out.");
+      }
+      else if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1)
         {
           std::cerr << ERROR_COLOR << "kill error" << COLOR_RESET << std::endl;
@@ -996,8 +1052,21 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
     }
   } else if (!method.compare("POST")) {
     std::string _body = request.getBody();
-    if (cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri, _body) < 0) {
-      if (pid != 0 && kill(pid, 0) == 0) {
+    int execResult = cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri, _body);
+    if (execResult < 0) {
+      if (execResult == -2) {
+        if (pid != 0 && kill(pid, 0) == 0) {
+          if (kill(pid, SIGTERM) == -1)
+          {
+            std::cerr << ERROR_COLOR << "kill error" << COLOR_RESET << std::endl;
+            throw HttpResponse::HttpResponseError("kill");
+          }
+        }
+        this->_response.clear();
+        this->setStatus(HTTP_GATEWAY_TIME_OUT);
+        throw HttpResponse::HttpResponseError("CGI script timed out.");
+      }
+      else if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1)
         {
           std::cerr << ERROR_COLOR << "kill error" << COLOR_RESET << std::endl;
