@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/07 17:35:54 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/09 23:50:58 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,8 @@
 #define HTTP_GATEWAY_TIME_OUT               504
 #define HTTP_VERSION_NOT_SUPPORTED          505
 
+#define CGI_TIMEOUT_ITERATION 10000000
+
 struct ConfigServer;
 class Socket;
 class HttpRequest;
@@ -90,8 +92,10 @@ private:
   int _createErrorResponseMessage(const ConfigServer& config, const std::string& version);
   void _createErrorResponse(const ConfigServer& config, int status);
   std::string _createAutoindexBody(std::string path);
-    
-  std::string _doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, std::string _body);
+
+
+  std::vector<std::string> createEnvs(const ConfigServer& config, std::string _uri, std::string method, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request);
+  std::string _doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request);
 
 public:
   HttpResponse(unsigned int status);
@@ -102,7 +106,7 @@ public:
   class HttpResponseError : public std::exception {
   private:
     std::string _error_message;
-  
+
   public:
     HttpResponseError(std::string error);
     virtual ~HttpResponseError() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW;
@@ -118,7 +122,7 @@ public:
   void setRedirectPath(const std::string& path);
   int createResponseMessage(const std::string& method, std::string path, const ConfigServer& config, std::string version);
   int createAutoindexMessage(std::string path, const ConfigServer& config, std::string version);
-  int createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string body);
+  int createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, HttpRequest& request);
   void execute(Socket& socket);
 
   HttpResponse& operator=(const HttpResponse& obj);

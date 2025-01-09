@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/07 15:00:27 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/09 23:50:32 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,6 +126,7 @@ void Http::parseRequestMessage(Socket& socket) {
   else {
     this->_httpRequest.setBody(it, end);
   }
+  this->_httpRequest.setIp(socket.getCSockAddr().sin_addr);
   if (this->_httpRequest.getBodySize() == -1)
     Http::HttpError("stringstream error");
   return ;

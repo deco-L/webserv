@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/07 20:46:42 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/09 23:52:40 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "Config.hpp"
 #include "webserv.hpp"
 #include "Error.hpp"
+#include "Http.hpp"
 
 HttpResponse::HttpResponse(void): _status(0), _returnFlag(false), _redirectPath(""), _response("") {
   return ;
@@ -503,23 +504,313 @@ bool FindNbrInVector::operator()(const std::pair<int, std::string>& p) const {
   return (p.first == target);
 }
 
-static std::vector<std::string> createEnvs(const ConfigServer& config, std::string _uri, std::string method, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version)
+// Authorization: Basic のデコード
+std::string decodeBase64(const std::string &input)
+{
+    // Base64 の変換テーブルに従って値を取り出すためのマップを作成
+    // ASCIIの全256文字分用意し、初期値は-1とする
+    int decodeMap[256];
+    std::memset(decodeMap, -1, sizeof(decodeMap));
+
+    // Base64 で使われる64文字
+    const char* base64Chars =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz"
+        "0123456789+/";
+
+    // decodeMap に文字 -> 値 の対応をセット
+    for (int i = 0; i < 64; ++i) {
+        unsigned char c = (unsigned char)base64Chars[i];
+        decodeMap[c] = i;
+    }
+    // パディング用 '=' は特別扱い（-2などにして判定できるようにしてもいい）
+    // ここでは -1 のままにしておいて後で判定
+
+    // 出力先（可変長で受けたいので、いったん std::string を用意）
+    std::string output;
+    output.reserve(input.size()); // 大まかなサイズ確保
+
+    // 4文字単位で処理
+    // 1ブロック = 4文字 -> 3バイト (実際はパディング'='があるかもしれない)
+    size_t i = 0;
+    while (i < input.size()) {
+        // 4文字バッファ
+        int values[4];
+        int validCount = 0;
+
+        // 4文字読み取る
+        for (int j = 0; j < 4; ++j) {
+            // インデックスが範囲外なら -1
+            if (i >= input.size()) {
+                values[j] = -1;
+            } else {
+                unsigned char c = (unsigned char)input[i++];
+                // 改行や空白を飛ばす実装を入れても良い
+                // ここではそのまま処理
+                if (decodeMap[c] >= 0) {
+                    values[j] = decodeMap[c];
+                    validCount++;
+                } else if (c == '=') {
+                    // パディングとみなして -2 とする
+                    values[j] = -2;
+                } else {
+                    // 不正文字（例: 改行など） -> とりあえず -1
+                    values[j] = -1;
+                }
+            }
+        }
+
+        // パディングが無いブロックの場合
+        if (values[0] < 0) break; // そもそも先頭が不正なら終わり
+        if (values[1] < 0) break; // 2文字目が不正なら終わり
+
+        // 24ビットを3バイトにまとめる
+        //   1文字目(6bit) << 18  + 2文字目(6bit) << 12 + 3文字目(6bit) << 6 + 4文字目(6bit)
+        int decoded = (values[0] & 0x3F) << 18
+                    | (values[1] & 0x3F) << 12;
+
+        unsigned char c1 = (decoded >> 16) & 0xFF;
+        output.push_back((char)c1);
+
+        if (values[2] >= 0) {
+            decoded |= (values[2] & 0x3F) << 6;
+            unsigned char c2 = (decoded >> 8) & 0xFF;
+            output.push_back((char)c2);
+        }
+        if (values[3] >= 0) {
+            decoded |= (values[3] & 0x3F);
+            unsigned char c3 = decoded & 0xFF;
+            output.push_back((char)c3);
+        }
+
+        // パディング(=)があればそこまでで終了
+        // values[2] == -2 とか values[3] == -2 で判断
+        if (values[2] == -2 || values[3] == -2) {
+            break;
+        }
+    }
+
+    return output;
+}
+
+// Authorization: Digest のパース
+bool parseDigestAuthHeader(const std::string &authHeader,
+                           std::map<std::string, std::string> &outParams)
+{
+    outParams.clear();
+
+    // "Digest " で始まっているか
+    const std::string prefix = "Digest ";
+    if (authHeader.size() < prefix.size()) {
+        return false;
+    }
+    if (authHeader.compare(0, prefix.size(), prefix) != 0) {
+        return false;
+    }
+
+    // "Digest " の後ろ (パラメータ部) を取り出す
+    std::string content = authHeader.substr(prefix.size());
+
+    // カンマ区切りで key=value を取り出す
+    std::string::size_type start = 0;
+    while (start < content.size()) {
+        // 次にカンマがある位置を探す
+        std::string::size_type commaPos = content.find(',', start);
+        std::string token;
+        if (commaPos == std::string::npos) {
+            // カンマが見つからなければ、末尾まで
+            token = content.substr(start);
+            start = content.size();
+        } else {
+            token = content.substr(start, commaPos - start);
+            start = commaPos + 1; // カンマの次から
+        }
+
+        // 前後の空白を除去 (簡易トリム)
+        while (!token.empty() && (token[0] == ' ' || token[0] == '\t')) {
+            token.erase(token.begin());
+        }
+        while (!token.empty() &&
+               (token[token.size() - 1] == ' ' || token[token.size() - 1] == '\t')) {
+            token.erase(token.end() - 1);
+        }
+
+        // key=value に分割
+        std::string::size_type eqPos = token.find('=');
+        if (eqPos == std::string::npos) {
+            // '=' が無ければ不正
+            continue; // 今回は無視して進む
+        }
+
+        std::string key = token.substr(0, eqPos);
+        std::string val = token.substr(eqPos + 1);
+
+        // key の前後空白除去
+        while (!key.empty() && (key[0] == ' ' || key[0] == '\t')) {
+            key.erase(key.begin());
+        }
+        while (!key.empty() &&
+               (key[key.size() - 1] == ' ' || key[key.size() - 1] == '\t')) {
+            key.erase(key.end() - 1);
+        }
+
+        // val の前後空白除去
+        while (!val.empty() && (val[0] == ' ' || val[0] == '\t')) {
+            val.erase(val.begin());
+        }
+        while (!val.empty() &&
+               (val[val.size() - 1] == ' ' || val[val.size() - 1] == '\t')) {
+            val.erase(val.end() - 1);
+        }
+
+        // もし val が "..." で囲まれていれば外す
+        if (val.size() >= 2 && val[0] == '\"' && val[val.size() - 1] == '\"') {
+            val = val.substr(1, val.size() - 2);
+        }
+
+        // map に格納
+        outParams[key] = val;
+    }
+
+    return true;
+}
+
+/**
+ * @brief
+ *  Digest認証のパラメータ文字列("xxx...")から username を抽出し、返却する。
+ *
+ * @param digestString  "Authorization: Digest " の後に続くパラメータ部。
+ *   例:  username="Mufasa", realm="testrealm@host.com", nonce="12345", ...
+ * @return std::string  抽出した username。見つからない or パース失敗なら空文字列。
+ */
+std::string getDigestUser(const std::string &digestString)
+{
+    // parseDigestAuthHeader は "Digest " を含む文字列を要求するので、
+    // "Digest " をプレフィックスとして付ける
+    std::string fullHeader = "Digest " + digestString;
+
+    std::map<std::string, std::string> params;
+    bool success = parseDigestAuthHeader(fullHeader, params);
+    if (!success) {
+        // パース失敗 -> 空文字
+        return std::string();
+    }
+
+    // "username" キーが存在しなければデフォルトコンストラクタ(空文字)が返る
+    return params["username"];
+}
+
+std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, std::string _uri, std::string method, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request)
 {
   std::vector<std::string> envs;
-  
+
   (void)cgiExtension;
-  
-  if (_uri != _uri_old) // /cgi/cgi.py/usr/ -> /usr
+  (void)request;
+  (void)version;
+  (void)config;
+  (void)method;
+  (void)cgiPath;
+
+  std::map<std::string, std::string> headers = request.getHeader();
+
+  // AUTH_TYPE
+  if (headers.find("Authorization") != headers.end())
+    envs.push_back("AUTH_TYPE=" + headers["Authorization"].substr(0, headers["Authorization"].find(' ')));
+  // CONTENT_LENGTH
+  if (method == "POST" && headers.find("Content-Length") != headers.end())
+    envs.push_back("CONTENT_LENGTH=" + headers["Content-Length"]);
+  // CONTENT_TYPE
+  if (method == "POST" && headers.find("Content-Type") != headers.end())
   {
-    envs.push_back("PATH_INFO=" + _uri_old.substr(_uri_old.find(cgiExtension) + cgiExtension.length()));
+    std::string tmp = headers["Content-Type"];
+    envs.push_back("CONTENT_TYPE=" + tmp.substr(0, tmp.find(';')) + ';');
   }
-  envs.push_back("SCRIPT_NAME=" + cgiPath);
-  envs.push_back("SERVER_NAME=" + config.server_name.front());
-  envs.push_back("SERVER_PORT=" + config.listen.front().first);
+  // GATEWAY_INTERFACE
+  envs.push_back("GATEWAY_INTERFACE=CGI/1.1");
+  // PATH_INFO, PATH_TRANSLATED
+  if (_uri != config.root + _uri_old) // /cgi/cgi.py/usr/ -> /usr
+  {
+    std::string tmp = _uri_old.substr(_uri_old.find(cgiExtension) + cgiExtension.length());
+    tmp = tmp.substr(0, tmp.find('?'));
+    envs.push_back("PATH_INFO=" + tmp);
+    envs.push_back("PATH_TRANSLATED=" + config.root + tmp);
+  }
+  // QUERY_STRING
+  if (_uri_old.find('?') != std::string::npos)
+    envs.push_back("QUERY_STRING=" + _uri_old.substr(_uri_old.find('?') + 1));
+
+  // REMOTE_ADDR
+  // requestのIPアドレス
+  char* cIp = inet_ntoa(request.getIp());
+  envs.push_back("REMOTE_ADDR=" + std::string(cIp));
+
+  // REMOTE_HOST
+  envs.push_back("REMOTE_HOST="); //逆引きDNSができないので空文字列
+  // REMOTE_IDENT
+  envs.push_back("REMOTE_IDENT="); //必要ないので空文字列
+  // REMOTE_USER
+  if (headers.find("Authorization") != headers.end())
+  {
+    std::vector<std::string> auths = mylib::split(headers["Authorization"], " ");
+    if (auths.size() == 2 && auths[0] == "Basic")
+    {
+      std::string decoded = decodeBase64(auths[1]);
+      envs.push_back("REMOTE_USER=" + decoded.substr(0, decoded.find(':')));
+    }
+    else if (auths.size() == 2 && auths[0] == "Digest")
+    {
+      std::string user = getDigestUser(auths[1]);
+      envs.push_back("REMOTE_USER=" + user);
+    }
+    else
+    {
+      this->setStatus(HTTP_INTERNAL_SERVER_ERROR);
+      throw Http::HttpError("HTTP_INTERNAL_SERVER_ERROR");
+    }
+  }
+  // REQUEST_METHOD
   envs.push_back("REQUEST_METHOD=" + method);
+  // SCRIPT_NAME
+  std::cout << "SCRIPT_NAME=" + _uri.substr(config.root.length()) << std::endl;
+  envs.push_back("SCRIPT_NAME=" + _uri.substr(config.root.length()));
+  // SERVER_NAME
+  // SERVER_PORT
+  std::string ip = headers["Host"].substr(0, headers["Host"].find(':'));
+  std::string port = headers["Host"].substr(headers["Host"].find(':') + 1);
+  bool flag = false;
+  for (size_t i = 0; i < config.server_name.size() && !flag; i++)
+  {
+    for (size_t j = 0; j < config.listen.size(); j++)
+    {
+      if (config.listen[j].first == ip && config.listen[j].second == port)
+      {
+        envs.push_back("SERVER_NAME=" + config.server_name[i]);
+        envs.push_back("SERVER_PORT=" + port);
+        flag = true;
+        break;
+      }
+    }
+  }
+  // SERVER_PROTOCOL
   envs.push_back("SERVER_PROTOCOL=" + version);
-  envs.push_back("SERVER_SOFTWARE=webserv");
-  
+  // SERVER_SOFTWARE
+  envs.push_back("SERVER_SOFTWARE=webserv/1.0");
+  // HTTP_ACCEPT
+  if (headers.find("Accept") != headers.end())
+    envs.push_back("HTTP_ACCEPT=" + headers["Accept"]);
+  // HTTP_FORWARDED
+  if (headers.find("Forwarded") != headers.end())
+    envs.push_back("HTTP_FORWARDED=" + headers["Forwarded"]);
+  // HTTP_REFERER
+  if (headers.find("Referer") != headers.end())
+    envs.push_back("HTTP_REFERER=" + headers["Referer"]);
+  // HTTP_USER_AGENT
+  if (headers.find("User-Agent") != headers.end())
+    envs.push_back("HTTP_USER_AGENT=" + headers["User-Agent"]);
+  // HTTP_X_FORWARDED_FOR
+  if (headers.find("X-Forwarded-For") != headers.end())
+    envs.push_back("HTTP_X_FORWARDED_FOR=" + headers["X-Forwarded-For"]);
+
   envs.push_back("PWD=" + _uri.substr(0, _uri.find_last_of('/')));
   return (envs);
 }
@@ -527,20 +818,21 @@ static std::vector<std::string> createEnvs(const ConfigServer& config, std::stri
 int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string _uri) {
   int pipeFd[2];
   int status;
-  
+
   //(void)_uri;
   (void)_uri_old;
-  
+
   // chdir用のpathを作成
   std::string path_chdir = _uri;
   path_chdir = path_chdir.substr(0, path_chdir.find_last_of('/'));
-  
+  std::cout << "path_chdir: " << path_chdir << std::endl;
+
   if (pipe(pipeFd) == -1)
   {
     perror("pipe");
     return (-1);
   }
-  
+
   pid = fork();
   if (pid == -1)
   {
@@ -548,7 +840,7 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
     close(pipeFd[1]);
     return (-1);
   }
-  if (pid == 0) {
+  else if (pid == 0) {
     close(pipeFd[0]);
     if (dup2(pipeFd[1], 1) == -1)
     {
@@ -556,7 +848,7 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
       _exit(EXIT_FAILURE);
     }
     close(pipeFd[1]);
-    
+
     if (chdir(path_chdir.c_str()) == -1)
     {
       perror("chdir");
@@ -584,12 +876,33 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
       }
     }
   }
-  close(pipeFd[1]);
-  readFd = pipeFd[0];
-  if (waitpid(pid, &status, 0) == -1)
+  else
   {
-    perror("waitpid");
-    return (-1);
+    close(pipeFd[1]);
+    readFd = pipeFd[0];
+
+    // タイムアウト処理: ポーリングループ
+    bool finished = false;
+    for (int i = 0; i < CGI_TIMEOUT_ITERATION; ++i) {
+        pid_t result = waitpid(pid, &status, WNOHANG);
+        if (result == -1) {
+            close(readFd);
+            return (-1);
+        }
+        else if (result > 0) { // 子プロセスが終了
+            finished = true;
+            break;
+        }
+    }
+
+    if (!finished) { // タイムアウト発生
+        std::cerr << "CGI script timed out." << std::endl;
+        kill(pid, SIGKILL); // 子プロセスを強制終了
+        waitpid(pid, &status, 0); // 終了ステータスを回収
+        close(readFd);
+        readFd = -1;
+        return (-2); // タイムアウトエラーコード
+    }
   }
   return (0);
 }
@@ -597,21 +910,21 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
 int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string _uri, std::string body) {
   int pipeIn[2]; // parent -> child
   int pipeOut[2]; // child -> parent
-  
+
   int status;
-  
+
   std::string path_chdir = _uri;
   path_chdir = path_chdir.substr(0, path_chdir.find_last_of('/'));
-  
+
   //(void)_uri;
   (void)_uri_old;
-  
+
   if (pipe(pipeIn) == -1)
   {
     perror("pipe");
     return (-1);
   }
-  
+
   if (pipe(pipeOut) == -1)
   {
     close(pipeIn[0]);
@@ -619,7 +932,7 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
     perror("pipe");
     return (-1);
   }
-  
+
   pid = fork();
   if (pid == -1)
   {
@@ -629,9 +942,8 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
     close(pipeOut[1]);
     return (-1);
   }
-  
-  // child
-  if (pid == 0) {
+  else if (pid == 0)// child
+  {
     close(pipeIn[1]);
     if (dup2(pipeIn[0], STDIN_FILENO) == -1)
     {
@@ -639,7 +951,7 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
       _exit(EXIT_FAILURE);
     }
     close(pipeIn[0]);
-    
+
     close(pipeOut[0]);
     if (dup2(pipeOut[1], STDOUT_FILENO) == -1)
     {
@@ -647,13 +959,13 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
       _exit(EXIT_FAILURE);
     }
     close(pipeOut[1]);
-    
+
     if (chdir(path_chdir.c_str()) == -1)
     {
       perror("chdir");
       _exit(EXIT_FAILURE);
     }
-    
+
     if (cgiExtension == ".py") {
       char* argv[] = {
         const_cast<char*>("python3"),
@@ -680,40 +992,77 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
     close(pipeIn[0]);
 
     body = body.substr(0, body.find_last_not_of('\0') + 1);
-    
-    write(pipeIn[1], body.data(), body.length());
-    
+
+    ssize_t write_ret = write(pipeIn[1], body.data(), body.length());
+    if (write_ret == -1)
+    {
+      close(pipeIn[1]);
+      close(pipeOut[1]);
+      close(pipeOut[0]);
+      return (-1);
+    }
+
     close(pipeIn[1]);
-    
-    
+
     close(pipeOut[1]);
     readFd = pipeOut[0];
-    if (waitpid(pid, &status, 0) == -1)
-    {
-      perror("waitpid");
-      return (-1);
+    // タイムアウト処理: ポーリングループ
+    bool finished = false;
+    for (int i = 0; i < CGI_TIMEOUT_ITERATION; ++i) {
+        pid_t result = waitpid(pid, &status, WNOHANG);
+        if (result == -1) {
+            close(readFd);
+            return (-1);
+        }
+        else if (result > 0) { // 子プロセスが終了
+            finished = true;
+            break;
+        }
+    }
+
+    if (!finished) { // タイムアウト発生
+        std::cerr << "CGI script timed out." << std::endl;
+        kill(pid, SIGKILL); // 子プロセスを強制終了
+        waitpid(pid, &status, 0); // 終了ステータスを回収
+        close(readFd);
+        readFd = -1;
+        return (-2); // タイムアウトエラーコード
     }
   }
   return (0);
 }
 
-std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, std::string _body) {
+
+std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request) {
   std::string body;
-  
-  std::vector<std::string> envs = createEnvs(config, _uri, method, cgiPath, cgiExtension, _uri_old, version);
-  
+
+  std::vector<std::string> envs = this->createEnvs(config, _uri, method, cgiPath, cgiExtension, _uri_old, version, request);
+
   std::vector<char*> env_cstrs;
   for (size_t i = 0; i < envs.size(); ++i) {
       env_cstrs.push_back(const_cast<char*>(envs[i].c_str()));
   }
   env_cstrs.push_back(NULL);
-  
+
   int readFd = -1;
   pid_t pid;
-  
+
   if (!method.compare("GET")) {
-    if (cgiExecGet(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri) < 0) {
-      if (pid != 0 && kill(pid, 0) == 0) {
+    int execResult = cgiExecGet(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri);
+    if (execResult < 0) {
+      if (execResult == -2) {
+        if (pid != 0 && kill(pid, 0) == 0) {
+          if (kill(pid, SIGTERM) == -1)
+          {
+            std::cerr << ERROR_COLOR << "kill error" << COLOR_RESET << std::endl;
+            throw HttpResponse::HttpResponseError("kill");
+          }
+        }
+        this->_response.clear();
+        this->setStatus(HTTP_GATEWAY_TIME_OUT);
+        throw HttpResponse::HttpResponseError("CGI script timed out.");
+      }
+      else if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1)
         {
           std::cerr << ERROR_COLOR << "kill error" << COLOR_RESET << std::endl;
@@ -724,8 +1073,22 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
       this->setStatus(HTTP_INTERNAL_SERVER_ERROR);
     }
   } else if (!method.compare("POST")) {
-    if (cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri, _body) < 0) {
-      if (pid != 0 && kill(pid, 0) == 0) {
+    std::string _body = request.getBody();
+    int execResult = cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri, _body);
+    if (execResult < 0) {
+      if (execResult == -2) {
+        if (pid != 0 && kill(pid, 0) == 0) {
+          if (kill(pid, SIGTERM) == -1)
+          {
+            std::cerr << ERROR_COLOR << "kill error" << COLOR_RESET << std::endl;
+            throw HttpResponse::HttpResponseError("kill");
+          }
+        }
+        this->_response.clear();
+        this->setStatus(HTTP_GATEWAY_TIME_OUT);
+        throw HttpResponse::HttpResponseError("CGI script timed out.");
+      }
+      else if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1)
         {
           std::cerr << ERROR_COLOR << "kill error" << COLOR_RESET << std::endl;
@@ -735,7 +1098,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
       this->_response.clear();
       this->setStatus(HTTP_INTERNAL_SERVER_ERROR);
     }
-    
+
   }
   if (readFd != -1) {
     char buf[1024];
@@ -762,21 +1125,23 @@ std::string makeCgiHeader(std::string str) {
   str = str.substr(1);
 
   contentLength = "Content-Length: " + mylib::nbrToS(str.length());
-  
-  
+
+
   header = contentType + CRLF + contentLength;
   if (location.length() > 0)
     header = "Location: " + location + CRLF + header;
   return (header);
 }
 
-int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string _body) {
+int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, HttpRequest& request) {
   int responseSize;
   std::string body;
   std::string header;
   std::string tmp;
 
-  tmp = this->_doCgi(method, _uri, config, cgiPath, cgiExtension, _uri_old, version, _body);
+  //std::string _body = request.getBody();
+
+  tmp = this->_doCgi(method, _uri, config, cgiPath, cgiExtension, _uri_old, version, request);
 
   header = makeCgiHeader(tmp);
   body = tmp.substr(tmp.find("\n\n") + 2);

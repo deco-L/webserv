@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/02 11:55:25 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/07 21:20:13 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,6 +169,10 @@ void Socket::close(void) {
   this->_error = -1;
   ::close(this->_socket);
   return ;
+}
+
+struct sockaddr_in Socket::getCSockAddr(void) const {
+  return (this->_cSockAddr);
 }
 
 Socket& Socket::operator=(const Socket& obj) {
