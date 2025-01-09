@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/28 12:40:06 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/07 17:44:54 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,10 +66,12 @@ const char* AHttpMethod::MethodError::what(void) const throw() {
 }
 
 HttpResponse* AHttpMethod::_returnRedirectStatus(const ConfigLocation& location) {
-  std::string tmp = location.return_.second;
+  HttpResponse* response = new HttpResponse(location.return_.first);
+  std::string redirectPath = location.return_.second;
 
-  this->setUri(tmp);
-  return (new HttpResponse(location.return_.first));
+  response->setReturnFlag(true);
+  response->setRedirectPath(redirectPath);
+  return (response);
 }
 
 HttpResponse* AHttpMethod::_setGetResponseStatus(const ConfigServer& config, std::string& path, const ConfigLocation& location) {

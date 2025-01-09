@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/02 12:46:29 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/07 15:04:42 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,12 +40,7 @@ void execEvent(Epoll& epoll, const epoll_event& event, std::vector<Event>& event
   (void) event;
   std::vector<Event> tmp = events;
 
-  std::cout << "===========================" << std::endl;
   for (std::vector<Event>::iterator it = tmp.begin(); it != tmp.end(); it++) {
-    if ((it->event & (EPOLLIN | EPOLLET)) == (EPOLLIN | EPOLLET))
-      std::cout << "EPOLLIN | EPOLLET" << std::endl;
-    else if ((it->event & EPOLLIN) == EPOLLIN)
-      std::cout << "EPOLLIN" << std::endl;
     if ((it->event & EPOLLIN) == EPOLLIN)
       it->func(epoll, events, it->socket, *it->config);
     else if ((it->event & (EPOLLIN | EPOLLET)) == (EPOLLIN | EPOLLET))
@@ -54,10 +49,7 @@ void execEvent(Epoll& epoll, const epoll_event& event, std::vector<Event>& event
       it->func(epoll, events, it->socket, *it->config);
   }
   tmp = events;
-  std::cout << "size: " << tmp.size() << std::endl;
   for (std::vector<Event>::iterator it = tmp.begin(); it != tmp.end(); it++) {
-    if ((it->event & EPOLLOUT) == EPOLLOUT)
-        std::cout << "EPOLLOUT" << std::endl;
     if ((it->event & EPOLLOUT) == EPOLLOUT)
       it->func(epoll, events, it->socket, *it->config);
   }

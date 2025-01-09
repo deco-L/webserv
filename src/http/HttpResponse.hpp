@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/28 17:30:29 by kmiyazaw         ###   ########.fr       */
+/*   Updated: 2025/01/07 17:35:54 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,7 @@ class AHttpMethod;
 class HttpResponse {
 private:
   unsigned int _status;
+  bool _returnFlag;
   std::string _redirectPath;
   std::string _response;
 
@@ -109,9 +110,12 @@ public:
   };
 
   unsigned int getStatus(void) const;
+  bool getReturnFlag(void) const;
   const std::string& getRedirectPath(void) const;
   const std::string& getResponse(void) const;
   void setStatus(unsigned int status);
+  void setReturnFlag(bool flag);
+  void setRedirectPath(const std::string& path);
   int createResponseMessage(const std::string& method, std::string path, const ConfigServer& config, std::string version);
   int createAutoindexMessage(std::string path, const ConfigServer& config, std::string version);
   int createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string body);
