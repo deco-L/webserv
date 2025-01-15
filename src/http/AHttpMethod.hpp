@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AHttpMethod.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/28 17:31:59 by kmiyazaw         ###   ########.fr       */
+/*   Updated: 2025/01/15 18:10:38 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ protected:
   std::string _uri;
   std::string _uri_old;
   const std::string _version;
-  
+
   bool _autoindex;
   std::string _cgi_extension;
   std::string _cgi_path;
@@ -45,7 +45,7 @@ protected:
   class MethodError : public std::exception {
   private:
     std::string _error_message;
-  
+
   public:
     MethodError(std::string error);
     virtual ~MethodError() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW;

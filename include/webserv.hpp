@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/02 18:11:08 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/15 18:26:43 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include <fstream>
 #include <stack>
 #include <map>
+#include <iomanip>
 #include <algorithm>
 #include <fstream>
 
@@ -137,6 +138,8 @@ namespace mylib {
   std::string nbrToS(T nbr);
 
   std::string formatTime(time_t rawTime);
+  std::string getCurrentTime(void);
+  std::string getFileModifiedTime(const std::string& path);
 }
 
 #include "string.tpp"

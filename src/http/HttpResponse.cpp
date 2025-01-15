@@ -3,30 +3,51 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/09 00:08:00 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/01/15 18:12:56 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "Config.hpp"
 #include "HttpResponse.hpp"
 #include "HttpRequest.hpp"
 #include "Socket.hpp"
-#include "Config.hpp"
 #include "webserv.hpp"
 #include "Error.hpp"
 #include "Http.hpp"
+#include "MIME.hpp"
 
-HttpResponse::HttpResponse(void): _status(0), _redirectPath(""), _response("") {
+static void _initHeaderList(headerList& list) {
+  list.server = std::make_pair("Server", "webserv");
+  list.date = std::make_pair("Date", "");
+  list.contentType = std::make_pair("Content-Type", "");
+  list.contentLength = std::make_pair("Content-Length", "");
+  list.lastModified = std::make_pair("Last-Modified", "");
+  list.allow = std::make_pair("Allow", "");
+  list.connection = std::make_pair("Connection", "close");
+  list.acceptRanges = std::make_pair("Accept-Ranges", "bytes");
   return ;
 }
 
-HttpResponse::HttpResponse(unsigned int status): _status(status), _redirectPath(""), _response("") {
+HttpResponse::HttpResponse(void): _status(0), _returnFlag(false), _location(), _redirectPath(""), _response("") {
+  _initHeaderList(this->_responseHeader);
   return ;
 }
 
-HttpResponse::HttpResponse(unsigned int status, std::string redirectPath): _status(status), _redirectPath(redirectPath), _response("") {
+HttpResponse::HttpResponse(unsigned int status): _status(status), _returnFlag(false), _location(), _redirectPath(""), _response("") {
+  _initHeaderList(this->_responseHeader);
+  return ;
+}
+
+HttpResponse::HttpResponse(unsigned int status, ConfigLocation location): _status(status), _returnFlag(false), _location(location), _redirectPath(""), _response("") {
+  _initHeaderList(this->_responseHeader);
+  return ;
+}
+
+HttpResponse::HttpResponse(unsigned int status, std::string redirectPath, ConfigLocation location): _status(status), _returnFlag(false), _location(location), _redirectPath(redirectPath), _response("") {
+  _initHeaderList(this->_responseHeader);
   return ;
 }
 
@@ -54,156 +75,205 @@ int HttpResponse::_createStatusLine(std::string version) {
   this->_response.append(version);
   this->_response.append(" ");
   this->_response.append(mylib::nbrToS(this->_status));
-  this->_response.append(" ");
   switch(this->_status) {
     case HTTP_CONTINUE:
-      this->_response.append("Continue");
+      this->_response.append(" Continue");
       break ;
     case HTTP_SWITCHING_PROTOCOlS:
-      this->_response.append("Switching Protocols");
+      this->_response.append(" Switching Protocols");
       break ;
     case HTTP_OK:
-      this->_response.append("OK");
+      this->_response.append(" OK");
       break ;
     case HTTP_CREATED:
-      this->_response.append("Created");
+      this->_response.append(" Created");
       break ;
     case HTTP_ACCEPTED:
-      this->_response.append("Accepted");
+      this->_response.append(" Accepted");
       break ;
     case HTTP_NON_AUTHORITATIVE_INFO:
-      this->_response.append("Non Authoritative Info");
+      this->_response.append(" Non Authoritative Info");
       break ;
     case HTTP_NO_CONTENT:
-      this->_response.append("No Content");
+      this->_response.append(" No Content");
       break ;
     case HTTP_RESET_CONTENT:
-      this->_response.append("Reset Content");
+      this->_response.append(" Reset Content");
       break ;
     case HTTP_PARTIAL_CONTENT:
-      this->_response.append("Partial Content");
+      this->_response.append(" Partial Content");
       break ;
     case HTTP_SPECIAL_RESPONSE:
-      this->_response.append("Special Response");
+      this->_response.append(" Special Response");
       break ;
     case HTTP_MOVED_PERMANENTLY:
-      this->_response.append("Moved Permanently");
+      this->_response.append(" Moved Permanently");
       break ;
     case HTTP_MOVED_TEMPORARILY:
-      this->_response.append("Moved Temporarily");
+      this->_response.append(" Moved Temporarily");
       break ;
     case HTTP_SEE_OTHER:
-      this->_response.append("See Other");
+      this->_response.append(" See Other");
       break ;
     case HTTP_NOT_MODIFIED:
-      this->_response.append("Not Modified");
+      this->_response.append(" Not Modified");
       break ;
     case HTTP_USE_PROXY:
-      this->_response.append("Use Proxy");
+      this->_response.append(" Use Proxy");
       break ;
     case HTTP_TEMPORARY_REDIRECT:
-      this->_response.append("Temporary Redirect");
+      this->_response.append(" Temporary Redirect");
       break ;
     case HTTP_PERMANENT_REDIRECT:
-      this->_response.append("Permanent Redirect");
+      this->_response.append(" Permanent Redirect");
       break ;
     case HTTP_BAD_REQUEST:
-      this->_response.append("Bad Request");
+      this->_response.append(" Bad Request");
       break ;
     case HTTP_UNAUTHORIZED:
-      this->_response.append("Unauthorized");
+      this->_response.append(" Unauthorized");
       break ;
     case HTTP_PAYMENT_REQUIRED:
-      this->_response.append("Payment Requeired");
+      this->_response.append(" Payment Requeired");
       break ;
     case HTTP_FORBIDDEN:
-      this->_response.append("Forbidden");
+      this->_response.append(" Forbidden");
       break ;
     case HTTP_NOT_FOUND:
-      this->_response.append("Not Found");
+      this->_response.append(" Not Found");
       break ;
     case HTTP_METHOD_NOT_ALLOWED:
-      this->_response.append("Method Not Allowed");
+      this->_response.append(" Method Not Allowed");
       break ;
     case HTTP_NOT_ACCEPTABLE:
-      this->_response.append("Not Acceptable");
+      this->_response.append(" Not Acceptable");
       break ;
     case HTTP_PROXY_AUTHENTICATION_REQUIRED:
-      this->_response.append("Proxy Authentication Required");
+      this->_response.append(" Proxy Authentication Required");
       break ;
     case HTTP_REQUEST_TIME_OUT:
-      this->_response.append("Request Time Out");
+      this->_response.append(" Request Time Out");
       break ;
     case HTTP_CONFLICT:
-      this->_response.append("Conflict");
+      this->_response.append(" Conflict");
       break ;
     case HTTP_GONE:
-      this->_response.append("Gone");
+      this->_response.append(" Gone");
       break ;
     case HTTP_LENGTH_REQUIRED:
-      this->_response.append("Length Required");
+      this->_response.append(" Length Required");
       break ;
     case HTTP_PRECONDETION_FAILED:
-      this->_response.append("Precondetion Failed");
+      this->_response.append(" Precondetion Failed");
       break ;
     case HTTP_REQUEST_ENTITY_TOO_LARGE:
-      this->_response.append("Request Entity Too Large");
+      this->_response.append(" Request Entity Too Large");
       break ;
     case HTTP_REQUEST_URI_TOO_LARGE:
-      this->_response.append("Request Uri Too Large");
+      this->_response.append(" Request Uri Too Large");
       break ;
     case HTTP_UNSUPPORTED_MEDIA_TYPE:
-      this->_response.append("Unsupported Media Type");
+      this->_response.append(" Unsupported Media Type");
       break ;
     case HTTP_RANGE_NOT_SATISFIABLE:
-      this->_response.append("Range Not Satisfiable");
+      this->_response.append(" Range Not Satisfiable");
       break ;
     case HTTP_EXPECTATION_FAILED:
-      this->_response.append("Expectation Failed");
+      this->_response.append(" Expectation Failed");
       break ;
     case HTTP_MISDIRECTED_REQUEST:
-      this->_response.append("Misdirected Request");
+      this->_response.append(" Misdirected Request");
       break ;
     case HTTP_UNPROCESSABLE_CONTENT:
-      this->_response.append("Unprocessable Content");
+      this->_response.append(" Unprocessable Content");
       break ;
     case HTTP_UPGRADE_REQUIRED:
-      this->_response.append("Upgrade Required");
+      this->_response.append(" Upgrade Required");
       break ;
     case HTTP_INTERNAL_SERVER_ERROR:
-      this->_response.append("Internal Server Error");
+      this->_response.append(" Internal Server Error");
       break ;
     case HTTP_NOT_IMPLEMENTED:
-      this->_response.append("Not Implemented");
+      this->_response.append(" Not Implemented");
       break ;
     case HTTP_BAD_GATEWAY:
-      this->_response.append("Bad Gateway");
+      this->_response.append(" Bad Gateway");
       break ;
     case HTTP_SERVICE_UNAVAILABLE:
-      this->_response.append("Service Unavailable");
+      this->_response.append(" Service Unavailable");
       break ;
     case HTTP_GATEWAY_TIME_OUT:
-      this->_response.append("Gateway Time Out");
+      this->_response.append(" Gateway Time Out");
       break ;
     case HTTP_VERSION_NOT_SUPPORTED:
-      this->_response.append("Version Not Supported");
+      this->_response.append(" Version Not Supported");
       break ;
   }
   this->_response.append(CRLF);
   return (this->_response.length());
 }
 
-int HttpResponse::_createHeaderLine(const ConfigServer& config, int bodySIze) {
-  (void)config;
+int HttpResponse::_createHeaderLine(const ConfigServer& config, int bodySize) {
+  (void) config;
   int size = 0;
 
-  std::string tmp = "Content-Length: ";
-  tmp.append(mylib::nbrToS(bodySIze));
-  tmp.append(CRLF);
-  tmp.append("Connection: close");
-  tmp.append(CRLF);
-  size += tmp.length();
-  this->_response.append(tmp);
+  this->_responseHeader.date.second = mylib::getCurrentTime();
+  this->_responseHeader.contentLength.second = mylib::nbrToS(bodySize);
+  for (size_t i = 0; i < this->_location.methods.size(); i++) {
+    if (i == 0)
+      this->_responseHeader.allow.second = this->_location.methods[i];
+    else
+      this->_responseHeader.allow.second += ", " + this->_location.methods[i];
+  }
+  this->_responseHeader.connection.second = "close";
+  if (!this->_responseHeader.server.second.empty()) {
+    this->_response.append(this->_responseHeader.server.first);
+    this->_response.append(": ");
+    this->_response.append(this->_responseHeader.server.second);
+    this->_response.append(CRLF);
+  }
+  if (!this->_responseHeader.date.second.empty()) {
+    this->_response.append(this->_responseHeader.date.first);
+    this->_response.append(": ");
+    this->_response.append(this->_responseHeader.date.second);
+    this->_response.append(CRLF);
+  }
+  if (!this->_responseHeader.contentType.second.empty()) {
+    this->_response.append(this->_responseHeader.contentType.first);
+    this->_response.append(": ");
+    this->_response.append(this->_responseHeader.contentType.second);
+    this->_response.append(CRLF);
+  }
+  if (!this->_responseHeader.contentLength.second.empty()) {
+    this->_response.append(this->_responseHeader.contentLength.first);
+    this->_response.append(": ");
+    this->_response.append(this->_responseHeader.contentLength.second);
+    this->_response.append(CRLF);
+  }
+  if (!this->_responseHeader.lastModified.second.empty()) {
+    this->_response.append(this->_responseHeader.lastModified.first);
+    this->_response.append(": ");
+    this->_response.append(this->_responseHeader.lastModified.second);
+    this->_response.append(CRLF);
+  }
+  if (!this->_responseHeader.allow.second.empty()) {
+    this->_response.append(this->_responseHeader.allow.first);
+    this->_response.append(": ");
+    this->_response.append(this->_responseHeader.allow.second);
+    this->_response.append(CRLF);
+  }
+  if (!this->_responseHeader.connection.second.empty()) {
+    this->_response.append(this->_responseHeader.connection.first);
+    this->_response.append(": ");
+    this->_response.append(this->_responseHeader.connection.second);
+    this->_response.append(CRLF);
+  }
+  if (!this->_responseHeader.acceptRanges.second.empty()) {
+    this->_response.append(this->_responseHeader.acceptRanges.first);
+    this->_response.append(": ");
+    this->_response.append(this->_responseHeader.acceptRanges.second);
+    this->_response.append(CRLF);
+  }
   return (size);
 }
 
@@ -296,6 +366,10 @@ unsigned int HttpResponse::getStatus(void) const {
   return (this->_status);
 }
 
+bool HttpResponse::getReturnFlag(void) const {
+  return (this->_returnFlag);
+}
+
 const std::string& HttpResponse::getRedirectPath(void) const {
   return (this->_redirectPath);
 }
@@ -304,8 +378,22 @@ const std::string& HttpResponse::getResponse(void) const {
   return (this->_response);
 }
 
+const headerList& HttpResponse::getheader(void) const {
+  return (this->_responseHeader);
+}
+
 void HttpResponse::setStatus(unsigned int status) {
   this->_status = status;
+  return ;
+}
+
+void HttpResponse::setReturnFlag(bool flag) {
+  this->_returnFlag = flag;
+  return ;
+}
+
+void HttpResponse::setRedirectPath(const std::string& path) {
+  this->_redirectPath = path;
   return ;
 }
 
@@ -376,17 +464,27 @@ void HttpResponse::_createDeleteResponseMessage(const std::string& uri, const Co
 int HttpResponse::_createRedirectResponseMessage(const std::string& uri, const ConfigServer& config) {
   int responseSize;
   int bodySize = 0;
+  std::string path = this->_redirectPath.length() ? this->_redirectPath : uri;
   std::string redirectBody;
 
-  redirectBody = wsvRedirectPage(this->_status, uri);
-  bodySize = redirectBody.length();
-  if (bodySize == 0)
-    return (-1);
-  this->_response.append("Location: " + uri + '/' + CRLF);
-  this->_createHeaderLine(config, bodySize);
-  this->_response.append(CRLF);
-  this->_response.append(redirectBody);
-  responseSize = this->_response.length();
+  if (300 < this->_status && this->_status < 400) {
+    redirectBody = wsvRedirectPage(this->_status, path);
+    bodySize = redirectBody.length();
+    if (bodySize == 0)
+      return (-1);
+    this->_response.append("Location: " + path + CRLF);
+    this->_createHeaderLine(config, bodySize);
+    this->_response.append(CRLF);
+    this->_response.append(redirectBody);
+    responseSize = this->_response.length();
+  } else {
+    redirectBody = path;
+    bodySize = redirectBody.length();
+    this->_createHeaderLine(config, bodySize);
+    this->_response.append(CRLF);
+    this->_response.append(redirectBody);
+    responseSize = this->_response.length();
+  }
   return (responseSize);
 }
 
@@ -421,7 +519,7 @@ int HttpResponse::createResponseMessage(const std::string& method, std::string p
   int bodySize;
 
   this->_createStatusLine(version);
-  if (300 <= this->_status && this->_status < 400)
+  if (this->_returnFlag || (300 <= this->_status && this->_status < 400))
     return (this->_createRedirectResponseMessage(path, config));
   if (400 <= this->_status && this->_status < 600)
     return (this->_createErrorResponseMessage(config, version));
@@ -464,7 +562,10 @@ void HttpResponse::execute(Socket& socket) {
 HttpResponse& HttpResponse::operator=(const HttpResponse& obj) {
   if (this != &obj) {
     this->_status = obj.getStatus();
+    this->_returnFlag = obj.getReturnFlag();
+    this->_redirectPath = obj.getRedirectPath();
     this->_response = obj.getResponse();
+    this->_responseHeader = obj.getheader();
   }
   else
   {
@@ -511,7 +612,6 @@ std::string decodeBase64(const std::string &input)
     while (i < input.size()) {
         // 4文字バッファ
         int values[4];
-        int validCount = 0;
 
         // 4文字読み取る
         for (int j = 0; j < 4; ++j) {
@@ -524,7 +624,6 @@ std::string decodeBase64(const std::string &input)
                 // ここではそのまま処理
                 if (decodeMap[c] >= 0) {
                     values[j] = decodeMap[c];
-                    validCount++;
                 } else if (c == '=') {
                     // パディングとみなして -2 とする
                     values[j] = -2;
@@ -651,9 +750,9 @@ bool parseDigestAuthHeader(const std::string &authHeader,
 }
 
 /**
- * @brief 
+ * @brief
  *  Digest認証のパラメータ文字列("xxx...")から username を抽出し、返却する。
- * 
+ *
  * @param digestString  "Authorization: Digest " の後に続くパラメータ部。
  *   例:  username="Mufasa", realm="testrealm@host.com", nonce="12345", ...
  * @return std::string  抽出した username。見つからない or パース失敗なら空文字列。
@@ -678,16 +777,16 @@ std::string getDigestUser(const std::string &digestString)
 std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, std::string _uri, std::string method, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request)
 {
   std::vector<std::string> envs;
-  
+
   (void)cgiExtension;
   (void)request;
   (void)version;
   (void)config;
   (void)method;
   (void)cgiPath;
-  
+
   std::map<std::string, std::string> headers = request.getHeader();
-  
+
   // AUTH_TYPE
   if (headers.find("Authorization") != headers.end())
     envs.push_back("AUTH_TYPE=" + headers["Authorization"].substr(0, headers["Authorization"].find(' ')));
@@ -713,12 +812,12 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
   // QUERY_STRING
   if (_uri_old.find('?') != std::string::npos)
     envs.push_back("QUERY_STRING=" + _uri_old.substr(_uri_old.find('?') + 1));
-  
+
   // REMOTE_ADDR
   // requestのIPアドレス
   char* cIp = inet_ntoa(request.getIp());
   envs.push_back("REMOTE_ADDR=" + std::string(cIp));
-  
+
   // REMOTE_HOST
   envs.push_back("REMOTE_HOST="); //逆引きDNSができないので空文字列
   // REMOTE_IDENT
@@ -785,30 +884,29 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
   // HTTP_X_FORWARDED_FOR
   if (headers.find("X-Forwarded-For") != headers.end())
     envs.push_back("HTTP_X_FORWARDED_FOR=" + headers["X-Forwarded-For"]);
-  
+
   envs.push_back("PWD=" + _uri.substr(0, _uri.find_last_of('/')));
   return (envs);
 }
 
-
 int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string _uri) {
   int pipeFd[2];
   int status;
-  
+
   //(void)_uri;
   (void)_uri_old;
-  
+
   // chdir用のpathを作成
   std::string path_chdir = _uri;
   path_chdir = path_chdir.substr(0, path_chdir.find_last_of('/'));
   std::cout << "path_chdir: " << path_chdir << std::endl;
-  
+
   if (pipe(pipeFd) == -1)
   {
     perror("pipe");
     return (-1);
   }
-  
+
   pid = fork();
   if (pid == -1)
   {
@@ -824,7 +922,7 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
       _exit(EXIT_FAILURE);
     }
     close(pipeFd[1]);
-    
+
     if (chdir(path_chdir.c_str()) == -1)
     {
       perror("chdir");
@@ -852,11 +950,11 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
       }
     }
   }
-  else 
+  else
   {
     close(pipeFd[1]);
     readFd = pipeFd[0];
-    
+
     // タイムアウト処理: ポーリングループ
     bool finished = false;
     for (int i = 0; i < CGI_TIMEOUT_ITERATION; ++i) {
@@ -883,26 +981,24 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
   return (0);
 }
 
-
-
 int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string _uri, std::string body) {
   int pipeIn[2]; // parent -> child
   int pipeOut[2]; // child -> parent
-  
+
   int status;
-  
+
   std::string path_chdir = _uri;
   path_chdir = path_chdir.substr(0, path_chdir.find_last_of('/'));
-  
+
   //(void)_uri;
   (void)_uri_old;
-  
+
   if (pipe(pipeIn) == -1)
   {
     perror("pipe");
     return (-1);
   }
-  
+
   if (pipe(pipeOut) == -1)
   {
     close(pipeIn[0]);
@@ -910,7 +1006,7 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
     perror("pipe");
     return (-1);
   }
-  
+
   pid = fork();
   if (pid == -1)
   {
@@ -929,7 +1025,7 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
       _exit(EXIT_FAILURE);
     }
     close(pipeIn[0]);
-    
+
     close(pipeOut[0]);
     if (dup2(pipeOut[1], STDOUT_FILENO) == -1)
     {
@@ -937,13 +1033,13 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
       _exit(EXIT_FAILURE);
     }
     close(pipeOut[1]);
-    
+
     if (chdir(path_chdir.c_str()) == -1)
     {
       perror("chdir");
       _exit(EXIT_FAILURE);
     }
-    
+
     if (cgiExtension == ".py") {
       char* argv[] = {
         const_cast<char*>("python3"),
@@ -970,7 +1066,7 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
     close(pipeIn[0]);
 
     body = body.substr(0, body.find_last_not_of('\0') + 1);
-    
+
     ssize_t write_ret = write(pipeIn[1], body.data(), body.length());
     if (write_ret == -1)
     {
@@ -979,9 +1075,9 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
       close(pipeOut[0]);
       return (-1);
     }
-    
+
     close(pipeIn[1]);
-    
+
     close(pipeOut[1]);
     readFd = pipeOut[0];
     // タイムアウト処理: ポーリングループ
@@ -997,7 +1093,7 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
             break;
         }
     }
-    
+
     if (!finished) { // タイムアウト発生
         std::cerr << "CGI script timed out." << std::endl;
         kill(pid, SIGKILL); // 子プロセスを強制終了
@@ -1013,18 +1109,18 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
 
 std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request) {
   std::string body;
-  
+
   std::vector<std::string> envs = this->createEnvs(config, _uri, method, cgiPath, cgiExtension, _uri_old, version, request);
-  
+
   std::vector<char*> env_cstrs;
   for (size_t i = 0; i < envs.size(); ++i) {
       env_cstrs.push_back(const_cast<char*>(envs[i].c_str()));
   }
   env_cstrs.push_back(NULL);
-  
+
   int readFd = -1;
   pid_t pid;
-  
+
   if (!method.compare("GET")) {
     int execResult = cgiExecGet(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri);
     if (execResult < 0) {
@@ -1076,7 +1172,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
       this->_response.clear();
       this->setStatus(HTTP_INTERNAL_SERVER_ERROR);
     }
-    
+
   }
   if (readFd != -1) {
     char buf[1024];
@@ -1103,8 +1199,8 @@ std::string makeCgiHeader(std::string str) {
   str = str.substr(1);
 
   contentLength = "Content-Length: " + mylib::nbrToS(str.length());
-  
-  
+
+
   header = contentType + CRLF + contentLength;
   if (location.length() > 0)
     header = "Location: " + location + CRLF + header;
@@ -1116,7 +1212,7 @@ int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, 
   std::string body;
   std::string header;
   std::string tmp;
-  
+
   //std::string _body = request.getBody();
 
   tmp = this->_doCgi(method, _uri, config, cgiPath, cgiExtension, _uri_old, version, request);
