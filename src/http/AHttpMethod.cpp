@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/07 17:44:54 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/15 17:43:21 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,11 @@ AHttpMethod::AHttpMethod(void) : _method("default"), _uri(""), _uri_old(""), _ve
 
 AHttpMethod::AHttpMethod(std::string method, std::string uri, std::string version) : _method(method), _uri(uri), _uri_old(uri), _version(version), _autoindex(false), _cgi_extension(""), _cgi_path(""), _cgi_relative_path("") {
   std::string::size_type pos = uri.find(".py");
-  
+
   std::string tmp = uri;
-  
+
   this->_cgi_relative_path.clear();
-  
+
   if (pos != std::string::npos) {
       if (pos + 3 <= uri.size()) {
           this->_uri = uri.substr(0, pos + 3);
@@ -81,9 +81,7 @@ HttpResponse* AHttpMethod::_setGetResponseStatus(const ConfigServer& config, std
 
     if (location.index.size()) {
       if (!mylib::isPathValid(path))
-        return (new HttpResponse(HTTP_NOT_FOUND));
-      if (!this->_autoindex && mylib::isDirectory(path))
-        return (new HttpResponse(HTTP_FORBIDDEN));
+        return (new HttpResponse(HTTP_NOT_FOUND, location));
       for (std::vector<std::string>::const_iterator it = location.index.begin(); it != location.index.end(); it++) {
         if (!mylib::isPathValid(path + *it))
           status = HTTP_NOT_FOUND;
@@ -93,8 +91,8 @@ HttpResponse* AHttpMethod::_setGetResponseStatus(const ConfigServer& config, std
           path = path + *it;
           this->setUri(path);
           if (location.return_.first != 0)
-            return (new HttpResponse(location.return_.first));
-          return (new HttpResponse(HTTP_OK));
+            return (new HttpResponse(location.return_.first, location));
+          return (new HttpResponse(HTTP_OK, location));
         }
       }
     } else if (!location.index.size() && config.index.size()){
@@ -107,45 +105,47 @@ HttpResponse* AHttpMethod::_setGetResponseStatus(const ConfigServer& config, std
           path = path + *it;
           this->setUri(path);
           if (location.return_.first != 0)
-            return (new HttpResponse(location.return_.first));
-          return (new HttpResponse(HTTP_OK));
+            return (new HttpResponse(location.return_.first, location));
+          return (new HttpResponse(HTTP_OK, location));
         }
       }
     }
-    if (this->_autoindex && mylib::isDirectory(path)) {
+    if (!this->_autoindex && mylib::isDirectory(path))
+      return (new HttpResponse(HTTP_FORBIDDEN, location));
+    else if (this->_autoindex && mylib::isDirectory(path)) {
       this->setUri(path);
       if (location.return_.first != 0)
-        return (new HttpResponse(location.return_.first));
-      return (new HttpResponse(HTTP_OK));
+        return (new HttpResponse(location.return_.first, location));
+      return (new HttpResponse(HTTP_OK, location));
     }
-    return (new HttpResponse(status));
+    return (new HttpResponse(status, location));
   }
   if (!mylib::isPathValid(path))
-    return (new HttpResponse(HTTP_NOT_FOUND));
+    return (new HttpResponse(HTTP_NOT_FOUND, location));
   if (mylib::isDirectory(path) && path[path.size() - 1] != '/')
-    return (new HttpResponse(HTTP_MOVED_PERMANENTLY, path));
+    return (new HttpResponse(HTTP_MOVED_PERMANENTLY, path, location));
   else if (!mylib::isModeValid(path, S_IRUSR))
-    return (new HttpResponse(HTTP_FORBIDDEN));
+    return (new HttpResponse(HTTP_FORBIDDEN, location));
   this->setUri(path);
-  return (new HttpResponse(HTTP_OK));
+  return (new HttpResponse(HTTP_OK, location));
 }
 
 HttpResponse* AHttpMethod::_setPostResponseStatus(std::string& path, const ConfigLocation& location) {
   if (!location.upload_enable)
-    return (new HttpResponse(HTTP_METHOD_NOT_ALLOWED));
+    return (new HttpResponse(HTTP_METHOD_NOT_ALLOWED, location));
   else if (!location.upload_store.empty())
     path = path + location.upload_store + this->_uri;
   else
     path = path + this->_uri;
   if (mylib::isDirectory(path) && path[path.size() - 1] != '/')
-    return (new HttpResponse(HTTP_MOVED_PERMANENTLY, path));
+    return (new HttpResponse(HTTP_MOVED_PERMANENTLY, path, location));
   if (mylib::isDirectory(path) && !mylib::isPathValid(path))
-    return (new HttpResponse(HTTP_NOT_FOUND));
+    return (new HttpResponse(HTTP_NOT_FOUND, location));
 
   this->setUri(path);
   if (location.return_.first != 0)
-    return (new HttpResponse(location.return_.first));
-  return (new HttpResponse(HTTP_CREATED));
+    return (new HttpResponse(location.return_.first, location));
+  return (new HttpResponse(HTTP_CREATED, location));
 }
 
 HttpResponse* AHttpMethod::_setDeleteResponseStatus(const ConfigServer& config, std::string& path, const ConfigLocation& location) {
@@ -153,15 +153,15 @@ HttpResponse* AHttpMethod::_setDeleteResponseStatus(const ConfigServer& config, 
 
   path = path + this->_uri;
   if (!mylib::isPathValid(path))
-    return (new HttpResponse(HTTP_NO_CONTENT));
+    return (new HttpResponse(HTTP_NO_CONTENT, location));
   if (mylib::isDirectory(path) || !mylib::isModeValid(path, S_IRUSR))
-    return (new HttpResponse(HTTP_FORBIDDEN));
+    return (new HttpResponse(HTTP_FORBIDDEN, location));
   if (mylib::isDirectory(path) && path[path.size() - 1] != '/')
-    return (new HttpResponse(HTTP_MOVED_PERMANENTLY, path));
+    return (new HttpResponse(HTTP_MOVED_PERMANENTLY, path, location));
   this->setUri(path);
   if (location.return_.first != 0)
-    return (new HttpResponse(location.return_.first));
-  return (new HttpResponse(HTTP_OK));
+    return (new HttpResponse(location.return_.first, location));
+  return (new HttpResponse(HTTP_OK, location));
 }
 
 const std::string& AHttpMethod::getMethod(void) const {
@@ -208,7 +208,7 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
     }
   }
   if ((location.path.empty() && config.root.empty()) || (!location.path.empty() && config.root.empty()))
-    return (new HttpResponse(HTTP_NOT_FOUND));
+    return (new HttpResponse(HTTP_NOT_FOUND, location));
   else if (!location.path.empty() && !location.root.empty())
     path = location.root;
   else if (!location.path.empty() && location.root.empty() && !config.root.empty())
@@ -221,14 +221,14 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
       this->_autoindex = true;
   }
   if (location.methods.size() && checkMethodPermission(this->_method, location.methods))
-    return (new HttpResponse(HTTP_METHOD_NOT_ALLOWED));
+    return (new HttpResponse(HTTP_METHOD_NOT_ALLOWED, location));
   if (!this->_method.compare("GET"))
     return (this->_setGetResponseStatus(config, path, location));
   else if (!this->_method.compare("POST"))
     return (this->_setPostResponseStatus(path, location));
   else if (!this->_method.compare("DELETE"))
     return (this->_setDeleteResponseStatus(config, path, location));
-  return (new HttpResponse(HTTP_OK));
+  return (new HttpResponse(HTTP_OK, location));
 }
 
 AHttpMethod& AHttpMethod::operator=(const AHttpMethod& obj) {

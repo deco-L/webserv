@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/09 23:50:58 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/15 18:11:03 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <queue>
 #include <sys/stat.h>
+#include "Config.hpp"
 
 #define HTTP_CONTINUE                       100
 #define HTTP_SWITCHING_PROTOCOlS            101
@@ -70,17 +71,29 @@
 
 #define CGI_TIMEOUT_ITERATION 10000000
 
-struct ConfigServer;
 class Socket;
 class HttpRequest;
 class AHttpMethod;
+
+struct headerList {
+  std::pair<std::string, std::string> server;
+  std::pair<std::string, std::string> date;
+  std::pair<std::string, std::string> contentType;
+  std::pair<std::string, std::string> contentLength;
+  std::pair<std::string, std::string> lastModified;
+  std::pair<std::string, std::string> allow;
+  std::pair<std::string, std::string> connection;
+  std::pair<std::string, std::string> acceptRanges;
+};
 
 class HttpResponse {
 private:
   unsigned int _status;
   bool _returnFlag;
+  ConfigLocation _location;
   std::string _redirectPath;
   std::string _response;
+  headerList _responseHeader;
 
   HttpResponse(void);
 
@@ -99,7 +112,8 @@ private:
 
 public:
   HttpResponse(unsigned int status);
-  HttpResponse(unsigned int status, std::string redirectPath);
+  HttpResponse(unsigned int status, ConfigLocation location);
+  HttpResponse(unsigned int status, std::string redirectPath, ConfigLocation location);
   HttpResponse(const HttpResponse& obj);
   ~HttpResponse();
 
@@ -117,6 +131,7 @@ public:
   bool getReturnFlag(void) const;
   const std::string& getRedirectPath(void) const;
   const std::string& getResponse(void) const;
+  const headerList& getheader(void) const;
   void setStatus(unsigned int status);
   void setReturnFlag(bool flag);
   void setRedirectPath(const std::string& path);

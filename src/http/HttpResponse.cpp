@@ -6,27 +6,48 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/10 00:11:05 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/15 18:12:56 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "Config.hpp"
 #include "HttpResponse.hpp"
 #include "HttpRequest.hpp"
 #include "Socket.hpp"
-#include "Config.hpp"
 #include "webserv.hpp"
 #include "Error.hpp"
 #include "Http.hpp"
+#include "MIME.hpp"
 
-HttpResponse::HttpResponse(void): _status(0), _returnFlag(false), _redirectPath(""), _response("") {
+static void _initHeaderList(headerList& list) {
+  list.server = std::make_pair("Server", "webserv");
+  list.date = std::make_pair("Date", "");
+  list.contentType = std::make_pair("Content-Type", "");
+  list.contentLength = std::make_pair("Content-Length", "");
+  list.lastModified = std::make_pair("Last-Modified", "");
+  list.allow = std::make_pair("Allow", "");
+  list.connection = std::make_pair("Connection", "close");
+  list.acceptRanges = std::make_pair("Accept-Ranges", "bytes");
   return ;
 }
 
-HttpResponse::HttpResponse(unsigned int status): _status(status), _returnFlag(false), _redirectPath(""), _response("") {
+HttpResponse::HttpResponse(void): _status(0), _returnFlag(false), _location(), _redirectPath(""), _response("") {
+  _initHeaderList(this->_responseHeader);
   return ;
 }
 
-HttpResponse::HttpResponse(unsigned int status, std::string redirectPath): _status(status), _returnFlag(false), _redirectPath(redirectPath), _response("") {
+HttpResponse::HttpResponse(unsigned int status): _status(status), _returnFlag(false), _location(), _redirectPath(""), _response("") {
+  _initHeaderList(this->_responseHeader);
+  return ;
+}
+
+HttpResponse::HttpResponse(unsigned int status, ConfigLocation location): _status(status), _returnFlag(false), _location(location), _redirectPath(""), _response("") {
+  _initHeaderList(this->_responseHeader);
+  return ;
+}
+
+HttpResponse::HttpResponse(unsigned int status, std::string redirectPath, ConfigLocation location): _status(status), _returnFlag(false), _location(location), _redirectPath(redirectPath), _response("") {
+  _initHeaderList(this->_responseHeader);
   return ;
 }
 
@@ -192,17 +213,67 @@ int HttpResponse::_createStatusLine(std::string version) {
   return (this->_response.length());
 }
 
-int HttpResponse::_createHeaderLine(const ConfigServer& config, int bodySIze) {
-  (void)config;
+int HttpResponse::_createHeaderLine(const ConfigServer& config, int bodySize) {
+  (void) config;
   int size = 0;
 
-  std::string tmp = "Content-Length: ";
-  tmp.append(mylib::nbrToS(bodySIze));
-  tmp.append(CRLF);
-  tmp.append("Connection: close");
-  tmp.append(CRLF);
-  size += tmp.length();
-  this->_response.append(tmp);
+  this->_responseHeader.date.second = mylib::getCurrentTime();
+  this->_responseHeader.contentLength.second = mylib::nbrToS(bodySize);
+  for (size_t i = 0; i < this->_location.methods.size(); i++) {
+    if (i == 0)
+      this->_responseHeader.allow.second = this->_location.methods[i];
+    else
+      this->_responseHeader.allow.second += ", " + this->_location.methods[i];
+  }
+  this->_responseHeader.connection.second = "close";
+  if (!this->_responseHeader.server.second.empty()) {
+    this->_response.append(this->_responseHeader.server.first);
+    this->_response.append(": ");
+    this->_response.append(this->_responseHeader.server.second);
+    this->_response.append(CRLF);
+  }
+  if (!this->_responseHeader.date.second.empty()) {
+    this->_response.append(this->_responseHeader.date.first);
+    this->_response.append(": ");
+    this->_response.append(this->_responseHeader.date.second);
+    this->_response.append(CRLF);
+  }
+  if (!this->_responseHeader.contentType.second.empty()) {
+    this->_response.append(this->_responseHeader.contentType.first);
+    this->_response.append(": ");
+    this->_response.append(this->_responseHeader.contentType.second);
+    this->_response.append(CRLF);
+  }
+  if (!this->_responseHeader.contentLength.second.empty()) {
+    this->_response.append(this->_responseHeader.contentLength.first);
+    this->_response.append(": ");
+    this->_response.append(this->_responseHeader.contentLength.second);
+    this->_response.append(CRLF);
+  }
+  if (!this->_responseHeader.lastModified.second.empty()) {
+    this->_response.append(this->_responseHeader.lastModified.first);
+    this->_response.append(": ");
+    this->_response.append(this->_responseHeader.lastModified.second);
+    this->_response.append(CRLF);
+  }
+  if (!this->_responseHeader.allow.second.empty()) {
+    this->_response.append(this->_responseHeader.allow.first);
+    this->_response.append(": ");
+    this->_response.append(this->_responseHeader.allow.second);
+    this->_response.append(CRLF);
+  }
+  if (!this->_responseHeader.connection.second.empty()) {
+    this->_response.append(this->_responseHeader.connection.first);
+    this->_response.append(": ");
+    this->_response.append(this->_responseHeader.connection.second);
+    this->_response.append(CRLF);
+  }
+  if (!this->_responseHeader.acceptRanges.second.empty()) {
+    this->_response.append(this->_responseHeader.acceptRanges.first);
+    this->_response.append(": ");
+    this->_response.append(this->_responseHeader.acceptRanges.second);
+    this->_response.append(CRLF);
+  }
   return (size);
 }
 
@@ -305,6 +376,10 @@ const std::string& HttpResponse::getRedirectPath(void) const {
 
 const std::string& HttpResponse::getResponse(void) const {
   return (this->_response);
+}
+
+const headerList& HttpResponse::getheader(void) const {
+  return (this->_responseHeader);
 }
 
 void HttpResponse::setStatus(unsigned int status) {
@@ -490,6 +565,7 @@ HttpResponse& HttpResponse::operator=(const HttpResponse& obj) {
     this->_returnFlag = obj.getReturnFlag();
     this->_redirectPath = obj.getRedirectPath();
     this->_response = obj.getResponse();
+    this->_responseHeader = obj.getheader();
   }
   else
   {
