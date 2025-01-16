@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/09 00:07:50 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/01/15 18:11:03 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <queue>
 #include <sys/stat.h>
+#include "Config.hpp"
 
 #define HTTP_CONTINUE                       100
 #define HTTP_SWITCHING_PROTOCOlS            101
@@ -70,16 +71,29 @@
 
 #define CGI_TIMEOUT_ITERATION 10000000
 
-struct ConfigServer;
 class Socket;
 class HttpRequest;
 class AHttpMethod;
 
+struct headerList {
+  std::pair<std::string, std::string> server;
+  std::pair<std::string, std::string> date;
+  std::pair<std::string, std::string> contentType;
+  std::pair<std::string, std::string> contentLength;
+  std::pair<std::string, std::string> lastModified;
+  std::pair<std::string, std::string> allow;
+  std::pair<std::string, std::string> connection;
+  std::pair<std::string, std::string> acceptRanges;
+};
+
 class HttpResponse {
 private:
   unsigned int _status;
+  bool _returnFlag;
+  ConfigLocation _location;
   std::string _redirectPath;
   std::string _response;
+  headerList _responseHeader;
 
   HttpResponse(void);
 
@@ -91,21 +105,22 @@ private:
   int _createErrorResponseMessage(const ConfigServer& config, const std::string& version);
   void _createErrorResponse(const ConfigServer& config, int status);
   std::string _createAutoindexBody(std::string path);
-  
-  
+
+
   std::vector<std::string> createEnvs(const ConfigServer& config, std::string _uri, std::string method, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request);
   std::string _doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request);
 
 public:
   HttpResponse(unsigned int status);
-  HttpResponse(unsigned int status, std::string redirectPath);
+  HttpResponse(unsigned int status, ConfigLocation location);
+  HttpResponse(unsigned int status, std::string redirectPath, ConfigLocation location);
   HttpResponse(const HttpResponse& obj);
   ~HttpResponse();
 
   class HttpResponseError : public std::exception {
   private:
     std::string _error_message;
-  
+
   public:
     HttpResponseError(std::string error);
     virtual ~HttpResponseError() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW;
@@ -113,9 +128,13 @@ public:
   };
 
   unsigned int getStatus(void) const;
+  bool getReturnFlag(void) const;
   const std::string& getRedirectPath(void) const;
   const std::string& getResponse(void) const;
+  const headerList& getheader(void) const;
   void setStatus(unsigned int status);
+  void setReturnFlag(bool flag);
+  void setRedirectPath(const std::string& path);
   int createResponseMessage(const std::string& method, std::string path, const ConfigServer& config, std::string version);
   int createAutoindexMessage(std::string path, const ConfigServer& config, std::string version);
   int createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, HttpRequest& request);
