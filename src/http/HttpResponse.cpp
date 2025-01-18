@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/18 23:23:18 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/19 00:03:28 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -518,7 +518,6 @@ int HttpResponse::createResponseMessage(const std::string& method, std::string p
   int bodySize;
 
   this->_createStatusLine(version);
-  std::cout << "ok" << std::endl;
   if (this->_returnFlag || (300 <= this->_status && this->_status < 400))
     return (this->_createRedirectResponseMessage(path, config));
   if (400 <= this->_status && this->_status < 600)
