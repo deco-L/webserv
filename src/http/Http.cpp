@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/09 23:50:32 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/18 23:55:05 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,9 +132,26 @@ void Http::parseRequestMessage(Socket& socket) {
   return ;
 }
 
-bool Http::checkSemantics(Socket& socket) {
-  (void)socket;
-  return (false);
+void Http::checkRequestMessage(const ConfigServer& config) {
+  std::map<std::string, std::string>::const_iterator it;
+  std::string host;
+  size_t colonPos = 0;
+
+  if (config.client_max_body_size != 0 && this->getRequestBodySize() > config.client_max_body_size) {
+    this->setHttpResponse(HTTP_REQUEST_ENTITY_TOO_LARGE);
+    throw Http::HttpError("HTTP_REQUEST_ENTITY_TOO_LARGE");
+  }
+  it = this->_httpRequest.getHeader().find("Host");
+  colonPos = it->second.find(':');
+  if (colonPos != std::string::npos)
+    host = it->second.substr(0, colonPos);
+  else
+    host = it->second;
+  if (host != config.server_name.at(0) && host != config.listen.at(0).first) {
+    this->setHttpResponse(HTTP_BAD_REQUEST);
+    throw Http::HttpError("HTTP_BAD_REQUEST");
+  }
+  return ;
 }
 
 void Http::executeMethod(const ConfigServer& config) {

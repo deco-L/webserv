@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/15 18:12:56 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/18 23:23:18 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -494,7 +494,6 @@ int HttpResponse::_createErrorResponseMessage(const ConfigServer& config, const 
   std::vector<std::pair<int, std::string> >::const_iterator it;
 
   it = std::find_if(config.error_page.begin(), config.error_page.end(), FindNbrInVector(this->_status));
-
   if (it != config.error_page.end()) {
     bodySize = mylib::countFileSize(config.root + it->second);
     responseSize = this->_createHeaderLine(config, bodySize);
@@ -519,6 +518,7 @@ int HttpResponse::createResponseMessage(const std::string& method, std::string p
   int bodySize;
 
   this->_createStatusLine(version);
+  std::cout << "ok" << std::endl;
   if (this->_returnFlag || (300 <= this->_status && this->_status < 400))
     return (this->_createRedirectResponseMessage(path, config));
   if (400 <= this->_status && this->_status < 600)
