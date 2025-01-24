@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/07 21:20:13 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/01/23 16:32:11 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,13 +124,15 @@ void Socket::sendText(std::string fileName) {
 
   inFile.open(fileName.c_str());
   if (!inFile)
-    throw Socket::SocketError("open error: " + std::string(strerror(errno)));
+    throw Socket::SocketError("open error");
   this->_error = 0;
   while (std::getline(inFile, line) && this->_error != -1) {
     line += '\n';
     this->_error = ::send(this->_socket, line.c_str(), line.size(), 0);
     if (inFile.bad())
-      throw Socket::SocketError("getline error: " + std::string(strerror(errno)));
+      throw Socket::SocketError("getline error");
+    else if (this->_error == -1)
+      throw Socket::SocketError("send error");
   }
   inFile.close();
   return ;
@@ -142,12 +144,14 @@ void Socket::sendBinary(std::string fileName) {
 
   inBinary.open(fileName.c_str(), std::ios::binary);
   if (!inBinary)
-    throw Socket::SocketError("open error: " + std::string(strerror(errno)));
+    throw Socket::SocketError("open error");
   while (std::getline(inBinary, line)) {
     line += '\n';
     this->_error = ::send(this->_socket, line.c_str(), line.size(), 0);
     if (inBinary.bad())
-      throw Socket::SocketError("send error: " + std::string(strerror(errno)));
+      throw Socket::SocketError("getline error");
+    else if (this->_error == -1)
+      throw Socket::SocketError("send error");
   }
   inBinary.close();
   return ;

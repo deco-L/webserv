@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/10 00:11:48 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/23 16:32:00 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,19 +40,8 @@ void execEvent(Epoll& epoll, const epoll_event& event, std::vector<Event>& event
   (void) event;
   std::vector<Event> tmp = events;
 
-  for (std::vector<Event>::iterator it = tmp.begin(); it != tmp.end(); it++) {
-    if ((it->event & EPOLLIN) == EPOLLIN)
-      it->func(epoll, events, it->socket, *it->config);
-    else if ((it->event & (EPOLLIN | EPOLLET)) == (EPOLLIN | EPOLLET))
-      it->func(epoll, events, it->socket, *it->config);
-    else if ((it->event & (EPOLLOUT)) == EPOLLOUT)
-      it->func(epoll, events, it->socket, *it->config);
-  }
-  tmp = events;
-  for (std::vector<Event>::iterator it = tmp.begin(); it != tmp.end(); it++) {
-    if ((it->event & EPOLLOUT) == EPOLLOUT)
-      it->func(epoll, events, it->socket, *it->config);
-  }
+  for (std::vector<Event>::iterator it = tmp.begin(); it != tmp.end(); it++)
+    it->func(epoll, events, it->socket, *it->config);
   return ;
 }
 
@@ -62,9 +51,9 @@ void connectHandler(Epoll& epoll, std::vector<Event>& evnents, Socket& socket, c
   socket.accept(cSocket);
   if (cSocket._socket == -1)
     return ;
-  epoll.setEvent(cSocket, EPOLLIN | EPOLLET);
+  epoll.setEvent(cSocket, (EPOLLIN | EPOLLET));
 
-  Event tmp(cSocket._socket, EPOLLIN | EPOLLET, &config, cSocket, readHandler);
+  Event tmp(cSocket._socket, (EPOLLIN | EPOLLET), &config, cSocket, readHandler);
   evnents.push_back(tmp);
   return ;
 }
@@ -82,7 +71,6 @@ void readHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const
     events.erase(it);
 
     Event tmp(socket._socket, EPOLLOUT, &config, socket, writeHandler);
-
     events.push_back(tmp);
     epoll.modEvent(socket, EPOLLOUT);
   }
@@ -94,6 +82,13 @@ void readHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const
     events.erase(it);
     socket.close();
     std::cout << NORMA_COLOR << "connection end" << COLOR_RESET << std::endl;
+  }
+  else {
+    std::vector<Event>::iterator it;
+
+    it = std::find_if(events.begin(), events.end(), FindByFd(socket._socket));
+    it->socket._outBuf = socket._outBuf;
+    epoll.modEvent(socket, (EPOLLIN | EPOLLET));
   }
   return ;
 }

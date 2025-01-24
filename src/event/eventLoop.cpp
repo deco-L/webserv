@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/07 15:02:20 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/23 16:19:40 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,9 +40,8 @@ void eventLoop(std::vector<Socket>& sockets, const std::vector<ConfigServer>& co
   while (true) {
     try {
       epoll.epollWait(-1);
-      for (int i = 0; i < epoll.getWait(); i++) {
+      for (int i = 0; i < epoll.getWait(); i++)
         execEvent(epoll, epoll.getEvents()[i], events);
-      }
     }
     catch(const std::exception& e) {
       std::cerr << ERROR_COLOR << e.what() << COLOR_RESET << '\n';
