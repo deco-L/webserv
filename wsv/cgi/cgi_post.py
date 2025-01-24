@@ -8,7 +8,9 @@ import os
 import sys
 
 # stdin
-input = sys.stdin.read()
+content_length = os.environ["CONTENT_LENGTH"]
+input = sys.stdin.read(int(content_length))
+#input = sys.stdin.read()
 
 data = input.split("&")
 username = data[0].split("=")[1]

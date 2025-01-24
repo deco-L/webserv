@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
 /*   Updated: 2025/01/19 00:03:28 by csakamot         ###   ########.fr       */
@@ -20,7 +20,7 @@
 #include "MIME.hpp"
 
 static void _initHeaderList(headerList& list) {
-  list.server = std::make_pair("Server", "webserv");
+  list.server = std::make_pair("Server", "webserv/1.0");
   list.date = std::make_pair("Date", "");
   list.contentType = std::make_pair("Content-Type", "");
   list.contentLength = std::make_pair("Content-Length", "");
@@ -1185,12 +1185,18 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
   return (body);
 }
 
-std::string makeCgiHeader(std::string str) {
+std::string makeCgiHeader(std::string str) { // str: cgiの出力
   std::string header;
-  std::string location;
+  
+  std::string date;
+  std::string server;
   std::string contentType;
   std::string contentLength;
-
+  
+  date = "Date: " + mylib::getCurrentTime();
+  
+  server = "Server: webserv/1.0";
+  
   contentType = str.substr(str.find("Content-Type: ") + 14, str.find("\n", str.find("Content-Type: ")) - str.find("Content-Type: ") - 14);
   contentType = "Content-Type: " + contentType;
 
@@ -1199,10 +1205,11 @@ std::string makeCgiHeader(std::string str) {
 
   contentLength = "Content-Length: " + mylib::nbrToS(str.length());
 
+  header = date + CRLF + server + CRLF + contentType + CRLF + contentLength + CRLF;
 
-  header = contentType + CRLF + contentLength;
-  if (location.length() > 0)
-    header = "Location: " + location + CRLF + header;
+  //header = contentType + CRLF + contentLength;
+  //if (location.length() > 0)
+  //  header = "Location: " + location + CRLF + header;
   return (header);
 }
 
@@ -1221,7 +1228,6 @@ int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, 
 
   this->_createStatusLine(version);
   this->_response.append(header);
-  this->_response.append(CRLF);
   this->_response.append(CRLF);
   this->_response.append(body);
   responseSize = this->_response.length();
