@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/10 00:11:48 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/18 23:28:02 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,11 +106,8 @@ void writeHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, cons
     #ifdef DEBUG
     showRequestMessage(http);
     #endif
-    if (config.client_max_body_size != 0 && http.getRequestBodySize() > config.client_max_body_size) {
-      http.setHttpResponse(HTTP_REQUEST_ENTITY_TOO_LARGE);
-      throw Http::HttpError("HTTP_REQUEST_ENTITY_TOO_LARGE");
-    }
     socket._outBuf.clear();
+    http.checkRequestMessage(config);
     if (!http.createMethod())
       throw Http::HttpError("HTTP_BAD_REQUEST");
     http.executeMethod(config);

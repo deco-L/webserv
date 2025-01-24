@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/24 14:00:49 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/01/19 00:03:28 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -494,7 +494,6 @@ int HttpResponse::_createErrorResponseMessage(const ConfigServer& config, const 
   std::vector<std::pair<int, std::string> >::const_iterator it;
 
   it = std::find_if(config.error_page.begin(), config.error_page.end(), FindNbrInVector(this->_status));
-
   if (it != config.error_page.end()) {
     bodySize = mylib::countFileSize(config.root + it->second);
     responseSize = this->_createHeaderLine(config, bodySize);
