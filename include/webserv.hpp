@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/15 18:26:43 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/24 13:44:20 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@
 #define CR    (u_char) '\r'
 #define CRLF  "\r\n"
 
-#define DEFOULT_CONF "conf/default.conf"
+#define DEFOULT_CONF "conf/kmiyazaw_home.conf"
 
 template <typename ConfigClass, typename SocketClass>
 struct t_root {
