@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/23 16:32:11 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/24 15:07:40 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ void Socket::passive(short int port, bool opt) {
   int optval = 1;
 
   if (opt) {
-    this->_error = setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, (char *) &optval, sizeof(optval));
+    this->_error = setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, (char *) &optval, sizeof(optval));
     if (this->_error < 0)
       throw Socket::SocketError("setsockopt error: " + std::string(strerror(errno)));
   }

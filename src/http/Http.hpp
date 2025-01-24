@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Http.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/28 17:30:31 by kmiyazaw         ###   ########.fr       */
+/*   Updated: 2025/01/17 16:23:16 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ public:
   class HttpError : public std::exception {
   private:
     std::string _error_message;
-  
+
   public:
     HttpError(std::string error);
     virtual ~HttpError() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW;
@@ -59,7 +59,7 @@ public:
   void setHttpResponse(unsigned int status);
   void recvRequestMessage(Socket& socket);
   void parseRequestMessage(Socket& socket);
-  bool checkSemantics(Socket& socket);
+  void checkRequestMessage(const ConfigServer& config);
   void executeMethod(const ConfigServer& config);
   bool createMethod(void);
   void createResponseMessage(const ConfigServer& config);
