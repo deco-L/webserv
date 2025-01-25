@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/17 16:23:16 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/24 23:43:00 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,9 @@
 #include "HttpResponse.hpp"
 
 struct ConfigServer;
+struct Event;
 class Socket;
+class Epoll;
 
 class Http {
 private:
@@ -60,7 +62,7 @@ public:
   void recvRequestMessage(Socket& socket);
   void parseRequestMessage(Socket& socket);
   void checkRequestMessage(const ConfigServer& config);
-  void executeMethod(const ConfigServer& config);
+  void executeMethod(const ConfigServer& config, std::pair<Epoll&, std::vector<Event>&>& event);
   bool createMethod(void);
   void createResponseMessage(const ConfigServer& config);
   void sendResponse(Socket& socket);

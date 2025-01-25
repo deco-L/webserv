@@ -6,10 +6,12 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/09 23:50:39 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/25 18:25:14 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "Event.hpp"
+#include "Epoll.hpp"
 #include "HttpGet.hpp"
 #include "webserv.hpp"
 #include "Config.hpp"
@@ -33,12 +35,12 @@ HttpGet::~HttpGet() {
   return ;
 }
 
-void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const {
+void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response, std::pair<class Epoll&, std::vector<Event>&> event) const {
   int responseSize;
   (void)request;
 
   if (!this->_cgi_extension.empty() && !this->_cgi_path.empty()) {
-    responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_path, this->_cgi_extension, this->_uri_old, request);
+    responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_path, this->_cgi_extension, this->_uri_old, request, event);
   }
   else if (this->_autoindex && mylib::isDirectory(this->_uri))
     responseSize = response.createAutoindexMessage(this->_uri, config, this->_version);
@@ -51,12 +53,12 @@ void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& reques
   return ;
 }
 
-void HttpGet::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response) {
+void HttpGet::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response, std::pair<Epoll&, std::vector<Event>&>& event) {
   if ((this->_cgi_extension.empty() || this->_cgi_path.empty()) || !this->_uri_old.empty())
     response = this->setResponseStatus(config);
   if (300 <= response->getStatus() && response->getStatus() < 600)
     return ;
-  this->setResponseMessage(config, request, *response);
+  this->setResponseMessage(config, request, *response, event);
   return ;
 }
 

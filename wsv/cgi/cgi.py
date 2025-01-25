@@ -2,9 +2,10 @@
 
 import os
 import sys
+import time
 
 # 環境変数をprint
-
+time.sleep(100)
 print("Content-Type: text/html")
 print("")
 
@@ -26,10 +27,10 @@ print("<h1>Python Version</h1>")
 print("<p>%s</p>" % sys.version)
 
 print("</body></html>")
-			
-			
-			
-			
+
+
+
+
 ##変数名	意味
 #AUTH_TYPE	認証方式(例えば MD5, Basicなど)
 #CONTENT_LENGTH	標準入力から読み込み可能なデータのバイト数(METHOD=POSTの時)

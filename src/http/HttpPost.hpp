@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/06 20:39:26 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/25 18:23:07 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,8 @@ public:
   HttpPost(std::string uri, std::string version);
   ~HttpPost();
 
-  void setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const;
-  void execute(const ConfigServer& config, HttpRequest& header, HttpResponse*& response);
+  void setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response, std::pair<class Epoll&, std::vector<Event>&> event) const;
+  void execute(const ConfigServer& config, HttpRequest& header, HttpResponse*& response, std::pair<Epoll&, std::vector<Event>&>& event);
 };
 
 #endif

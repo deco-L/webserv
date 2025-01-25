@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/19 00:03:28 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/25 19:22:07 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -915,7 +915,7 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
   }
   else if (pid == 0) {
     close(pipeFd[0]);
-    if (dup2(pipeFd[1], 1) == -1)
+    if (dup2(pipeFd[1], STDOUT_FILENO) == -1)
     {
       perror("dup2");
       _exit(EXIT_FAILURE);
@@ -953,160 +953,96 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
   {
     close(pipeFd[1]);
     readFd = pipeFd[0];
-
-    // タイムアウト処理: ポーリングループ
-    bool finished = false;
-    for (int i = 0; i < CGI_TIMEOUT_ITERATION; ++i) {
-        pid_t result = waitpid(pid, &status, WNOHANG);
-        if (result == -1) {
-            close(readFd);
-            return (-1);
-        }
-        else if (result > 0) { // 子プロセスが終了
-            finished = true;
-            break;
-        }
-    }
-
-    if (!finished) { // タイムアウト発生
-        std::cerr << "CGI script timed out." << std::endl;
-        kill(pid, SIGKILL); // 子プロセスを強制終了
-        waitpid(pid, &status, 0); // 終了ステータスを回収
-        close(readFd);
-        readFd = -1;
-        return (-2); // タイムアウトエラーコード
-    }
   }
   return (0);
 }
 
-int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string _uri, std::string body) {
+int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri, std::string body, std::pair<class Epoll&, std::vector<Event>&> event) {
   int pipeIn[2]; // parent -> child
   int pipeOut[2]; // child -> parent
-
   int status;
-
   std::string path_chdir = _uri;
   path_chdir = path_chdir.substr(0, path_chdir.find_last_of('/'));
 
-  //(void)_uri;
-  (void)_uri_old;
-
-  if (pipe(pipeIn) == -1)
-  {
+  if (pipe(pipeIn) == -1) {
     perror("pipe");
     return (-1);
   }
-
-  if (pipe(pipeOut) == -1)
-  {
+  if (pipe(pipeOut) == -1) {
     close(pipeIn[0]);
     close(pipeIn[1]);
     perror("pipe");
     return (-1);
   }
-
   pid = fork();
-  if (pid == -1)
-  {
+  if (pid == -1) {
     close(pipeIn[0]);
     close(pipeIn[1]);
     close(pipeOut[0]);
     close(pipeOut[1]);
     return (-1);
   }
-  else if (pid == 0)// child
-  {
+  else if (pid == 0) {
     close(pipeIn[1]);
-    if (dup2(pipeIn[0], STDIN_FILENO) == -1)
-    {
+    if (dup2(pipeIn[0], STDIN_FILENO) == -1) {
       perror("dup2");
       _exit(EXIT_FAILURE);
     }
     close(pipeIn[0]);
-
     close(pipeOut[0]);
-    if (dup2(pipeOut[1], STDOUT_FILENO) == -1)
-    {
+    if (dup2(pipeOut[1], STDOUT_FILENO) == -1) {
       perror("dup2");
       _exit(EXIT_FAILURE);
     }
     close(pipeOut[1]);
-
-    if (chdir(path_chdir.c_str()) == -1)
-    {
+    if (chdir(path_chdir.c_str()) == -1) {
       perror("chdir");
       _exit(EXIT_FAILURE);
     }
-
     if (cgiExtension == ".py") {
       char* argv[] = {
         const_cast<char*>("python3"),
         const_cast<char*>(_uri.c_str()),
         NULL};
-      if (execve(cgiPath.c_str(), argv, envs.data()) == -1)
-      {
+      if (execve(cgiPath.c_str(), argv, envs.data()) == -1) {
         perror("execve");
         _exit(EXIT_FAILURE);
       }
     } else {
-      char *argv[] = {
-        (char *)_uri.c_str(),
-        NULL};
-      if (execve(cgiPath.c_str(), argv, envs.data()) == -1)
-      {
+      char *argv[] = {(char *)_uri.c_str(), NULL};
+      if (execve(cgiPath.c_str(), argv, envs.data()) == -1) {
         perror("execve");
         _exit(EXIT_FAILURE);
       }
     }
-  }
-  else // parent
-  {
+  } else {
     close(pipeIn[0]);
-
     body = body.substr(0, body.find_last_not_of('\0') + 1);
 
     ssize_t write_ret = write(pipeIn[1], body.data(), body.length());
-    if (write_ret == -1)
-    {
+
+    if (write_ret == -1) {
       close(pipeIn[1]);
       close(pipeOut[1]);
       close(pipeOut[0]);
       return (-1);
     }
-
     close(pipeIn[1]);
-
     close(pipeOut[1]);
-    readFd = pipeOut[0];
-    // タイムアウト処理: ポーリングループ
-    bool finished = false;
-    for (int i = 0; i < CGI_TIMEOUT_ITERATION; ++i) {
-        pid_t result = waitpid(pid, &status, WNOHANG);
-        if (result == -1) {
-            close(readFd);
-            return (-1);
-        }
-        else if (result > 0) { // 子プロセスが終了
-            finished = true;
-            break;
-        }
-    }
 
-    if (!finished) { // タイムアウト発生
-        std::cerr << "CGI script timed out." << std::endl;
-        kill(pid, SIGKILL); // 子プロセスを強制終了
-        waitpid(pid, &status, 0); // 終了ステータスを回収
-        close(readFd);
-        readFd = -1;
-        return (-2); // タイムアウトエラーコード
+    pid_t result = waitpid(pid, &status, WNOHANG);
+
+    readFd = pipeOut[0];
+    if (result == -1) {
+        close(pipeOut[0]);
+        return (-1);
     }
   }
   return (0);
 }
 
 
-std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request) {
+std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request, std::pair<class Epoll&, std::vector<Event>&> event) {
   std::string body;
 
   std::vector<std::string> envs = this->createEnvs(config, _uri, method, cgiPath, cgiExtension, _uri_old, version, request);
@@ -1147,7 +1083,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
     }
   } else if (!method.compare("POST")) {
     std::string _body = request.getBody();
-    int execResult = cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri, _body);
+    int execResult = cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri, _body, event);
     if (execResult < 0) {
       if (execResult == -2) {
         if (pid != 0 && kill(pid, 0) == 0) {
@@ -1206,7 +1142,7 @@ std::string makeCgiHeader(std::string str) {
   return (header);
 }
 
-int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, HttpRequest& request) {
+int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, HttpRequest& request, std::pair<class Epoll&, std::vector<Event>&> event) {
   int responseSize;
   std::string body;
   std::string header;
@@ -1214,7 +1150,7 @@ int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, 
 
   //std::string _body = request.getBody();
 
-  tmp = this->_doCgi(method, _uri, config, cgiPath, cgiExtension, _uri_old, version, request);
+  tmp = this->_doCgi(method, _uri, config, cgiPath, cgiExtension, _uri_old, version, request, event);
 
   header = makeCgiHeader(tmp);
   body = tmp.substr(tmp.find("\n\n") + 2);

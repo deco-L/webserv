@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/24 15:07:53 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/24 23:46:11 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,7 @@ void readHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const
 
 void writeHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const ConfigServer& config) {
   Http http;
+  std::pair<Epoll&, std::vector<Event>&> event(epoll, events);
 
   try {
     http.parseRequestMessage(socket);
@@ -105,7 +106,7 @@ void writeHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, cons
     http.checkRequestMessage(config);
     if (!http.createMethod())
       throw Http::HttpError("HTTP_BAD_REQUEST");
-    http.executeMethod(config);
+    http.executeMethod(config, event);
     #ifdef DEBUG
     showResponseMessage(http);
     #endif

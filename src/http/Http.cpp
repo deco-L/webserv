@@ -6,12 +6,14 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/18 23:55:05 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/24 23:43:40 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Http.hpp"
 #include "Socket.hpp"
+#include "Event.hpp"
+#include "Epoll.hpp"
 #include "Config.hpp"
 #include "Error.hpp"
 #include "HttpGet.hpp"
@@ -154,8 +156,8 @@ void Http::checkRequestMessage(const ConfigServer& config) {
   return ;
 }
 
-void Http::executeMethod(const ConfigServer& config) {
-  this->_httpMethod->execute(config, this->_httpRequest, this->_httpResponse);
+void Http::executeMethod(const ConfigServer& config, std::pair<Epoll&, std::vector<Event>&>& event) {
+  this->_httpMethod->execute(config, this->_httpRequest, this->_httpResponse, event);
   if (300 <= this->_httpResponse->getStatus() && this->_httpResponse->getStatus() < 600) {
     if (this->_httpResponse->getStatus() == HTTP_SPECIAL_RESPONSE)
       throw Http::HttpError("HTTP_SPECIAL_RESPONSE");
