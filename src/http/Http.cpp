@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Http.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/18 23:55:05 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 01:02:31 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -231,7 +231,7 @@ void Http::executeMethod(const ConfigServer& config) {
   return ;
 }
 
-bool Http::createMethod(void) {
+bool Http::createMethod(Epoll &epoll, std::vector<Event> &events) {
   if (this->_httpRequest.getMethod() == "GET")
     this->_httpMethod = new HttpGet(this->_httpRequest.getUri(), this->_httpRequest.getVersion());
   else if (this->_httpRequest.getMethod() == "DELETE")
@@ -242,6 +242,8 @@ bool Http::createMethod(void) {
     this->_httpMethod = NULL;
     this->_httpResponse = new HttpResponse(HTTP_BAD_REQUEST);
   }
+  this->_httpMethod->setEpoll(epoll);
+  this->_httpMethod->setEvents(events);
   return (this->_httpMethod != NULL);
 }
 

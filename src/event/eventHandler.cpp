@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   eventHandler.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/18 23:28:02 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 01:02:10 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,8 +108,15 @@ void writeHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, cons
     #endif
     socket._outBuf.clear();
     http.checkRequestMessage(config);
-    if (!http.createMethod())
+    if (!http.createMethod(epoll, events))
       throw Http::HttpError("HTTP_BAD_REQUEST");
+    
+    // ===
+    //http.get
+    //http._httpMethod->setEpoll(epoll);
+    //http._httpMethod->setEvents(events);
+    // ===
+    
     http.executeMethod(config);
     #ifdef DEBUG
     showResponseMessage(http);

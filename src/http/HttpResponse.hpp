@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/15 18:11:03 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 02:48:22 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,12 @@
 #include <fstream>
 #include <algorithm>
 #include <queue>
+#include <vector>
 #include <sys/stat.h>
 #include "Config.hpp"
+#include "Socket.hpp"
+#include "Epoll.hpp"
+#include "Event.hpp"
 
 #define HTTP_CONTINUE                       100
 #define HTTP_SWITCHING_PROTOCOlS            101
@@ -86,6 +90,20 @@ struct headerList {
   std::pair<std::string, std::string> acceptRanges;
 };
 
+struct CgiState {
+    pid_t       pid;
+    int         fdIn;       // 親→子 (書き込み方向)
+    int         fdOut;      // 子→親 (読み込み方向)
+    std::string body;       // POSTボディ
+    size_t      writeOffset; // どこまで書き終えたか
+    bool        isClosed;    // 書き込み完了(= fdをclose)したか などの管理用
+    // 他にもタイムアウト管理用に startTime などを入れても良い
+
+    CgiState()
+      : pid(-1), fdIn(-1), fdOut(-1),
+        writeOffset(0), isClosed(false) {}
+};
+
 class HttpResponse {
 private:
   unsigned int _status;
@@ -94,6 +112,9 @@ private:
   std::string _redirectPath;
   std::string _response;
   headerList _responseHeader;
+  //Epoll *_epoll;
+  //std::vector<Event> *_events;
+  
 
   HttpResponse(void);
 
@@ -108,7 +129,7 @@ private:
 
 
   std::vector<std::string> createEnvs(const ConfigServer& config, std::string _uri, std::string method, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request);
-  std::string _doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request);
+  std::string _doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request, Epoll &epoll, std::vector<Event> &events);
 
 public:
   HttpResponse(unsigned int status);
@@ -137,7 +158,7 @@ public:
   void setRedirectPath(const std::string& path);
   int createResponseMessage(const std::string& method, std::string path, const ConfigServer& config, std::string version);
   int createAutoindexMessage(std::string path, const ConfigServer& config, std::string version);
-  int createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, HttpRequest& request);
+  int createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, HttpRequest& request, Epoll &epoll, std::vector<Event> &events);
   void execute(Socket& socket);
 
   HttpResponse& operator=(const HttpResponse& obj);

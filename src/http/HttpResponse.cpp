@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/19 00:03:28 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 11:49:21 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,15 @@
 #include "Error.hpp"
 #include "Http.hpp"
 #include "MIME.hpp"
+
+bool setNonBlocking(int fd) {
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags == -1)
+        return false;
+    if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
+        return false;
+    return true;
+}
 
 static void _initHeaderList(headerList& list) {
   list.server = std::make_pair("Server", "webserv/1.0");
@@ -888,6 +897,17 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
   return (envs);
 }
 
+// MARK: cgiWriteHandler
+
+void cgiWriteHandler(
+{
+
+}
+
+// MARK: cgiReadHandler
+
+// MARK: cgiExecGet
+
 int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string _uri) {
   int pipeFd[2];
   int status;
@@ -952,35 +972,80 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
   else
   {
     close(pipeFd[1]);
+    
+    if (!setNonBlocking(pipeFd[0]))
+    {
+      close(pipeFd[0]);
+      return (-1);
+    }
+    
+    // epollに登録するため、一時的に "Socket" を生成 (あなたの設計次第)
+    // ここでは読み込み用(=cgiOutSocket) を生成
+    Socket cgiOutSocket(pipeFd[0]);
+    
+    // 読み込みイベント: CGI 出力を受け取る用
+    Event cgiOutEvent(
+        pipeOut[0],      // fd
+        EPOLLIN,         // イベントフラグ (読み込み監視)
+        NULL,            // configServer等必要なら
+        cgiOutSocket,
+        &cgiReadHandler  // こちらも読み込み用ハンドラ(仮名)
+    );
+    events.push_back(cgiOutEvent);
+    
+    epoll.setEvents(cgiOutSocket, EPOLLIN);
+    
     readFd = pipeFd[0];
 
-    // タイムアウト処理: ポーリングループ
-    bool finished = false;
-    for (int i = 0; i < CGI_TIMEOUT_ITERATION; ++i) {
-        pid_t result = waitpid(pid, &status, WNOHANG);
-        if (result == -1) {
-            close(readFd);
-            return (-1);
-        }
-        else if (result > 0) { // 子プロセスが終了
-            finished = true;
-            break;
-        }
-    }
+    //// タイムアウト処理: ポーリングループ
+    //bool finished = false;
+    //for (int i = 0; i < CGI_TIMEOUT_ITERATION; ++i) {
+    //    pid_t result = waitpid(pid, &status, WNOHANG);
+    //    if (result == -1) {
+    //        close(readFd);
+    //        return (-1);
+    //    }
+    //    else if (result > 0) { // 子プロセスが終了
+    //        finished = true;
+    //        break;
+    //    }
+    //}
 
-    if (!finished) { // タイムアウト発生
-        std::cerr << "CGI script timed out." << std::endl;
-        kill(pid, SIGKILL); // 子プロセスを強制終了
-        waitpid(pid, &status, 0); // 終了ステータスを回収
-        close(readFd);
-        readFd = -1;
-        return (-2); // タイムアウトエラーコード
-    }
+    //if (!finished) { // タイムアウト発生
+    //    std::cerr << "CGI script timed out." << std::endl;
+    //    kill(pid, SIGKILL); // 子プロセスを強制終了
+    //    waitpid(pid, &status, 0); // 終了ステータスを回収
+    //    close(readFd);
+    //    readFd = -1;
+    //    return (-2); // タイムアウトエラーコード
+    //}
   }
   return (0);
 }
 
-int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string _uri, std::string body) {
+
+// MARK: cgiExecPost
+
+
+int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string _uri, std::string body, Epoll &epoll, std::vector<Event> &events) {
+  
+  if (DEBUG)
+  {
+    std::cout << " --- cgiExecPost --- " << std::endl;
+    std::cout << "epoll:" << std::endl;
+    std::cout << "  _epollFd: " << epoll.getEpollFd() << std::endl;
+    std::cout << "  _wait:" << epoll.getWait() << std::endl;
+    
+    std::cout << "events:" << std::endl;
+    for (size_t i = 0; i < events.size(); i++)
+    {
+      std::cout << "  events[" << i << "]: " << std::endl;
+      std::cout << "    _fd: " << events[i].fd << std::endl;
+      std::cout << "    _event: " << events[i].event << std::endl;
+    }
+  }
+  
+  
   int pipeIn[2]; // parent -> child
   int pipeOut[2]; // child -> parent
 
@@ -1063,50 +1128,110 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
   else // parent
   {
     close(pipeIn[0]);
-
-    body = body.substr(0, body.find_last_not_of('\0') + 1);
-
-    ssize_t write_ret = write(pipeIn[1], body.data(), body.length());
-    if (write_ret == -1)
+    close(pipeOut[1]);
+    
+    if (!setNonBlocking(pipeIn[1]))
     {
       close(pipeIn[1]);
-      close(pipeOut[1]);
       close(pipeOut[0]);
       return (-1);
     }
+    
+    if (!setNonBlocking(pipeOut[0]))
+    {
+      close(pipeIn[1]);
+      close(pipeOut[0]);
+      return (-1);
+    }
+    
+    body = body.substr(0, body.find_last_not_of('\0') + 1);
+    
+    // epoll に登録するため、一時的に "Socket" を生成 (あなたの設計次第)
+    // ここでは書き込み用(=cgiInSocket) と読み込み用(=cgiOutSocket) の2つを作る
+    Socket cgiInSocket(pipeIn[1]);
+    Socket cgiOutSocket(pipeOut[0]);
+    
+    CgiState cgiState;
+    cgiState.pid = pid;
+    cgiState.fdIn = pipeIn[1];
+    cgiState.fdOut = pipeOut[0];
+    cgiState.body = body;
+    
+    // 書き込みイベント: POSTボディを送るときは EPOLLOUT を使う
+    // あとで writeHandler の中で少しずつ write する想定
+    Event cgiInEvent(
+        pipeIn[1],       // fd
+        EPOLLOUT,        // イベントフラグ (書き込み監視)
+        &cgiState,       // ここに状態を持たせる
+        cgiInSocket,     // ソケット(実体FD持ち)
+        &cgiWriteHandler // ハンドラ関数を登録(仮名)
+    );
+    events.push_back(cgiInEvent);
+    
+    // 読み込みイベント: CGI 出力を受け取る用
+    Event cgiOutEvent(
+        pipeOut[0],      // fd
+        EPOLLIN,         // イベントフラグ (読み込み監視)
+        &cgiState,       // ここに状態を持たせる
+        cgiOutSocket,
+        &cgiReadHandler  // こちらも読み込み用ハンドラ(仮名)
+    );
+    events.push_back(cgiOutEvent);
 
-    close(pipeIn[1]);
+    epoll.setEvent(cgiInSocket, EPOLLOUT);
+    epoll.setEvent(cgiOutSocket, EPOLLIN);
 
-    close(pipeOut[1]);
+    // この段階ではwrite()せず、「後でEPOLLOUTが来たらcgiWriteHandlerで書き込み」
+    // 読み取りは「後でEPOLLINが来たらcgiReadHandlerでread」
+
+    // 呼び出し元が「CGI出力を最後に取りたい」場合は
+    // readFd に pipeOut[0] を記録しておいても良い
     readFd = pipeOut[0];
-    // タイムアウト処理: ポーリングループ
-    bool finished = false;
-    for (int i = 0; i < CGI_TIMEOUT_ITERATION; ++i) {
-        pid_t result = waitpid(pid, &status, WNOHANG);
-        if (result == -1) {
-            close(readFd);
-            return (-1);
-        }
-        else if (result > 0) { // 子プロセスが終了
-            finished = true;
-            break;
-        }
-    }
 
-    if (!finished) { // タイムアウト発生
-        std::cerr << "CGI script timed out." << std::endl;
-        kill(pid, SIGKILL); // 子プロセスを強制終了
-        waitpid(pid, &status, 0); // 終了ステータスを回収
-        close(readFd);
-        readFd = -1;
-        return (-2); // タイムアウトエラーコード
-    }
+    // 同期的に書き込み・読み込みをしないので即return
+    return 0; 
+
+
+
+    //ssize_t write_ret = write(pipeIn[1], body.data(), body.length());
+    //if (write_ret == -1)
+    //{
+    //  close(pipeIn[1]);
+    //  close(pipeOut[0]);
+    //  return (-1);
+    //}
+
+    //close(pipeIn[1]);
+
+    //readFd = pipeOut[0];
+    //// タイムアウト処理: ポーリングループ
+    //bool finished = false;
+    //for (int i = 0; i < CGI_TIMEOUT_ITERATION; ++i) {
+    //    pid_t result = waitpid(pid, &status, WNOHANG);
+    //    if (result == -1) {
+    //        close(readFd);
+    //        return (-1);
+    //    }
+    //    else if (result > 0) { // 子プロセスが終了
+    //        finished = true;
+    //        break;
+    //    }
+    //}
+
+    //if (!finished) { // タイムアウト発生
+    //    std::cerr << "CGI script timed out." << std::endl;
+    //    kill(pid, SIGKILL); // 子プロセスを強制終了
+    //    waitpid(pid, &status, 0); // 終了ステータスを回収
+    //    close(readFd);
+    //    readFd = -1;
+    //    return (-2); // タイムアウトエラーコード
+    //}
   }
   return (0);
 }
 
 
-std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request) {
+std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request, Epoll &epoll, std::vector<Event> &events) {
   std::string body;
 
   std::vector<std::string> envs = this->createEnvs(config, _uri, method, cgiPath, cgiExtension, _uri_old, version, request);
@@ -1147,7 +1272,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
     }
   } else if (!method.compare("POST")) {
     std::string _body = request.getBody();
-    int execResult = cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri, _body);
+    int execResult = cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri_old, _uri, _body, epoll, events);
     if (execResult < 0) {
       if (execResult == -2) {
         if (pid != 0 && kill(pid, 0) == 0) {
@@ -1213,7 +1338,7 @@ std::string makeCgiHeader(std::string str) { // str: cgiの出力
   return (header);
 }
 
-int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, HttpRequest& request) {
+int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, HttpRequest& request, Epoll &epoll, std::vector<Event> &events) {
   int responseSize;
   std::string body;
   std::string header;
@@ -1221,7 +1346,7 @@ int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, 
 
   //std::string _body = request.getBody();
 
-  tmp = this->_doCgi(method, _uri, config, cgiPath, cgiExtension, _uri_old, version, request);
+  tmp = this->_doCgi(method, _uri, config, cgiPath, cgiExtension, _uri_old, version, request, epoll, events);
 
   header = makeCgiHeader(tmp);
   body = tmp.substr(tmp.find("\n\n") + 2);

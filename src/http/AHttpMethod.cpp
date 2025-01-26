@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AHttpMethod.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/15 17:43:21 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 01:19:42 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include "HttpResponse.hpp"
 
 AHttpMethod::AHttpMethod(void) : _method("default"), _uri(""), _uri_old(""), _version(""), _autoindex(false), _cgi_extension(""), _cgi_path(""), _cgi_relative_path("") {
+  _epoll = NULL;
+  _events = NULL;
   return ;
 }
 
@@ -39,9 +41,10 @@ AHttpMethod::AHttpMethod(std::string method, std::string uri, std::string versio
       this->_uri = uri;
   }
 
+  _epoll = NULL;
+  _events = NULL;
+
   return;
-
-
 }
 
 AHttpMethod::AHttpMethod(const AHttpMethod& obj) : _method(obj.getMethod()) {
@@ -176,10 +179,26 @@ const std::string& AHttpMethod::getVersion(void) const {
   return (this->_version);
 }
 
+Epoll* AHttpMethod::getEpoll(void) const {
+  return (this->_epoll);
+}
+
+std::vector<Event>* AHttpMethod::getEvents(void) const {
+  return (this->_events);
+}
+
 void AHttpMethod::setUri(std::string& uri) {
   if (!uri.empty())
     this->_uri = uri;
   return ;
+}
+
+void AHttpMethod::setEpoll(Epoll &epoll) {
+  this->_epoll = &epoll;
+}
+
+void AHttpMethod::setEvents(std::vector<Event> &events) {
+  this->_events = &events;
 }
 
 static bool checkMethodPermission(const std::string& method, const std::vector<std::string>& methods) {

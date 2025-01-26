@@ -3,15 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   AHttpMethod.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/15 18:10:38 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 01:30:59 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef AHTTPMETHOD_HPP
 #define AHTTPMETHOD_HPP
+
+#include "Socket.hpp"
+#include "Epoll.hpp"
+#include "Event.hpp"
 
 #include <iostream>
 #include <vector>
@@ -41,6 +45,8 @@ protected:
   std::string _cgi_extension;
   std::string _cgi_path;
   std::string _cgi_relative_path;
+  Epoll *_epoll;
+  std::vector<Event> *_events;
 
   class MethodError : public std::exception {
   private:
@@ -60,8 +66,15 @@ public:
   const std::string& getMethod(void) const;
   const std::string& getUri(void) const;
   const std::string& getVersion(void) const;
+  Epoll* getEpoll(void) const;
+  std::vector<Event>* getEvents(void) const;
+  
   void setUri(std::string& uri);
+  void setEpoll(Epoll &epoll);
+  void setEvents(std::vector<Event> &events);
+  
   HttpResponse* setResponseStatus(const ConfigServer& config);
+  
   virtual void execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response) = 0;
   virtual void setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const = 0;
 };
