@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/26 15:13:10 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 16:06:30 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "Error.hpp"
 #include "Config.hpp"
 #include "Socket.hpp"
+#include "CgiEvent.hpp"
 #include "Epoll.hpp"
 #include "Event.hpp"
 #include "Http.hpp"
@@ -41,17 +42,19 @@ void execEvent(Epoll& epoll, const epoll_event& event, std::vector<Event>& event
   std::vector<Event> tmp = events;
 
   for (std::vector<Event>::iterator it = tmp.begin(); it != tmp.end(); it++) {
-    if ((it->event & EPOLLIN) == EPOLLIN)
-      it->func(epoll, events, it->socket, *it->config);
+    if ((it->event & EPOLLIN) == EPOLLIN) {
+      it->socketFunc(epoll, events, it->socket, *it->config);
+      it->cgiFunc(epoll, events, *it->cgiEvent);
+    }
     else if ((it->event & (EPOLLIN | EPOLLET)) == (EPOLLIN | EPOLLET))
-      it->func(epoll, events, it->socket, *it->config);
+      it->socketFunc(epoll, events, it->socket, *it->config);
     else if ((it->event & (EPOLLOUT)) == EPOLLOUT)
-      it->func(epoll, events, it->socket, *it->config);
+      it->socketFunc(epoll, events, it->socket, *it->config);
   }
   tmp = events;
   for (std::vector<Event>::iterator it = tmp.begin(); it != tmp.end(); it++) {
     if ((it->event & EPOLLOUT) == EPOLLOUT)
-      it->func(epoll, events, it->socket, *it->config);
+      it->socketFunc(epoll, events, it->socket, *it->config);
   }
   return ;
 }
@@ -62,7 +65,7 @@ void connectHandler(Epoll& epoll, std::vector<Event>& evnents, Socket& socket, c
   socket.accept(cSocket);
   if (cSocket._socket == -1)
     return ;
-  epoll.setEvent(cSocket, EPOLLIN | EPOLLET);
+  epoll.setEvent(cSocket._socket, EPOLLIN | EPOLLET);
 
   Event tmp(cSocket._socket, EPOLLIN | EPOLLET, &config, cSocket, readHandler);
   evnents.push_back(tmp);
@@ -85,8 +88,7 @@ void readHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const
 
     events.push_back(tmp);
     epoll.modEvent(socket, EPOLLOUT);
-  }
-  else if (size == 0 && !socket._outBuf.length()) {
+  } else if (size == 0 && !socket._outBuf.length()) {
     std::vector<Event>::iterator it;
 
     it = std::find_if(events.begin(), events.end(), FindByFd(socket._socket));
@@ -98,12 +100,20 @@ void readHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const
   return ;
 }
 
-void readCgiHandler(Epoll& epoll, std::vector<Event>& events, Cgi cgi) {
-  pid_t pid = waitpid(-1, NULL, WNOHANG);
+void readCgiHandler(Epoll& epoll, std::vector<Event>& events, CgiEvent& cgi) {
+  pid_t pid = waitpid(cgi._pid, NULL, WNOHANG);
+
+  if (pid == -1) {
+    std::cerr << ERROR_COLOR << "waitpid error" << COLOR_RESET << std::endl;
+  } else if (pid == 0) {
+  } else {
+  }
+  return ;
 }
 
 void writeHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const ConfigServer& config) {
   Http http;
+  std::pair<Epoll&, std::vector<Event>&> event(epoll, events);
 
   try {
     http.parseRequestMessage(socket);
@@ -114,7 +124,7 @@ void writeHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, cons
     http.checkRequestMessage(config);
     if (!http.createMethod())
       throw Http::HttpError("HTTP_BAD_REQUEST");
-    http.executeMethod(config);
+    http.executeMethod(config, event);
     #ifdef DEBUG
     showResponseMessage(http);
     #endif

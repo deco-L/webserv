@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/23 15:46:02 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 15:34:51 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ public:
   int getWait(void) const;
   const struct epoll_event* getEvents(void) const;
   void epollCreate(void);
-  void setEvent(const Socket& socket, unsigned int flag);
+  void setEvent(const int fd, unsigned int flag);
   void modEvent(const Socket& socket, unsigned int flag);
   void delEvent(const Socket& socket);
   int epollWait(int time);

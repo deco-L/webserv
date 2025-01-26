@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/23 16:19:40 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 15:47:44 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,9 @@ void eventLoop(std::vector<Socket>& sockets, const std::vector<ConfigServer>& co
   try {
     epoll.epollCreate();
     for (std::vector<Socket>::iterator it = sockets.begin(); it != sockets.end(); it++) {
-      Event tmp(it->_socket, EPOLLIN, &configs[it - sockets.begin()], *it, connectHandler);
+      Event tmp(it->_socket, EPOLLIN, &configs[it - sockets.begin()], *it, NULL, connectHandler);
 
-      epoll.setEvent(*it, EPOLLIN);
+      epoll.setEvent(it->_socket, EPOLLIN);
       events.push_back(tmp);
     }
   }
