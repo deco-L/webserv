@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/25 18:25:24 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/25 20:13:42 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,13 +45,11 @@ bool HttpPost::_uploadFile(HttpRequest& request) {
   return (true);
 }
 
-void HttpPost::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response, std::pair<class Epoll&, std::vector<Event>&> evnet) const {
+void HttpPost::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response, std::pair<class Epoll&, std::vector<Event>&> event) const {
   int responseSize;
 
   if ((!this->_cgi_extension.empty() && !this->_cgi_path.empty()) || this->_cgi_relative_path.size())
-  {
     responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_path, this->_cgi_extension, this->_uri_old, request, event);
-  }
   else {
     responseSize = response.createResponseMessage(this->getMethod(), this->_uri, config, this->_version);
   }
@@ -63,8 +61,7 @@ void HttpPost::setResponseMessage(const ConfigServer& config, HttpRequest& reque
 }
 
 void HttpPost::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response, std::pair<Epoll&, std::vector<Event>&>& event) {
-  if ((this->_cgi_extension.empty() || this->_cgi_path.empty()) || !this->_uri_old.size())
-    response = this->setResponseStatus(config);
+  response = this->setResponseStatus(config);
   if (400 <= response->getStatus() && response->getStatus() <= 600)
     return ;
   if ((this->_cgi_extension.empty() || this->_cgi_path.empty()) || !this->_uri_old.size())

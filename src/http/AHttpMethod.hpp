@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/25 18:19:00 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/25 20:25:20 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ private:
   HttpResponse* _returnRedirectStatus(const ConfigLocation& location);
   HttpResponse* _setGetResponseStatus(const ConfigServer& config, std::string& path, const ConfigLocation& location);
   HttpResponse* _setPostResponseStatus(std::string& path, const ConfigLocation& location);
-  HttpResponse* _setDeleteResponseStatus(const ConfigServer& config, std::string& path, const ConfigLocation& location);
+  HttpResponse* _setDeleteResponseStatus(std::string& path, const ConfigLocation& location);
 
 protected:
   const std::string _method;
