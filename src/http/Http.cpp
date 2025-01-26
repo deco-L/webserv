@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/24 23:43:40 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 18:34:37 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,10 @@ int Http::getRequestSize(void) const {
 
 unsigned long Http::getRequestBodySize(void) const {
   return (this->_httpRequest.getBodySize());
+}
+
+HttpResponse* Http::getHttpResponse(void) const {
+  return (this->_httpResponse);
 }
 
 void Http::setHttpResponse(unsigned int status) {

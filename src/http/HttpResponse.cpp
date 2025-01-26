@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/26 16:02:35 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 19:18:26 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -561,6 +561,26 @@ void HttpResponse::execute(Socket& socket) {
   return ;
 }
 
+int HttpResponse::cgiEventProcess(int readfd) {
+  int len = 0;
+  int responseSize = 0;
+  std::string body;
+  std::string tmp;
+  std::string header;
+  char buf[KILOBYTE];
+
+  while ((len = read(readfd, buf, KILOBYTE)) > 0)
+    tmp.append(buf, len);
+  header = makeCgiHeader(tmp);
+  body = tmp.substr(tmp.find("\n\n") + 2);
+  this->_response.append(header);
+  this->_response.append(CRLF);
+  this->_response.append(CRLF);
+  this->_response.append(body);
+  responseSize = this->_response.length();
+  return (responseSize);
+}
+
 HttpResponse& HttpResponse::operator=(const HttpResponse& obj) {
   if (this != &obj) {
     this->_status = obj.getStatus();
@@ -944,10 +964,12 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
       return (-1);
     } else if (result == 0) {
       CgiEvent cgiEvent(pid, pipeFd[1]);
-      Event tmp(pipeFd[1], EPOLLIN, cgiEvent, readCgiHandler);
+      Event tmp(pipeFd[1], EPOLLIN, &cgiEvent, readCgiHandler);
 
+      tmp.cgiFlag = true;
       event.first.setEvent(pipeFd[1], EPOLLIN);
-      event.second.push_back();
+      event.second.push_back(tmp);
+      return (-1);
     }
     close(pipeFd[1]);
     readFd = pipeFd[0];
@@ -956,6 +978,7 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
 }
 
 int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri, std::string body, std::pair<class Epoll&, std::vector<Event>&> event) {
+  (void) event;
   int pipeIn[2]; // parent -> child
   int pipeOut[2]; // child -> parent
   int status;
@@ -1057,6 +1080,8 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
   if (!method.compare("GET")) {
     int execResult = cgiExecGet(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri, event);
     if (execResult < 0) {
+      if (pid == 0)
+        throw HttpResponse::HttpResponseError("cgi unfinished");
       if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1)
         {
@@ -1093,14 +1118,12 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
       this->_response.clear();
       this->setStatus(HTTP_INTERNAL_SERVER_ERROR);
     }
-
   }
   if (readFd != -1) {
     char buf[1024];
     int len;
-    while ((len = read(readFd, buf, 1024)) > 0) {
+    while ((len = read(readFd, buf, 1024)) > 0)
       body.append(buf, len);
-    }
     close(readFd);
   }
   return (body);
@@ -1114,32 +1137,24 @@ std::string makeCgiHeader(std::string str) {
 
   contentType = str.substr(str.find("Content-Type: ") + 14, str.find("\n", str.find("Content-Type: ")) - str.find("Content-Type: ") - 14);
   contentType = "Content-Type: " + contentType;
-
   str = str.substr(str.find("\n", str.find("Content-Type: ")) + 1);
   str = str.substr(1);
-
   contentLength = "Content-Length: " + mylib::nbrToS(str.length());
-
-
   header = contentType + CRLF + contentLength;
   if (location.length() > 0)
     header = "Location: " + location + CRLF + header;
   return (header);
 }
 
-int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, HttpRequest& request, std::pair<class Epoll&, std::vector<Event>&> event) {
+int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, HttpRequest& request, std::pair<class Epoll&, std::vector<Event>&>& event) {
   int responseSize;
   std::string body;
   std::string header;
   std::string tmp;
 
-  //std::string _body = request.getBody();
-
   tmp = this->_doCgi(method, _uri, config, cgiPath, cgiExtension, _uri_old, version, request, event);
-
   header = makeCgiHeader(tmp);
   body = tmp.substr(tmp.find("\n\n") + 2);
-
   this->_createStatusLine(version);
   this->_response.append(header);
   this->_response.append(CRLF);

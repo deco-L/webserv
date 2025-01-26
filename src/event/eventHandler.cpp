@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/26 16:06:30 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 19:16:17 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,10 @@ void execEvent(Epoll& epoll, const epoll_event& event, std::vector<Event>& event
 
   for (std::vector<Event>::iterator it = tmp.begin(); it != tmp.end(); it++) {
     if ((it->event & EPOLLIN) == EPOLLIN) {
-      it->socketFunc(epoll, events, it->socket, *it->config);
-      it->cgiFunc(epoll, events, *it->cgiEvent);
+      if (!it->cgiFlag)
+        it->socketFunc(epoll, events, it->socket, *it->config);
+      else
+        it->cgiFunc(epoll, events, *it);
     }
     else if ((it->event & (EPOLLIN | EPOLLET)) == (EPOLLIN | EPOLLET))
       it->socketFunc(epoll, events, it->socket, *it->config);
@@ -92,22 +94,56 @@ void readHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const
     std::vector<Event>::iterator it;
 
     it = std::find_if(events.begin(), events.end(), FindByFd(socket._socket));
-    epoll.delEvent(socket);
+    epoll.delEvent(socket._socket);
     events.erase(it);
     socket.close();
     std::cout << NORMA_COLOR << "connection end" << COLOR_RESET << std::endl;
+  } else {
+    std::vector<Event>::iterator it;
+
+    it = std::find_if(events.begin(), events.end(), FindByFd(socket._socket));
+    it->socket._outBuf = socket._outBuf;
+    epoll.modEvent(socket, (EPOLLIN | EPOLLET));
   }
   return ;
 }
 
-void readCgiHandler(Epoll& epoll, std::vector<Event>& events, CgiEvent& cgi) {
-  pid_t pid = waitpid(cgi._pid, NULL, WNOHANG);
+void readCgiHandler(Epoll& epoll, std::vector<Event>& events, Event& event) {
+  try {
+    pid_t pid = waitpid(event.cgiEvent->_pid, NULL, WNOHANG);
 
-  if (pid == -1) {
-    std::cerr << ERROR_COLOR << "waitpid error" << COLOR_RESET << std::endl;
-  } else if (pid == 0) {
-  } else {
+    if (pid == -1) {
+      throw std::runtime_error("HTTP_INTERNAL_SERVER_ERROR");
+    } else if (pid == 0) {
+      return ;
+    } else {
+      int responseSize = 0;
+      responseSize = event.http->getHttpResponse()->cgiEventProcess(event.cgiEvent->_readFd);
+      close(event.cgiEvent->_readFd);
+      if (responseSize < 0)
+        throw std::runtime_error("HTTP_INTERNAL_SERVER_ERROR");
+      event.http->getHttpResponse()->execute(event.socket);
+    }
+  } catch(const std::exception& e) {
+    std::string error(e.what());
+
+    std::cout << ERROR_COLOR << error << COLOR_RESET << std::endl;
+    event.http->createResponseMessage(*event.config);
+    #ifdef DEBUG
+    showResponseMessage(*event.http);
+    #endif
+    event.http->sendResponse(event.socket);
   }
+  std::vector<Event>::iterator it;
+
+  it = std::find_if(events.begin(), events.end(), FindByFd(event.cgiEvent->_readFd));
+  events.erase(it);
+  epoll.delEvent(event.cgiEvent->_readFd);
+
+  Event tmp(event.socket._socket, EPOLLIN | EPOLLET, event.config, event.socket, readHandler);
+
+  events.push_back(tmp);
+  epoll.setEvent(event.socket._socket, EPOLLIN | EPOLLET);
   return ;
 }
 
@@ -130,16 +166,26 @@ void writeHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, cons
     #endif
     http.sendResponse(socket);
   }
-    catch(const std::exception& e) {
-      std::string error(e.what());
+  catch(const std::exception& e) {
+    std::string error(e.what());
 
-      std::cout << ERROR_COLOR << error << COLOR_RESET << std::endl;
-      http.createResponseMessage(config);
-      #ifdef DEBUG
-      showResponseMessage(http);
-      #endif
-      http.sendResponse(socket);
+    if (error == "cgi unfinished") {
+      events.end()->http = &http;
+      events.end()->socket = socket;
+
+      std::vector<Event>::iterator it;
+
+      it = std::find_if(events.begin(), events.end(), FindByFd(socket._socket));
+      events.erase(it);
+      epoll.delEvent(socket._socket);
     }
+    std::cout << ERROR_COLOR << error << COLOR_RESET << std::endl;
+    http.createResponseMessage(config);
+    #ifdef DEBUG
+    showResponseMessage(http);
+    #endif
+    http.sendResponse(socket);
+  }
 
   std::vector<Event>::iterator it;
 

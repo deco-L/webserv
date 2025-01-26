@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/26 15:34:37 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 16:58:25 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,8 +80,8 @@ void Epoll::modEvent(const Socket& socket, unsigned int flag) {
   return ;
 }
 
-void Epoll::delEvent(const Socket& socket) {
-  if (epoll_ctl(this->_epollFd, EPOLL_CTL_DEL, socket._socket, NULL) == -1)
+void Epoll::delEvent(const int fd) {
+  if (epoll_ctl(this->_epollFd, EPOLL_CTL_DEL, fd, NULL) == -1)
     throw Epoll::EpollError("Error: epoll_ctl error.");
   return ;
 }

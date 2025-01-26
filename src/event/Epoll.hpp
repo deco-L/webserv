@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/26 15:34:51 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 16:58:36 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ public:
   void epollCreate(void);
   void setEvent(const int fd, unsigned int flag);
   void modEvent(const Socket& socket, unsigned int flag);
-  void delEvent(const Socket& socket);
+  void delEvent(const int socket);
   int epollWait(int time);
   void epollCrose(void);
 };

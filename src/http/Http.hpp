@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/24 23:43:00 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 18:33:58 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ public:
   const std::string& getVersion(void) const;
   int getRequestSize(void) const;
   unsigned long getRequestBodySize(void) const;
+  HttpResponse* getHttpResponse(void) const;
   void setHttpResponse(unsigned int status);
   void recvRequestMessage(Socket& socket);
   void parseRequestMessage(Socket& socket);
