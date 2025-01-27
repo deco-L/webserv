@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/26 18:33:58 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/27 13:38:36 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,13 +34,13 @@ private:
   AHttpMethod* _httpMethod;
   HttpResponse* _httpResponse;
 
-  Http(const Http& obj);
-  Http& operator=(const Http& obj);
 
   void _parseRequestLine(std::string line);
 
 public:
   Http(void);
+  Http(const Http& obj);
+  Http& operator=(const Http& obj);
   ~Http();
 
   class HttpError : public std::exception {
@@ -58,6 +58,8 @@ public:
   const std::string& getVersion(void) const;
   int getRequestSize(void) const;
   unsigned long getRequestBodySize(void) const;
+  const HttpRequest& getHttpRequest(void) const;
+  AHttpMethod* getHttpMethod(void) const;
   HttpResponse* getHttpResponse(void) const;
   void setHttpResponse(unsigned int status);
   void recvRequestMessage(Socket& socket);

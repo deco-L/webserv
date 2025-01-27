@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/26 19:18:26 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/27 15:18:59 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -561,7 +561,7 @@ void HttpResponse::execute(Socket& socket) {
   return ;
 }
 
-int HttpResponse::cgiEventProcess(int readfd) {
+int HttpResponse::cgiEventProcess(int readfd, const std::string& version) {
   int len = 0;
   int responseSize = 0;
   std::string body;
@@ -573,6 +573,7 @@ int HttpResponse::cgiEventProcess(int readfd) {
     tmp.append(buf, len);
   header = makeCgiHeader(tmp);
   body = tmp.substr(tmp.find("\n\n") + 2);
+  this->_createStatusLine(version);
   this->_response.append(header);
   this->_response.append(CRLF);
   this->_response.append(CRLF);
@@ -887,26 +888,18 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
       }
     }
   }
-  // SERVER_PROTOCOL
   envs.push_back("SERVER_PROTOCOL=" + version);
-  // SERVER_SOFTWARE
   envs.push_back("SERVER_SOFTWARE=webserv/1.0");
-  // HTTP_ACCEPT
   if (headers.find("Accept") != headers.end())
     envs.push_back("HTTP_ACCEPT=" + headers["Accept"]);
-  // HTTP_FORWARDED
   if (headers.find("Forwarded") != headers.end())
     envs.push_back("HTTP_FORWARDED=" + headers["Forwarded"]);
-  // HTTP_REFERER
   if (headers.find("Referer") != headers.end())
     envs.push_back("HTTP_REFERER=" + headers["Referer"]);
-  // HTTP_USER_AGENT
   if (headers.find("User-Agent") != headers.end())
     envs.push_back("HTTP_USER_AGENT=" + headers["User-Agent"]);
-  // HTTP_X_FORWARDED_FOR
   if (headers.find("X-Forwarded-For") != headers.end())
     envs.push_back("HTTP_X_FORWARDED_FOR=" + headers["X-Forwarded-For"]);
-
   envs.push_back("PWD=" + _uri.substr(0, _uri.find_last_of('/')));
   return (envs);
 }
@@ -914,7 +907,6 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
 int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri, std::pair<class Epoll&, std::vector<Event>&>& event) {
   int pipeFd[2];
   int status;
-  // chdir用のpathを作成
   std::string path_chdir = _uri;
 
   path_chdir = path_chdir.substr(0, path_chdir.find_last_of('/'));
@@ -923,6 +915,7 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
     perror("pipe");
     return (-1);
   }
+  mylib::nonBlocking(pipeFd[0]);
   pid = fork();
   if (pid == -1) {
     close(pipeFd[0]);
@@ -963,13 +956,18 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
       close(pipeFd[1]);
       return (-1);
     } else if (result == 0) {
-      CgiEvent cgiEvent(pid, pipeFd[1]);
-      Event tmp(pipeFd[1], EPOLLIN, &cgiEvent, readCgiHandler);
+      std::vector<int> pipeFds;
+
+      pipeFds.push_back(pipeFd[0]);
+      pipeFds.push_back(pipeFd[1]);
+
+      CgiEvent cgiEvent(pid, pipeFds);
+      Event tmp(pipeFd[0], EPOLLIN, cgiEvent, readCgiHandler);
 
       tmp.cgiFlag = true;
-      event.first.setEvent(pipeFd[1], EPOLLIN);
+      event.first.setEvent(pipeFd[0], EPOLLIN);
       event.second.push_back(tmp);
-      return (-1);
+      return (1);
     }
     close(pipeFd[1]);
     readFd = pipeFd[0];
@@ -1067,8 +1065,8 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
   std::string body;
 
   std::vector<std::string> envs = this->createEnvs(config, _uri, method, cgiPath, cgiExtension, _uri_old, version, request);
-
   std::vector<char*> env_cstrs;
+
   for (size_t i = 0; i < envs.size(); ++i) {
       env_cstrs.push_back(const_cast<char*>(envs[i].c_str()));
   }
@@ -1079,12 +1077,11 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
 
   if (!method.compare("GET")) {
     int execResult = cgiExecGet(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri, event);
+    if (execResult == 1)
+      throw HttpResponse::HttpResponseError("cgi unfinished");
     if (execResult < 0) {
-      if (pid == 0)
-        throw HttpResponse::HttpResponseError("cgi unfinished");
       if (pid != 0 && kill(pid, 0) == 0) {
-        if (kill(pid, SIGTERM) == -1)
-        {
+        if (kill(pid, SIGTERM) == -1) {
           std::cerr << ERROR_COLOR << "kill error" << COLOR_RESET << std::endl;
           throw HttpResponse::HttpResponseError("kill");
         }
@@ -1098,8 +1095,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
     if (execResult < 0) {
       if (execResult == -2) {
         if (pid != 0 && kill(pid, 0) == 0) {
-          if (kill(pid, SIGTERM) == -1)
-          {
+          if (kill(pid, SIGTERM) == -1) {
             std::cerr << ERROR_COLOR << "kill error" << COLOR_RESET << std::endl;
             throw HttpResponse::HttpResponseError("kill");
           }
@@ -1109,8 +1105,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
         throw HttpResponse::HttpResponseError("CGI script timed out.");
       }
       else if (pid != 0 && kill(pid, 0) == 0) {
-        if (kill(pid, SIGTERM) == -1)
-        {
+        if (kill(pid, SIGTERM) == -1) {
           std::cerr << ERROR_COLOR << "kill error" << COLOR_RESET << std::endl;
           throw HttpResponse::HttpResponseError("kill");
         }

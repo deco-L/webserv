@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/26 19:00:35 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/27 13:39:17 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,11 @@ HttpDelete::HttpDelete(): AHttpMethod("DELETE", "", "") {
 HttpDelete::HttpDelete(std::string uri, std::string version): AHttpMethod("DELETE", uri, version) {
   (void)uri;
   (void)version;
+  return ;
+}
+
+HttpDelete::HttpDelete(const AHttpMethod& obj): AHttpMethod("DELETE", obj.getUri(), obj.getVersion()) {
+  *this = obj;
   return ;
 }
 
@@ -63,10 +68,12 @@ void HttpDelete::execute(const ConfigServer& config, HttpRequest& request, HttpR
 
 HttpDelete& HttpDelete::operator=(const HttpDelete& obj) {
   if (this != &obj) {
-    ;
-  }
-  else
-  {
+    this->_uri_old = obj._uri_old;
+    this->_autoindex = obj._autoindex;
+    this->_cgi_extension = obj._cgi_extension;
+    this->_cgi_path = obj._cgi_path;
+    this->_cgi_relative_path = obj._cgi_relative_path;
+  } else {
     std::cout << "\e[1;31mError: "
               << "Attempted self-assignment in copy assignment operator.\e[0m"
               << std::endl;

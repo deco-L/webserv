@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/07 21:32:37 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/01/26 19:42:31 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +31,11 @@ private:
   long long _bodySize;
   struct in_addr _ip;
 
-  HttpRequest(const HttpRequest& obj);
-  HttpRequest& operator=(const HttpRequest& obj);
 
 public:
   HttpRequest(void);
+  HttpRequest(const HttpRequest& obj);
+  HttpRequest& operator=(const HttpRequest& obj);
   ~HttpRequest();
 
   const std::string& getMethod(void) const;

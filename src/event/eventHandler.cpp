@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/26 19:16:17 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/27 17:11:54 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,9 @@ void execEvent(Epoll& epoll, const epoll_event& event, std::vector<Event>& event
     if ((it->event & EPOLLIN) == EPOLLIN) {
       if (!it->cgiFlag)
         it->socketFunc(epoll, events, it->socket, *it->config);
-      else
+      else {
         it->cgiFunc(epoll, events, *it);
+      }
     }
     else if ((it->event & (EPOLLIN | EPOLLET)) == (EPOLLIN | EPOLLET))
       it->socketFunc(epoll, events, it->socket, *it->config);
@@ -110,7 +111,7 @@ void readHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const
 
 void readCgiHandler(Epoll& epoll, std::vector<Event>& events, Event& event) {
   try {
-    pid_t pid = waitpid(event.cgiEvent->_pid, NULL, WNOHANG);
+    pid_t pid = waitpid(event.cgiEvent._pid, NULL, WNOHANG);
 
     if (pid == -1) {
       throw std::runtime_error("HTTP_INTERNAL_SERVER_ERROR");
@@ -118,27 +119,32 @@ void readCgiHandler(Epoll& epoll, std::vector<Event>& events, Event& event) {
       return ;
     } else {
       int responseSize = 0;
-      responseSize = event.http->getHttpResponse()->cgiEventProcess(event.cgiEvent->_readFd);
-      close(event.cgiEvent->_readFd);
+
+      responseSize = event.http.getHttpResponse()->cgiEventProcess(event.cgiEvent._readFd[0], event.http.getHttpMethod()->getVersion());
+      close(event.cgiEvent._readFd[1]);
       if (responseSize < 0)
         throw std::runtime_error("HTTP_INTERNAL_SERVER_ERROR");
-      event.http->getHttpResponse()->execute(event.socket);
+      #ifdef DEBUG
+      showResponseMessage(event.http);
+      #endif
+      event.http.sendResponse(event.socket);
     }
   } catch(const std::exception& e) {
     std::string error(e.what());
 
     std::cout << ERROR_COLOR << error << COLOR_RESET << std::endl;
-    event.http->createResponseMessage(*event.config);
+    event.http.createResponseMessage(*event.config);
     #ifdef DEBUG
-    showResponseMessage(*event.http);
+    showResponseMessage(event.http);
     #endif
-    event.http->sendResponse(event.socket);
+    event.http.sendResponse(event.socket);
   }
   std::vector<Event>::iterator it;
 
-  it = std::find_if(events.begin(), events.end(), FindByFd(event.cgiEvent->_readFd));
+  it = std::find_if(events.begin(), events.end(), FindByFd(event.cgiEvent._readFd[0]));
   events.erase(it);
-  epoll.delEvent(event.cgiEvent->_readFd);
+  epoll.delEvent(event.cgiEvent._readFd[0]);
+  close(event.cgiEvent._readFd[0]);
 
   Event tmp(event.socket._socket, EPOLLIN | EPOLLET, event.config, event.socket, readHandler);
 
@@ -170,21 +176,23 @@ void writeHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, cons
     std::string error(e.what());
 
     if (error == "cgi unfinished") {
-      events.end()->http = &http;
-      events.end()->socket = socket;
+      events.back().http = http;
+      events.back().socket = socket;
 
       std::vector<Event>::iterator it;
 
       it = std::find_if(events.begin(), events.end(), FindByFd(socket._socket));
       events.erase(it);
       epoll.delEvent(socket._socket);
+      return ;
+    } else {
+      std::cout << ERROR_COLOR << error << COLOR_RESET << std::endl;
+      http.createResponseMessage(config);
+      #ifdef DEBUG
+      showResponseMessage(http);
+      #endif
+      http.sendResponse(socket);
     }
-    std::cout << ERROR_COLOR << error << COLOR_RESET << std::endl;
-    http.createResponseMessage(config);
-    #ifdef DEBUG
-    showResponseMessage(http);
-    #endif
-    http.sendResponse(socket);
   }
 
   std::vector<Event>::iterator it;

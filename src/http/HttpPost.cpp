@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/26 18:39:29 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/27 13:40:30 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,11 @@ HttpPost::HttpPost(void): AHttpMethod("POST", "", "") {
 }
 
 HttpPost::HttpPost(std::string uri, std::string version): AHttpMethod("POST", uri, version) {
+  return ;
+}
+
+HttpPost::HttpPost(const AHttpMethod& obj): AHttpMethod("POST", obj.getUri(), obj.getVersion()) {
+  *this = obj;
   return ;
 }
 
@@ -75,9 +80,12 @@ void HttpPost::execute(const ConfigServer& config, HttpRequest& request, HttpRes
 
 HttpPost& HttpPost::operator=(const HttpPost& obj) {
   if (this != &obj) {
-  }
-  else
-  {
+    this->_uri_old = obj._uri_old;
+    this->_autoindex = obj._autoindex;
+    this->_cgi_extension = obj._cgi_extension;
+    this->_cgi_path = obj._cgi_path;
+    this->_cgi_relative_path = obj._cgi_relative_path;
+  } else {
     std::cout << "\e[1;31mError: "
               << "Attempted self-assignment in copy assignment operator.\e[0m"
               << std::endl;

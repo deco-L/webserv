@@ -5,7 +5,7 @@ import sys
 import time
 
 # 環境変数をprint
-time.sleep(100)
+time.sleep(2)
 print("Content-Type: text/html")
 print("")
 

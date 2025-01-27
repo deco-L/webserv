@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/26 19:02:20 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/27 15:18:49 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,7 +141,7 @@ public:
   int createAutoindexMessage(std::string path, const ConfigServer& config, std::string version);
   int createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, HttpRequest& request, std::pair<class Epoll&, std::vector<Event>&>& event);
   void execute(Socket& socket);
-  int cgiEventProcess(int readfd);
+  int cgiEventProcess(int readfd, const std::string& version);
 
   HttpResponse& operator=(const HttpResponse& obj);
 };

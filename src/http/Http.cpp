@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/26 18:34:37 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/27 14:29:34 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,14 @@ int Http::getRequestSize(void) const {
 
 unsigned long Http::getRequestBodySize(void) const {
   return (this->_httpRequest.getBodySize());
+}
+
+const HttpRequest& Http::getHttpRequest(void) const {
+  return (this->_httpRequest);
+}
+
+AHttpMethod* Http::getHttpMethod(void) const {
+  return (this->_httpMethod);
 }
 
 HttpResponse* Http::getHttpResponse(void) const {
@@ -289,6 +297,20 @@ void Http::showResponseMessage(void) const {
 Http& Http::operator=(const Http& obj) {
   if (this != &obj) {
     this->_requestSize = obj.getRequestSize();
+    this->_httpRequest = obj.getHttpRequest();
+    this->_httpMethod = obj.getHttpMethod();
+    this->_httpResponse = obj.getHttpResponse();
+    if (this->_httpMethod != NULL) {
+      if (obj.getHttpMethod()->getMethod() == "GET")
+        this->_httpMethod = new HttpGet(*dynamic_cast<HttpGet*>(obj.getHttpMethod()));
+      else if (obj.getHttpMethod()->getMethod() == "POST")
+        this->_httpMethod = new HttpPost(*dynamic_cast<HttpPost*>(obj.getHttpMethod()));
+      else if (obj.getHttpMethod()->getMethod() == "DELETE")
+        this->_httpMethod = new HttpDelete(*dynamic_cast<HttpDelete*>(obj.getHttpMethod()));
+    }
+    if (this->_httpResponse != NULL) {
+      this->_httpResponse = new HttpResponse(*obj.getHttpResponse());
+    }
   }
   else
   {

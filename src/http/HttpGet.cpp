@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/26 18:39:40 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/27 13:40:50 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,11 @@ HttpGet::HttpGet(): AHttpMethod("GET", "", "") {
 }
 
 HttpGet::HttpGet(std::string uri, std::string version): AHttpMethod("GET", uri, version) {
+  return ;
+}
+
+HttpGet::HttpGet(const AHttpMethod& obj): AHttpMethod("GET", obj.getUri(), obj.getVersion()) {
+  *this = obj;
   return ;
 }
 
@@ -62,7 +67,11 @@ void HttpGet::execute(const ConfigServer& config, HttpRequest& request, HttpResp
 
 HttpGet& HttpGet::operator=(const HttpGet& obj) {
   if (this != &obj) {
-    ;
+    this->_uri_old = obj._uri_old;
+    this->_autoindex = obj._autoindex;
+    this->_cgi_extension = obj._cgi_extension;
+    this->_cgi_path = obj._cgi_path;
+    this->_cgi_relative_path = obj._cgi_relative_path;
   }
   else
   {
