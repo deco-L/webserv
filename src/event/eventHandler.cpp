@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/27 17:11:54 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/27 17:25:03 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,10 @@ void readCgiHandler(Epoll& epoll, std::vector<Event>& events, Event& event) {
     } else {
       int responseSize = 0;
 
-      responseSize = event.http.getHttpResponse()->cgiEventProcess(event.cgiEvent._readFd[0], event.http.getHttpMethod()->getVersion());
+      responseSize = event.http.getHttpResponse()->cgiEventProcess(
+        event.cgiEvent._readFd[0],
+        event.http.getHttpMethod()->getVersion()
+      );
       close(event.cgiEvent._readFd[1]);
       if (responseSize < 0)
         throw std::runtime_error("HTTP_INTERNAL_SERVER_ERROR");

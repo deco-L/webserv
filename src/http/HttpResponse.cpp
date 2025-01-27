@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/27 15:18:59 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/27 17:26:45 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -589,9 +589,7 @@ HttpResponse& HttpResponse::operator=(const HttpResponse& obj) {
     this->_redirectPath = obj.getRedirectPath();
     this->_response = obj.getResponse();
     this->_responseHeader = obj.getheader();
-  }
-  else
-  {
+  } else {
     std::cout << "\e[1;31mError: "
               << "Attempted self-assignment in copy assignment operator.\e[0m"
               << std::endl;
@@ -799,14 +797,14 @@ std::string getDigestUser(const std::string &digestString)
 
 std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, std::string _uri, std::string method, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request)
 {
-  std::vector<std::string> envs;
-
   (void)cgiExtension;
   (void)request;
   (void)version;
   (void)config;
   (void)method;
   (void)cgiPath;
+  std::vector<std::string> envs;
+
 
   std::map<std::string, std::string> headers = request.getHeader();
 
@@ -910,7 +908,6 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
   std::string path_chdir = _uri;
 
   path_chdir = path_chdir.substr(0, path_chdir.find_last_of('/'));
-  std::cout << "path_chdir: " << path_chdir << std::endl;
   if (pipe(pipeFd) == -1) {
     perror("pipe");
     return (-1);
@@ -1063,18 +1060,15 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
 
 std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request, std::pair<class Epoll&, std::vector<Event>&>& event) {
   std::string body;
-
   std::vector<std::string> envs = this->createEnvs(config, _uri, method, cgiPath, cgiExtension, _uri_old, version, request);
   std::vector<char*> env_cstrs;
+  int readFd = -1;
+  pid_t pid;
 
   for (size_t i = 0; i < envs.size(); ++i) {
       env_cstrs.push_back(const_cast<char*>(envs[i].c_str()));
   }
   env_cstrs.push_back(NULL);
-
-  int readFd = -1;
-  pid_t pid;
-
   if (!method.compare("GET")) {
     int execResult = cgiExecGet(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri, event);
     if (execResult == 1)
@@ -1103,8 +1097,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
         this->_response.clear();
         this->setStatus(HTTP_GATEWAY_TIME_OUT);
         throw HttpResponse::HttpResponseError("CGI script timed out.");
-      }
-      else if (pid != 0 && kill(pid, 0) == 0) {
+      } else if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1) {
           std::cerr << ERROR_COLOR << "kill error" << COLOR_RESET << std::endl;
           throw HttpResponse::HttpResponseError("kill");
