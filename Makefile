@@ -6,7 +6,7 @@
 #    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2025/01/15 14:54:17 by csakamot         ###   ########.fr        #
+#    Updated: 2025/01/22 14:19:32 by csakamot         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,7 +31,7 @@ CORESRC	=	main.cpp socketMain.cpp Socket.cpp
 
 CONFSRC = configMain.cpp Config.cpp checkConfig.cpp isValidConfig.cpp isValidBracketFormat.cpp isValidDirectiveArguments.cpp isValidNest.cpp parseConfig.cpp
 
-EVENSRC = eventLoop.cpp Epoll.cpp Event.cpp eventHandler.cpp
+EVENSRC = eventLoop.cpp Epoll.cpp eventHandler.cpp
 
 HTTPSRC = Http.cpp HttpRequest.cpp AHttpMethod.cpp HttpDelete.cpp HttpGet.cpp HttpPost.cpp HttpResponse.cpp HttpErrorPage.cpp HttpRedirectPage.cpp MIME.cpp
 

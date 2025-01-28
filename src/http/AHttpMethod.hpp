@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/15 18:10:38 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/25 20:25:20 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@
 
 struct ConfigServer;
 struct ConfigLocation;
+struct Event;
+class Epoll;
 class Socket;
 class HttpRequest;
 class HttpResponse;
@@ -29,7 +31,7 @@ private:
   HttpResponse* _returnRedirectStatus(const ConfigLocation& location);
   HttpResponse* _setGetResponseStatus(const ConfigServer& config, std::string& path, const ConfigLocation& location);
   HttpResponse* _setPostResponseStatus(std::string& path, const ConfigLocation& location);
-  HttpResponse* _setDeleteResponseStatus(const ConfigServer& config, std::string& path, const ConfigLocation& location);
+  HttpResponse* _setDeleteResponseStatus(std::string& path, const ConfigLocation& location);
 
 protected:
   const std::string _method;
@@ -62,8 +64,8 @@ public:
   const std::string& getVersion(void) const;
   void setUri(std::string& uri);
   HttpResponse* setResponseStatus(const ConfigServer& config);
-  virtual void execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response) = 0;
-  virtual void setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const = 0;
+  virtual void execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response, std::pair<class Epoll&, std::vector<Event>&>& event) = 0;
+  virtual void setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response, std::pair<class Epoll&, std::vector<Event>&>& event) const = 0;
 };
 
 #endif

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpPost.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/05 14:36:14 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/01/27 13:40:30 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,11 @@ HttpPost::HttpPost(void): AHttpMethod("POST", "", "") {
 }
 
 HttpPost::HttpPost(std::string uri, std::string version): AHttpMethod("POST", uri, version) {
+  return ;
+}
+
+HttpPost::HttpPost(const AHttpMethod& obj): AHttpMethod("POST", obj.getUri(), obj.getVersion()) {
+  *this = obj;
   return ;
 }
 
@@ -45,16 +50,12 @@ bool HttpPost::_uploadFile(HttpRequest& request) {
   return (true);
 }
 
-void HttpPost::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response) const {
+void HttpPost::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response, std::pair<class Epoll&, std::vector<Event>&>& event) const {
   int responseSize;
 
   if ((!this->_cgi_extension.empty() && !this->_cgi_path.empty()) || this->_cgi_relative_path.size())
-  {
-    responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_path, this->_cgi_extension, this->_uri_old, request);
-  }
-  else {
-    responseSize = response.createResponseMessage(this->getMethod(), this->_uri, config, this->_version);
-  }
+    responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_path, this->_cgi_extension, this->_uri_old, request, event);
+  responseSize = response.createResponseMessage(this->getMethod(), this->_uri, config, this->_version);
   if (responseSize < 0) {
     response.setStatus(HTTP_INTERNAL_SERVER_ERROR);
     return ;
@@ -62,9 +63,8 @@ void HttpPost::setResponseMessage(const ConfigServer& config, HttpRequest& reque
   return ;
 }
 
-void HttpPost::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response) {
-  if ((this->_cgi_extension.empty() || this->_cgi_path.empty()) || !this->_uri_old.size())
-    response = this->setResponseStatus(config);
+void HttpPost::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response, std::pair<Epoll&, std::vector<Event>&>& event) {
+  response = this->setResponseStatus(config);
   if (400 <= response->getStatus() && response->getStatus() <= 600)
     return ;
   if ((this->_cgi_extension.empty() || this->_cgi_path.empty()) || !this->_uri_old.size())
@@ -74,15 +74,18 @@ void HttpPost::execute(const ConfigServer& config, HttpRequest& request, HttpRes
       return ;
     }
   }
-  this->setResponseMessage(config, request, *response);
+  this->setResponseMessage(config, request, *response, event);
   return ;
 }
 
 HttpPost& HttpPost::operator=(const HttpPost& obj) {
   if (this != &obj) {
-  }
-  else
-  {
+    this->_uri_old = obj._uri_old;
+    this->_autoindex = obj._autoindex;
+    this->_cgi_extension = obj._cgi_extension;
+    this->_cgi_path = obj._cgi_path;
+    this->_cgi_relative_path = obj._cgi_relative_path;
+  } else {
     std::cout << "\e[1;31mError: "
               << "Attempted self-assignment in copy assignment operator.\e[0m"
               << std::endl;

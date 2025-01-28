@@ -6,12 +6,14 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/18 23:55:05 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/27 14:29:34 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Http.hpp"
 #include "Socket.hpp"
+#include "Event.hpp"
+#include "Epoll.hpp"
 #include "Config.hpp"
 #include "Error.hpp"
 #include "HttpGet.hpp"
@@ -81,6 +83,18 @@ int Http::getRequestSize(void) const {
 
 unsigned long Http::getRequestBodySize(void) const {
   return (this->_httpRequest.getBodySize());
+}
+
+const HttpRequest& Http::getHttpRequest(void) const {
+  return (this->_httpRequest);
+}
+
+AHttpMethod* Http::getHttpMethod(void) const {
+  return (this->_httpMethod);
+}
+
+HttpResponse* Http::getHttpResponse(void) const {
+  return (this->_httpResponse);
 }
 
 void Http::setHttpResponse(unsigned int status) {
@@ -154,8 +168,8 @@ void Http::checkRequestMessage(const ConfigServer& config) {
   return ;
 }
 
-void Http::executeMethod(const ConfigServer& config) {
-  this->_httpMethod->execute(config, this->_httpRequest, this->_httpResponse);
+void Http::executeMethod(const ConfigServer& config, std::pair<Epoll&, std::vector<Event>&>& event) {
+  this->_httpMethod->execute(config, this->_httpRequest, this->_httpResponse, event);
   if (300 <= this->_httpResponse->getStatus() && this->_httpResponse->getStatus() < 600) {
     if (this->_httpResponse->getStatus() == HTTP_SPECIAL_RESPONSE)
       throw Http::HttpError("HTTP_SPECIAL_RESPONSE");
@@ -283,6 +297,20 @@ void Http::showResponseMessage(void) const {
 Http& Http::operator=(const Http& obj) {
   if (this != &obj) {
     this->_requestSize = obj.getRequestSize();
+    this->_httpRequest = obj.getHttpRequest();
+    this->_httpMethod = obj.getHttpMethod();
+    this->_httpResponse = obj.getHttpResponse();
+    if (this->_httpMethod != NULL) {
+      if (obj.getHttpMethod()->getMethod() == "GET")
+        this->_httpMethod = new HttpGet(*dynamic_cast<HttpGet*>(obj.getHttpMethod()));
+      else if (obj.getHttpMethod()->getMethod() == "POST")
+        this->_httpMethod = new HttpPost(*dynamic_cast<HttpPost*>(obj.getHttpMethod()));
+      else if (obj.getHttpMethod()->getMethod() == "DELETE")
+        this->_httpMethod = new HttpDelete(*dynamic_cast<HttpDelete*>(obj.getHttpMethod()));
+    }
+    if (this->_httpResponse != NULL) {
+      this->_httpResponse = new HttpResponse(*obj.getHttpResponse());
+    }
   }
   else
   {

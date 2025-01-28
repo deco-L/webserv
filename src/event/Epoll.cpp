@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/31 18:36:34 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 16:58:25 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,19 +60,19 @@ void Epoll::epollCreate(void) {
   return ;
 }
 
-void Epoll::setEvent(const Socket& socket, unsigned int flag) {
+void Epoll::setEvent(const int fd, unsigned int flag) {
   struct epoll_event event;
 
   event.events = flag;
-  event.data.fd = socket._socket;
-  if (epoll_ctl(this->_epollFd, EPOLL_CTL_ADD, socket._socket, &event) == -1)
+  event.data.fd = fd;
+  if (epoll_ctl(this->_epollFd, EPOLL_CTL_ADD, fd, &event) == -1)
     throw Epoll::EpollError("Error: epoll_ctl error.");
   return ;
 }
 
 void Epoll::modEvent(const Socket& socket, unsigned int flag) {
   struct epoll_event event;
-  
+
   event.events = flag;
   event.data.fd = socket._socket;
   if (epoll_ctl(this->_epollFd, EPOLL_CTL_MOD, socket._socket, &event) == -1)
@@ -80,17 +80,17 @@ void Epoll::modEvent(const Socket& socket, unsigned int flag) {
   return ;
 }
 
-void Epoll::delEvent(const Socket& socket) {
-  if (epoll_ctl(this->_epollFd, EPOLL_CTL_DEL, socket._socket, NULL) == -1)
+void Epoll::delEvent(const int fd) {
+  if (epoll_ctl(this->_epollFd, EPOLL_CTL_DEL, fd, NULL) == -1)
     throw Epoll::EpollError("Error: epoll_ctl error.");
   return ;
 }
 
-void Epoll::epollWait(int time) {
+int Epoll::epollWait(int time) {
   this->_wait = epoll_wait(this->_epollFd, this->_events, FD_SETSIZE, time);
   if (this->_wait < 0)
     throw Epoll::EpollError("Error: epoll_wait error");
-  return ;
+  return (this->_wait);
 }
 
 void Epoll::epollCrose(void) {

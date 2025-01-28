@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/16 22:55:03 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/27 17:18:27 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,12 @@ void Socket::passive(short int port, bool opt) {
   int optval = 1;
 
   if (opt) {
-    this->_error = setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, (char *) &optval, sizeof(optval));
+    this->_error = setsockopt(
+      this->_socket,SOL_SOCKET,
+      SO_REUSEADDR | SO_REUSEPORT,
+      (char *) &optval,
+      sizeof(optval)
+    );
     if (this->_error < 0)
       throw Socket::SocketError("setsockopt error: " + std::string(strerror(errno)));
   }
@@ -88,7 +93,11 @@ void Socket::passive(short int port, bool opt) {
 
 void Socket::accept(Socket& cSocket) {
   mylib::bzero(&this->_cSockAddr, this->_addrLen);
-  cSocket._socket = ::accept(this->_socket, (struct sockaddr *) &cSocket._cSockAddr, (unsigned int *) &cSocket._addrLen);
+  cSocket._socket = ::accept(
+    this->_socket,
+    (struct sockaddr *) &cSocket._cSockAddr,
+    (unsigned int *) &cSocket._addrLen
+  );
   if (cSocket._socket ==  -1)
     return ;
   cSocket._peerIp = mylib::to_string(ntohs(cSocket._cSockAddr.sin_port));
@@ -114,6 +123,7 @@ ssize_t Socket::recv(void) {
 
 void Socket::send(std::string buf, size_t len) {
   const char* tmp = buf.c_str();
+
   this->_error = ::send(this->_socket, (char *)tmp, len, 0);
   return ;
 }
@@ -124,13 +134,15 @@ void Socket::sendText(std::string fileName) {
 
   inFile.open(fileName.c_str());
   if (!inFile)
-    throw Socket::SocketError("open error: " + std::string(strerror(errno)));
+    throw Socket::SocketError("open error");
   this->_error = 0;
   while (std::getline(inFile, line) && this->_error != -1) {
     line += '\n';
     this->_error = ::send(this->_socket, line.c_str(), line.size(), 0);
     if (inFile.bad())
-      throw Socket::SocketError("getline error: " + std::string(strerror(errno)));
+      throw Socket::SocketError("getline error");
+    else if (this->_error == -1)
+      throw Socket::SocketError("send error");
   }
   inFile.close();
   return ;
@@ -142,12 +154,14 @@ void Socket::sendBinary(std::string fileName) {
 
   inBinary.open(fileName.c_str(), std::ios::binary);
   if (!inBinary)
-    throw Socket::SocketError("open error: " + std::string(strerror(errno)));
+    throw Socket::SocketError("open error");
   while (std::getline(inBinary, line)) {
     line += '\n';
     this->_error = ::send(this->_socket, line.c_str(), line.size(), 0);
     if (inBinary.bad())
-      throw Socket::SocketError("send error: " + std::string(strerror(errno)));
+      throw Socket::SocketError("getline error");
+    else if (this->_error == -1)
+      throw Socket::SocketError("send error");
   }
   inBinary.close();
   return ;
@@ -189,9 +203,7 @@ Socket& Socket::operator=(const Socket& obj) {
     this->_peerIpName = obj._peerIpName;
     this->_peerIp = obj._peerIp;
     this->_timeOut = obj._timeOut;
-  }
-  else
-  {
+  } else {
     std::cout << ERROR_COLOR
               << "Attempted self-assignment in copy assignment operator.\e[0m"
               << COLOR_RESET << std::endl;

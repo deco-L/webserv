@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/07 21:34:00 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/01/26 19:42:41 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,7 +138,13 @@ void HttpRequest::showHeaders(void) const {
 
 HttpRequest& HttpRequest::operator=(const HttpRequest& obj) {
   if (this != &obj) {
-    ;
+    this->_method = obj.getMethod();
+    this->_uri = obj.getUri();
+    this->_version = obj.getVersion();
+    this->_headers = obj.getHeader();
+    this->_body = obj.getBody();
+    this->_bodySize = obj.getBodySize();
+    this->_ip = obj.getIp();
   }
   else
   {

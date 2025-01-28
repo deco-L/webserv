@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/15 17:43:21 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/25 20:18:55 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,27 +21,20 @@ AHttpMethod::AHttpMethod(void) : _method("default"), _uri(""), _uri_old(""), _ve
 
 AHttpMethod::AHttpMethod(std::string method, std::string uri, std::string version) : _method(method), _uri(uri), _uri_old(uri), _version(version), _autoindex(false), _cgi_extension(""), _cgi_path(""), _cgi_relative_path("") {
   std::string::size_type pos = uri.find(".py");
-
   std::string tmp = uri;
 
   this->_cgi_relative_path.clear();
-
   if (pos != std::string::npos) {
       if (pos + 3 <= uri.size()) {
           this->_uri = uri.substr(0, pos + 3);
           this->_uri_old = uri;
-      } else {
+      } else
           this->_uri = uri;
-      }
-
   } else {
       this->_cgi_relative_path.clear();
       this->_uri = uri;
   }
-
   return;
-
-
 }
 
 AHttpMethod::AHttpMethod(const AHttpMethod& obj) : _method(obj.getMethod()) {
@@ -141,16 +134,13 @@ HttpResponse* AHttpMethod::_setPostResponseStatus(std::string& path, const Confi
     return (new HttpResponse(HTTP_MOVED_PERMANENTLY, path, location));
   if (mylib::isDirectory(path) && !mylib::isPathValid(path))
     return (new HttpResponse(HTTP_NOT_FOUND, location));
-
   this->setUri(path);
   if (location.return_.first != 0)
     return (new HttpResponse(location.return_.first, location));
   return (new HttpResponse(HTTP_CREATED, location));
 }
 
-HttpResponse* AHttpMethod::_setDeleteResponseStatus(const ConfigServer& config, std::string& path, const ConfigLocation& location) {
-  (void)config;
-
+HttpResponse* AHttpMethod::_setDeleteResponseStatus(std::string& path, const ConfigLocation& location) {
   path = path + this->_uri;
   if (!mylib::isPathValid(path))
     return (new HttpResponse(HTTP_NO_CONTENT, location));
@@ -199,9 +189,7 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
       path = it->path;
       location = *it;
       this->_autoindex = location.autoindex;
-
-      if (location.cgi_extension.size())
-      {
+      if (location.cgi_extension.size()) {
         this->_cgi_extension = location.cgi_extension[0].first;
         this->_cgi_path = location.cgi_extension[0].second;
       }
@@ -227,7 +215,7 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
   else if (!this->_method.compare("POST"))
     return (this->_setPostResponseStatus(path, location));
   else if (!this->_method.compare("DELETE"))
-    return (this->_setDeleteResponseStatus(config, path, location));
+    return (this->_setDeleteResponseStatus(path, location));
   return (new HttpResponse(HTTP_OK, location));
 }
 

@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/02 18:12:43 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/28 16:10:24 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,26 +14,77 @@
 #define EVENT_HPP
 
 #include <cstdlib>
+#include <vector>
+#include <sys/epoll.h>
+#include "Socket.hpp"
+#include "Http.hpp"
+#include "CgiEvent.hpp"
 
 class Epoll;
-class Socket;
 struct ConfigServer;
 
 struct Event {
   int fd;
   int event;
+  bool cgiFlag;
   const ConfigServer* config;
   Socket socket;
-  void (*func)(Epoll& epoll, std::vector<Event>& events, Socket& socket, const ConfigServer& config);
+  Http http;
+  CgiEvent cgiEvent;
+  void (*socketFunc)(
+    Epoll& epoll,
+    std::vector<Event>& events,
+    Socket& socket,
+    const ConfigServer& config
+  );
+  void (*cgiFunc)(Epoll& epoll, std::vector<Event>& events, Event& event);
 
-  Event(void): fd(0), event(0), config(NULL), socket(), func(NULL) {}; 
+  Event(void):
+  fd(0),
+  event(0),
+  cgiFlag(false),
+  config(NULL),
+  socket(),
+  http(),
+  cgiEvent(),
+  socketFunc(NULL),
+  cgiFunc(NULL) {};
+
   Event(
     int fd,
     int event,
     const ConfigServer* config,
     Socket socket,
-    void (*func)(Epoll& epoll, std::vector<Event>& events, Socket& socket, const ConfigServer& config)
-  ): fd(fd), event(event), config(config), socket(socket), func(func) {};
+    void (*socketFunc)(
+      Epoll& epoll,
+      std::vector<Event>& events,
+      Socket& socket,
+      const ConfigServer& config
+    )
+  ): fd(fd),
+  event(event),
+  cgiFlag(false),
+  config(config),
+  socket(socket),
+  http(),
+  cgiEvent(),
+  socketFunc(socketFunc),
+  cgiFunc(NULL) {};
+
+  Event(
+    int fd,
+    int event,
+    CgiEvent cgiEvent,
+    void (*cgiFunc)(Epoll& epoll, std::vector<Event>& events, Event& event)
+  ): fd(fd),
+  event(event),
+  cgiFlag(false),
+  config(NULL),
+  socket(),
+  http(),
+  cgiEvent(cgiEvent),
+  socketFunc(NULL),
+  cgiFunc(cgiFunc) {};
 };
 
 struct FindByFd {
@@ -46,10 +97,43 @@ struct FindByFd {
     }
 };
 
+void execEvent(
+  Epoll& epoll,
+  const epoll_event& event,
+  std::vector<Event>& events
+);
 
-void execEvent(Epoll& epoll, const epoll_event& event, std::vector<Event>& events);
-void connectHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const ConfigServer& config);
-void readHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const ConfigServer& config);
-void writeHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const ConfigServer& config);
+void connectHandler(
+  Epoll& epoll,
+  std::vector<Event>& events,
+  Socket& socket,
+  const ConfigServer& config
+);
+
+void readHandler(
+  Epoll& epoll,
+  std::vector<Event>& events,
+  Socket& socket,
+  const ConfigServer& config
+);
+
+void readCgiHandler(
+  Epoll& epoll,
+  std::vector<Event>& events,
+  Event& event
+);
+
+void writeHandler(
+  Epoll& epoll,
+  std::vector<Event>& events,
+  Socket& socket,
+  const ConfigServer& config
+);
+
+void writeCgiHandler(
+  Epoll& epoll,
+  std::vector<Event>& events,
+  Event& event
+);
 
 #endif

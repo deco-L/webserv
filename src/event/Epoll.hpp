@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/31 18:34:34 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/26 16:58:36 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ public:
   class EpollError : public std::exception {
   private:
     std::string _error_message;
-  
+
   public:
     EpollError(std::string error);
     virtual ~EpollError() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW;
@@ -46,10 +46,10 @@ public:
   int getWait(void) const;
   const struct epoll_event* getEvents(void) const;
   void epollCreate(void);
-  void setEvent(const Socket& socket, unsigned int flag);
+  void setEvent(const int fd, unsigned int flag);
   void modEvent(const Socket& socket, unsigned int flag);
-  void delEvent(const Socket& socket);
-  void epollWait(int time);
+  void delEvent(const int socket);
+  int epollWait(int time);
   void epollCrose(void);
 };
 

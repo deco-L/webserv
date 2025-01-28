@@ -1,16 +1,17 @@
-#CGIのPOSTのためのテストcgiスクリプトです。stdinからデータを読み込んで、その長さを表示します。
-
-#stdinから入ってくるデータの想定は、
-#usrname=xxx&password=yyy
-#のような形式です。
+#  CGIのPOSTのためのテストcgiスクリプトです。stdinからデータを読み込んで、その長さを表示します。
+#  stdinから入ってくるデータの想定は、
+#  usrname=xxx&password=yyy
+#  のような形式です。
 
 import os
 import sys
+import time
+
 
 # stdin
-content_length = os.environ["CONTENT_LENGTH"]
-input = sys.stdin.read(int(content_length))
-#input = sys.stdin.read()
+
+time.sleep(4)
+input = sys.stdin.read()
 
 data = input.split("&")
 username = data[0].split("=")[1]
@@ -35,10 +36,10 @@ env_list_all = ["AUTH_TYPE", "CONTENT_LENGTH", "CONTENT_TYPE", "GATEWAY_INTERFAC
 env_list_now = os.environ.keys()
 
 for env in env_list_all:
-	if env in env_list_now:
-		print("<tr><td>%s</td><td>%s</td></tr>" % (env, os.environ[env]))
-	else:
-		print("<tr><td>%s</td><td></td></tr>" % env)
+    if env in env_list_now:
+        print("<tr><td>%s</td><td>%s</td></tr>" % (env, os.environ[env]))
+    else:
+        print("<tr><td>%s</td><td></td></tr>" % env)
 print("</table>")
 
 print("<h1>Python Version</h1>")
