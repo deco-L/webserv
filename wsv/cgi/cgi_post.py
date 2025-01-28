@@ -9,8 +9,8 @@ import time
 
 
 # stdin
+time.sleep(4)
 input = sys.stdin.read()
-time.sleep(100)
 
 data = input.split("&")
 username = data[0].split("=")[1]

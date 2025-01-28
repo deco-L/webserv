@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/27 17:24:47 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/28 16:10:24 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,34 +97,43 @@ struct FindByFd {
     }
 };
 
-
 void execEvent(
   Epoll& epoll,
   const epoll_event& event,
   std::vector<Event>& events
 );
+
 void connectHandler(
   Epoll& epoll,
   std::vector<Event>& events,
   Socket& socket,
   const ConfigServer& config
 );
+
 void readHandler(
   Epoll& epoll,
   std::vector<Event>& events,
   Socket& socket,
   const ConfigServer& config
 );
+
 void readCgiHandler(
   Epoll& epoll,
   std::vector<Event>& events,
   Event& event
 );
+
 void writeHandler(
   Epoll& epoll,
   std::vector<Event>& events,
   Socket& socket,
   const ConfigServer& config
+);
+
+void writeCgiHandler(
+  Epoll& epoll,
+  std::vector<Event>& events,
+  Event& event
 );
 
 #endif

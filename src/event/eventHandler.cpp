@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/27 17:25:03 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/28 16:29:43 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,19 +45,26 @@ void execEvent(Epoll& epoll, const epoll_event& event, std::vector<Event>& event
     if ((it->event & EPOLLIN) == EPOLLIN) {
       if (!it->cgiFlag)
         it->socketFunc(epoll, events, it->socket, *it->config);
-      else {
+      else
         it->cgiFunc(epoll, events, *it);
-      }
     }
     else if ((it->event & (EPOLLIN | EPOLLET)) == (EPOLLIN | EPOLLET))
       it->socketFunc(epoll, events, it->socket, *it->config);
-    else if ((it->event & (EPOLLOUT)) == EPOLLOUT)
-      it->socketFunc(epoll, events, it->socket, *it->config);
+    else if ((it->event & (EPOLLOUT)) == EPOLLOUT) {
+      if (!it->cgiFlag)
+        it->socketFunc(epoll, events, it->socket, *it->config);
+      else
+        it->cgiFunc(epoll, events, *it);
+    }
   }
   tmp = events;
   for (std::vector<Event>::iterator it = tmp.begin(); it != tmp.end(); it++) {
-    if ((it->event & EPOLLOUT) == EPOLLOUT)
-      it->socketFunc(epoll, events, it->socket, *it->config);
+    if ((it->event & (EPOLLOUT)) == EPOLLOUT) {
+      if (!it->cgiFlag)
+        it->socketFunc(epoll, events, it->socket, *it->config);
+      else
+        it->cgiFunc(epoll, events, *it);
+    }
   }
   return ;
 }
@@ -205,5 +212,42 @@ void writeHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, cons
   Event tmp(socket._socket, EPOLLIN | EPOLLET, &config, socket, readHandler);
   events.push_back(tmp);
   epoll.modEvent(socket, EPOLLIN | EPOLLET);
+  return ;
+}
+
+void writeCgiHandler(Epoll& epoll, std::vector<Event>& events, Event& event) {
+  try {
+    ssize_t size = 0;
+
+    size = write(event.cgiEvent._writeFd[1], event.cgiEvent._writeBuf.c_str(), event.cgiEvent._writeBuf.length());
+    if (size == -1)
+      return ;
+    std::vector<Event>::iterator it;
+
+    it = std::find_if(events.begin(), events.end(), FindByFd(event.cgiEvent._writeFd[1]));
+    events.erase(it);
+    epoll.delEvent(event.cgiEvent._writeFd[1]);
+    close(event.cgiEvent._writeFd[1]);
+
+    Event tmp(event.cgiEvent._readFd[0], EPOLLIN, event.cgiEvent, readCgiHandler);
+
+    events.push_back(tmp);
+    epoll.setEvent(event.cgiEvent._readFd[0], EPOLLIN);
+  } catch(const std::exception& e) {
+    std::string error(e.what());
+
+    std::cout << ERROR_COLOR << error << COLOR_RESET << std::endl;
+    event.http.createResponseMessage(*event.config);
+    #ifdef DEBUG
+    showResponseMessage(event.http);
+    #endif
+    event.http.sendResponse(event.socket);
+    std::vector<Event>::iterator it;
+
+    it = std::find_if(events.begin(), events.end(), FindByFd(event.cgiEvent._writeFd[1]));
+    events.erase(it);
+    epoll.delEvent(event.cgiEvent._writeFd[1]);
+    close(event.cgiEvent._writeFd[1]);
+  }
   return ;
 }

@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/27 17:26:45 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/28 17:10:33 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -912,7 +912,11 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
     perror("pipe");
     return (-1);
   }
-  mylib::nonBlocking(pipeFd[0]);
+  if (mylib::nonBlocking(pipeFd[0]) == -1) {
+    close(pipeFd[0]);
+    close(pipeFd[1]);
+    return (-1);
+  }
   pid = fork();
   if (pid == -1) {
     close(pipeFd[0]);
@@ -984,10 +988,22 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
     perror("pipe");
     return (-1);
   }
+  if (mylib::nonBlocking(pipeIn[1]) == -1) {
+    close(pipeIn[0]);
+    close(pipeIn[1]);
+    return (-1);
+  }
   if (pipe(pipeOut) == -1) {
     close(pipeIn[0]);
     close(pipeIn[1]);
     perror("pipe");
+    return (-1);
+  }
+  if (mylib::nonBlocking(pipeOut[0]) == -1) {
+    close(pipeIn[0]);
+    close(pipeIn[1]);
+    close(pipeOut[0]);
+    close(pipeOut[1]);
     return (-1);
   }
   pid = fork();
@@ -1038,21 +1054,45 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
     ssize_t write_ret = write(pipeIn[1], body.data(), body.length());
 
     if (write_ret == -1) {
-      close(pipeIn[1]);
-      close(pipeOut[1]);
-      close(pipeOut[0]);
-      return (-1);
+      std::vector<int>pipeInFds;
+      std::vector<int>pipeOutFds;
+
+      pipeInFds.push_back(pipeIn[0]);
+      pipeInFds.push_back(pipeIn[1]);
+      pipeOutFds.push_back(pipeOut[0]);
+      pipeOutFds.push_back(pipeOut[1]);
+
+      CgiEvent cgiEvent(pid, pipeInFds, pipeOutFds, body.data());
+      Event tmp(pipeIn[1], EPOLLOUT, cgiEvent, writeCgiHandler);
+
+      tmp.cgiFlag = true;
+      event.first.setEvent(pipeIn[1], EPOLLOUT);
+      event.second.push_back(tmp);
+      return (1);
     }
     close(pipeIn[1]);
-    close(pipeOut[1]);
 
     pid_t result = waitpid(pid, &status, WNOHANG);
 
-    readFd = pipeOut[0];
     if (result == -1) {
-        close(pipeOut[0]);
-        return (-1);
+      close(pipeOut[1]);
+      return (-1);
+    } else if (result == 0) {
+      std::vector<int> pipeFds;
+
+      pipeFds.push_back(pipeOut[0]);
+      pipeFds.push_back(pipeOut[1]);
+
+      CgiEvent cgiEvent(pid, pipeFds);
+      Event tmp(pipeOut[0], EPOLLIN, cgiEvent, readCgiHandler);
+
+      tmp.cgiFlag = true;
+      event.first.setEvent(pipeOut[0], EPOLLIN);
+      event.second.push_back(tmp);
+      return (1);
     }
+    close(pipeOut[1]);
+    readFd = pipeOut[0];
   }
   return (0);
 }
@@ -1071,6 +1111,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
   env_cstrs.push_back(NULL);
   if (!method.compare("GET")) {
     int execResult = cgiExecGet(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri, event);
+
     if (execResult == 1)
       throw HttpResponse::HttpResponseError("cgi unfinished");
     if (execResult < 0) {
@@ -1086,18 +1127,11 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
   } else if (!method.compare("POST")) {
     std::string _body = request.getBody();
     int execResult = cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri, _body, event);
+
+    if (execResult == 1)
+      throw HttpResponse::HttpResponseError("cgi unfinished");
     if (execResult < 0) {
-      if (execResult == -2) {
-        if (pid != 0 && kill(pid, 0) == 0) {
-          if (kill(pid, SIGTERM) == -1) {
-            std::cerr << ERROR_COLOR << "kill error" << COLOR_RESET << std::endl;
-            throw HttpResponse::HttpResponseError("kill");
-          }
-        }
-        this->_response.clear();
-        this->setStatus(HTTP_GATEWAY_TIME_OUT);
-        throw HttpResponse::HttpResponseError("CGI script timed out.");
-      } else if (pid != 0 && kill(pid, 0) == 0) {
+      if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1) {
           std::cerr << ERROR_COLOR << "kill error" << COLOR_RESET << std::endl;
           throw HttpResponse::HttpResponseError("kill");
