@@ -576,7 +576,6 @@ int HttpResponse::cgiEventProcess(int readfd, const std::string& version) {
   this->_createStatusLine(version);
   this->_response.append(header);
   this->_response.append(CRLF);
-  this->_response.append(CRLF);
   this->_response.append(body);
   responseSize = this->_response.length();
   return (responseSize);
@@ -1168,9 +1167,7 @@ std::string makeCgiHeader(std::string str) { // str: cgiの出力
   str = str.substr(str.find("\n", str.find("Content-Type: ")) + 1);
   str = str.substr(1);
   contentLength = "Content-Length: " + mylib::nbrToS(str.length());
-  header = contentType + CRLF + contentLength;
-  if (location.length() > 0)
-    header = "Location: " + location + CRLF + header;
+  header = date + CRLF + server + CRLF + contentType + CRLF + contentLength + CRLF;
   return (header);
 }
 
