@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/28 17:10:33 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/02 11:29:04 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -901,7 +901,7 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
   return (envs);
 }
 
-int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri, std::pair<class Epoll&, std::vector<Event>&>& event) {
+int cgiExecGet(const ConfigServer& config, int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri, std::pair<class Epoll&, std::vector<Event>&>& event) {
   int pipeFd[2];
   int status;
   std::string path_chdir = _uri;
@@ -962,7 +962,7 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
       pipeFds.push_back(pipeFd[1]);
 
       CgiEvent cgiEvent(pid, pipeFds);
-      Event tmp(pipeFd[0], EPOLLIN, cgiEvent, readCgiHandler);
+      Event tmp(pipeFd[0], EPOLLIN, &config, cgiEvent, readCgiHandler);
 
       tmp.cgiFlag = true;
       event.first.setEvent(pipeFd[0], EPOLLIN);
@@ -975,7 +975,7 @@ int cgiExecGet(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::str
   return (0);
 }
 
-int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri, std::string body, std::pair<class Epoll&, std::vector<Event>&> event) {
+int cgiExecPost(const ConfigServer& config, int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri, std::string body, std::pair<class Epoll&, std::vector<Event>&> event) {
   (void) event;
   int pipeIn[2]; // parent -> child
   int pipeOut[2]; // child -> parent
@@ -1062,7 +1062,7 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
       pipeOutFds.push_back(pipeOut[1]);
 
       CgiEvent cgiEvent(pid, pipeInFds, pipeOutFds, body.data());
-      Event tmp(pipeIn[1], EPOLLOUT, cgiEvent, writeCgiHandler);
+      Event tmp(pipeIn[1], EPOLLOUT, &config, cgiEvent, writeCgiHandler);
 
       tmp.cgiFlag = true;
       event.first.setEvent(pipeIn[1], EPOLLOUT);
@@ -1083,7 +1083,7 @@ int cgiExecPost(int &readFd, pid_t &pid, const std::vector<char*>& envs, std::st
       pipeFds.push_back(pipeOut[1]);
 
       CgiEvent cgiEvent(pid, pipeFds);
-      Event tmp(pipeOut[0], EPOLLIN, cgiEvent, readCgiHandler);
+      Event tmp(pipeOut[0], EPOLLIN, &config, cgiEvent, readCgiHandler);
 
       tmp.cgiFlag = true;
       event.first.setEvent(pipeOut[0], EPOLLIN);
@@ -1109,7 +1109,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
   }
   env_cstrs.push_back(NULL);
   if (!method.compare("GET")) {
-    int execResult = cgiExecGet(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri, event);
+    int execResult = cgiExecGet(config, readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri, event);
 
     if (execResult == 1)
       throw HttpResponse::HttpResponseError("cgi unfinished");
@@ -1125,7 +1125,7 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
     }
   } else if (!method.compare("POST")) {
     std::string _body = request.getBody();
-    int execResult = cgiExecPost(readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri, _body, event);
+    int execResult = cgiExecPost(config, readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri, _body, event);
 
     if (execResult == 1)
       throw HttpResponse::HttpResponseError("cgi unfinished");
@@ -1152,16 +1152,16 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
 
 std::string makeCgiHeader(std::string str) { // str: cgiの出力
   std::string header;
-  
+
   std::string date;
   std::string server;
   std::string contentType;
   std::string contentLength;
-  
+
   date = "Date: " + mylib::getCurrentTime();
-  
+
   server = "Server: webserv/1.0";
-  
+
   contentType = str.substr(str.find("Content-Type: ") + 14, str.find("\n", str.find("Content-Type: ")) - str.find("Content-Type: ") - 14);
   contentType = "Content-Type: " + contentType;
   str = str.substr(str.find("\n", str.find("Content-Type: ")) + 1);

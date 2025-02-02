@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/28 16:29:43 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/02 11:32:12 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,7 +229,7 @@ void writeCgiHandler(Epoll& epoll, std::vector<Event>& events, Event& event) {
     epoll.delEvent(event.cgiEvent._writeFd[1]);
     close(event.cgiEvent._writeFd[1]);
 
-    Event tmp(event.cgiEvent._readFd[0], EPOLLIN, event.cgiEvent, readCgiHandler);
+    Event tmp(event.cgiEvent._readFd[0], EPOLLIN, event.config, event.cgiEvent, readCgiHandler);
 
     events.push_back(tmp);
     epoll.setEvent(event.cgiEvent._readFd[0], EPOLLIN);

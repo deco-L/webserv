@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/28 16:10:24 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/02 11:27:09 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,12 +74,13 @@ struct Event {
   Event(
     int fd,
     int event,
+    const ConfigServer* config,
     CgiEvent cgiEvent,
     void (*cgiFunc)(Epoll& epoll, std::vector<Event>& events, Event& event)
   ): fd(fd),
   event(event),
   cgiFlag(false),
-  config(NULL),
+  config(config),
   socket(),
   http(),
   cgiEvent(cgiEvent),
