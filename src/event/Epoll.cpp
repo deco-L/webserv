@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/26 16:58:25 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/02 13:14:48 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,9 @@ void Epoll::delEvent(const int fd) {
 int Epoll::epollWait(int time) {
   this->_wait = epoll_wait(this->_epollFd, this->_events, FD_SETSIZE, time);
   if (this->_wait < 0)
-    throw Epoll::EpollError("Error: epoll_wait error");
+    throw Epoll::EpollError("Error: epoll_wait error.");
+  if (this->_wait == 0)
+    throw Epoll::EpollError("Error: epoll_wait timeout.");
   return (this->_wait);
 }
 

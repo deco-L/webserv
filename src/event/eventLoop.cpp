@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/27 14:22:53 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/02 13:26:46 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 void eventLoop(std::vector<Socket>& sockets, const std::vector<ConfigServer>& configs) {
   Epoll epoll;
   std::vector<Event> events;
+  int time = 5000;
 
   try {
     epoll.epollCreate();
@@ -39,12 +40,23 @@ void eventLoop(std::vector<Socket>& sockets, const std::vector<ConfigServer>& co
   }
   while (true) {
     try {
-      epoll.epollWait(-1);
+      while (true) {
+      epoll.epollWait(time);
       for (int i = 0; i < epoll.getWait(); i++)
-        execEvent(epoll, epoll.getEvents()[i], events);
+        execEvent(epoll, events);
+      }
     }
     catch(const std::exception& e) {
-      std::cerr << ERROR_COLOR << e.what() << COLOR_RESET << '\n';
+      std::string error = e.what();
+
+      if (error == "Error: epoll_wait timeout." && events.size() == sockets.size())
+        continue ;
+      else if (error == "Error: epoll_wait timeout." && events.size() != sockets.size()) {
+        for (std::vector<Event>::iterator it = events.begin(); it != events.end(); it++)
+          it->timeoutFlag = true;
+        execEvent(epoll, events);
+      } else if (error != "Error: epoll_wait timeout.")
+        std::cerr << ERROR_COLOR << e.what() << COLOR_RESET << '\n';
     }
   }
   epoll.epollCrose();

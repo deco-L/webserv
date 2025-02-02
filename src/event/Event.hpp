@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/02/02 11:27:09 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/02 13:25:19 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ struct Event {
   int fd;
   int event;
   bool cgiFlag;
+  bool timeoutFlag;
   const ConfigServer* config;
   Socket socket;
   Http http;
@@ -43,6 +44,7 @@ struct Event {
   fd(0),
   event(0),
   cgiFlag(false),
+  timeoutFlag(false),
   config(NULL),
   socket(),
   http(),
@@ -64,6 +66,7 @@ struct Event {
   ): fd(fd),
   event(event),
   cgiFlag(false),
+  timeoutFlag(false),
   config(config),
   socket(socket),
   http(),
@@ -80,6 +83,7 @@ struct Event {
   ): fd(fd),
   event(event),
   cgiFlag(false),
+  timeoutFlag(false),
   config(config),
   socket(),
   http(),
@@ -100,7 +104,6 @@ struct FindByFd {
 
 void execEvent(
   Epoll& epoll,
-  const epoll_event& event,
   std::vector<Event>& events
 );
 

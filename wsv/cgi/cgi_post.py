@@ -10,7 +10,7 @@ import time
 
 # stdin
 
-time.sleep(4)
+time.sleep(6)
 input = sys.stdin.read()
 
 data = input.split("&")

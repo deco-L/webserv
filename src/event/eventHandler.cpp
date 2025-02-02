@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/02/02 11:32:12 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/02 13:39:22 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include "Epoll.hpp"
 #include "Event.hpp"
 #include "Http.hpp"
+#include "HttpResponse.hpp"
 
 #ifdef DEBUG
 static void showRequestMessage(Http& http) {
@@ -37,34 +38,14 @@ static void showResponseMessage(Http& http) {
 #endif
 
 
-void execEvent(Epoll& epoll, const epoll_event& event, std::vector<Event>& events) {
-  (void) event;
+void execEvent(Epoll& epoll, std::vector<Event>& events) {
   std::vector<Event> tmp = events;
 
   for (std::vector<Event>::iterator it = tmp.begin(); it != tmp.end(); it++) {
-    if ((it->event & EPOLLIN) == EPOLLIN) {
-      if (!it->cgiFlag)
-        it->socketFunc(epoll, events, it->socket, *it->config);
-      else
-        it->cgiFunc(epoll, events, *it);
-    }
-    else if ((it->event & (EPOLLIN | EPOLLET)) == (EPOLLIN | EPOLLET))
+    if (!it->cgiFlag)
       it->socketFunc(epoll, events, it->socket, *it->config);
-    else if ((it->event & (EPOLLOUT)) == EPOLLOUT) {
-      if (!it->cgiFlag)
-        it->socketFunc(epoll, events, it->socket, *it->config);
-      else
-        it->cgiFunc(epoll, events, *it);
-    }
-  }
-  tmp = events;
-  for (std::vector<Event>::iterator it = tmp.begin(); it != tmp.end(); it++) {
-    if ((it->event & (EPOLLOUT)) == EPOLLOUT) {
-      if (!it->cgiFlag)
-        it->socketFunc(epoll, events, it->socket, *it->config);
-      else
-        it->cgiFunc(epoll, events, *it);
-    }
+    else
+      it->cgiFunc(epoll, events, *it);
   }
   return ;
 }
@@ -120,7 +101,12 @@ void readCgiHandler(Epoll& epoll, std::vector<Event>& events, Event& event) {
   try {
     pid_t pid = waitpid(event.cgiEvent._pid, NULL, WNOHANG);
 
+    if (event.timeoutFlag) {
+      event.http.getHttpResponse()->setStatus(HTTP_GATEWAY_TIME_OUT);
+      throw std::runtime_error("HTTP_GATEWAY_TIMEOUT");
+    }
     if (pid == -1) {
+      event.http.getHttpResponse()->setStatus(HTTP_INTERNAL_SERVER_ERROR);
       throw std::runtime_error("HTTP_INTERNAL_SERVER_ERROR");
     } else if (pid == 0) {
       return ;
@@ -132,8 +118,10 @@ void readCgiHandler(Epoll& epoll, std::vector<Event>& events, Event& event) {
         event.http.getHttpMethod()->getVersion()
       );
       close(event.cgiEvent._readFd[1]);
-      if (responseSize < 0)
+      if (responseSize < 0) {
+        event.http.getHttpResponse()->setStatus(HTTP_INTERNAL_SERVER_ERROR);
         throw std::runtime_error("HTTP_INTERNAL_SERVER_ERROR");
+      }
       #ifdef DEBUG
       showResponseMessage(event.http);
       #endif
@@ -143,6 +131,7 @@ void readCgiHandler(Epoll& epoll, std::vector<Event>& events, Event& event) {
     std::string error(e.what());
 
     std::cout << ERROR_COLOR << error << COLOR_RESET << std::endl;
+    close(event.cgiEvent._readFd[1]);
     event.http.createResponseMessage(*event.config);
     #ifdef DEBUG
     showResponseMessage(event.http);
@@ -219,6 +208,10 @@ void writeCgiHandler(Epoll& epoll, std::vector<Event>& events, Event& event) {
   try {
     ssize_t size = 0;
 
+    if (event.timeoutFlag) {
+      event.http.getHttpResponse()->setStatus(HTTP_GATEWAY_TIME_OUT);
+      throw std::runtime_error("HTTP_GATEWAY_TIME_OUT");
+    }
     size = write(event.cgiEvent._writeFd[1], event.cgiEvent._writeBuf.c_str(), event.cgiEvent._writeBuf.length());
     if (size == -1)
       return ;
@@ -236,6 +229,7 @@ void writeCgiHandler(Epoll& epoll, std::vector<Event>& events, Event& event) {
   } catch(const std::exception& e) {
     std::string error(e.what());
 
+    close(event.cgiEvent._writeFd[1]);
     std::cout << ERROR_COLOR << error << COLOR_RESET << std::endl;
     event.http.createResponseMessage(*event.config);
     #ifdef DEBUG
