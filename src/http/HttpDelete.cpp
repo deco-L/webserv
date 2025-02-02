@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpDelete.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/29 01:27:03 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/02/02 16:18:08 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,8 @@ void HttpDelete::setResponseMessage(const ConfigServer& config, HttpRequest& req
 
 void HttpDelete::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response, std::pair<Epoll*, std::vector<Event>*>& event) {
   response = this->setResponseStatus(config);
+  if (400 <= response->getStatus() && response->getStatus() < 600)
+    return ;
   if (std::remove(this->_uri.c_str())) {
     response->setStatus(HTTP_INTERNAL_SERVER_ERROR);
     return ;
