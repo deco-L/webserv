@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Http.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/02/02 11:31:40 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/02 13:23:03 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,7 +168,7 @@ void Http::checkRequestMessage(const ConfigServer& config) {
   return ;
 }
 
-void Http::executeMethod(const ConfigServer& config, std::pair<Epoll&, std::vector<Event>&>& event) {
+void Http::executeMethod(const ConfigServer& config, std::pair<Epoll*, std::vector<Event>*>& event) {
   this->_httpMethod->execute(config, this->_httpRequest, this->_httpResponse, event);
   if (300 <= this->_httpResponse->getStatus() && this->_httpResponse->getStatus() < 600) {
     if (this->_httpResponse->getStatus() == HTTP_SPECIAL_RESPONSE)
