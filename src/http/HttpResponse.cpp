@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/02/02 14:03:07 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/02 15:12:23 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,10 @@ const char* HttpResponse::HttpResponseError::what(void) const throw() {
 }
 
 int HttpResponse::_createStatusLine(std::string version) {
-  this->_response.append(version);
+  if (version != "HTTP/0.9" && version != "HTTP/1.0" && version != "HTTP/1.1")
+    this->_response.append("HTTP/1.1");
+  else
+    this->_response.append(version);
   this->_response.append(" ");
   this->_response.append(mylib::nbrToS(this->_status));
   switch(this->_status) {
@@ -215,6 +218,7 @@ int HttpResponse::_createStatusLine(std::string version) {
   this->_response.append(CRLF);
   return (this->_response.length());
 }
+
 
 int HttpResponse::_createHeaderLine(const ConfigServer& config, int bodySize) {
   (void) config;
