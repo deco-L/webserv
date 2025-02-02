@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   eventHandler.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/02/02 11:32:12 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/02 13:22:51 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,7 +165,7 @@ void readCgiHandler(Epoll& epoll, std::vector<Event>& events, Event& event) {
 
 void writeHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const ConfigServer& config) {
   Http http;
-  std::pair<Epoll&, std::vector<Event>&> event(epoll, events);
+  std::pair<Epoll*, std::vector<Event>*> event(&epoll, &events);
 
   try {
     http.parseRequestMessage(socket);

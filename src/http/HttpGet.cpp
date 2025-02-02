@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpGet.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/27 13:40:50 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/29 01:17:43 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ HttpGet::~HttpGet() {
   return ;
 }
 
-void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response, std::pair<class Epoll&, std::vector<Event>&>& event) const {
+void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response, std::pair<class Epoll*, std::vector<Event>*>& event) const {
   int responseSize;
 
   if (!this->_cgi_extension.empty() && !this->_cgi_path.empty()) {
@@ -57,7 +57,7 @@ void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& reques
   return ;
 }
 
-void HttpGet::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response, std::pair<Epoll&, std::vector<Event>&>& event) {
+void HttpGet::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response, std::pair<Epoll*, std::vector<Event>*>& event) {
   response = this->setResponseStatus(config);
   if (300 <= response->getStatus() && response->getStatus() < 600)
     return ;
