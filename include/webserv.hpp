@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/02/02 11:56:50 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/02 14:02:07 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,7 @@
 #define LF    (u_char) '\n'
 #define CR    (u_char) '\r'
 #define CRLF  "\r\n"
+#define TIMEOUT 60000
 
 #define DEFOULT_CONF "conf/default.conf"
 

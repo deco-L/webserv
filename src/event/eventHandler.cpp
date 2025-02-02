@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/02/02 13:44:47 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/02 13:59:35 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,6 +132,7 @@ void readCgiHandler(Epoll& epoll, std::vector<Event>& events, Event& event) {
 
     std::cout << ERROR_COLOR << error << COLOR_RESET << std::endl;
     close(event.cgiEvent._readFd[1]);
+    kill(event.cgiEvent._pid, SIGKILL);
     event.http.createResponseMessage(*event.config);
     #ifdef DEBUG
     showResponseMessage(event.http);
@@ -155,8 +156,15 @@ void readCgiHandler(Epoll& epoll, std::vector<Event>& events, Event& event) {
 void writeHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const ConfigServer& config) {
   Http http;
   std::pair<Epoll*, std::vector<Event>*> event(&epoll, &events);
+  std::vector<Event>::iterator it;
+
 
   try {
+    it = std::find_if(events.begin(), events.end(), FindByFd(socket._socket));
+    if (it->timeoutFlag) {
+      http.getHttpResponse()->setStatus(HTTP_REQUEST_TIME_OUT);
+      throw std::runtime_error("HTTP_REQUEST_TIME_OUT");
+    }
     http.parseRequestMessage(socket);
     #ifdef DEBUG
     showRequestMessage(http);
@@ -193,12 +201,10 @@ void writeHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, cons
       http.sendResponse(socket);
     }
   }
-
-  std::vector<Event>::iterator it;
-
-  it = std::find_if(events.begin(), events.end(), FindByFd(socket._socket));
   events.erase(it);
+
   Event tmp(socket._socket, EPOLLIN | EPOLLET, &config, socket, readHandler);
+
   events.push_back(tmp);
   epoll.modEvent(socket, EPOLLIN | EPOLLET);
   return ;
@@ -229,7 +235,7 @@ void writeCgiHandler(Epoll& epoll, std::vector<Event>& events, Event& event) {
   } catch(const std::exception& e) {
     std::string error(e.what());
 
-    close(event.cgiEvent._writeFd[1]);
+    kill(event.cgiEvent._pid, SIGKILL);
     std::cout << ERROR_COLOR << error << COLOR_RESET << std::endl;
     event.http.createResponseMessage(*event.config);
     #ifdef DEBUG

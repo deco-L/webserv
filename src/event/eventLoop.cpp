@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/02/02 13:26:46 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/02 14:01:55 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 void eventLoop(std::vector<Socket>& sockets, const std::vector<ConfigServer>& configs) {
   Epoll epoll;
   std::vector<Event> events;
-  int time = 5000;
+  int time = TIMEOUT;
 
   try {
     epoll.epollCreate();

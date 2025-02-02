@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/02/02 13:29:33 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/02/02 14:03:07 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -865,7 +865,9 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
   // REQUEST_METHOD
   envs.push_back("REQUEST_METHOD=" + method);
   // SCRIPT_NAME
+  # ifdef DEBUG
   std::cout << "SCRIPT_NAME=" + _uri.substr(config.root.length()) << std::endl;
+  # endif
   envs.push_back("SCRIPT_NAME=" + _uri.substr(config.root.length()));
   // SERVER_NAME
   // SERVER_PORT
