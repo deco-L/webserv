@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpDelete.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/27 13:39:17 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/29 01:27:03 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ HttpDelete::~HttpDelete() {
   return ;
 }
 
-void HttpDelete::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response, std::pair<class Epoll&, std::vector<Event>&>& event) const {
+void HttpDelete::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response, std::pair<class Epoll*, std::vector<Event>*>& event) const {
   int responseSize;
   (void)request;
   (void)event;
@@ -54,7 +54,7 @@ void HttpDelete::setResponseMessage(const ConfigServer& config, HttpRequest& req
   return ;
 }
 
-void HttpDelete::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response, std::pair<Epoll&, std::vector<Event>&>& event) {
+void HttpDelete::execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response, std::pair<Epoll*, std::vector<Event>*>& event) {
   response = this->setResponseStatus(config);
   if (std::remove(this->_uri.c_str())) {
     response->setStatus(HTTP_INTERNAL_SERVER_ERROR);

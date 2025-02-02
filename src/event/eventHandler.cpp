@@ -6,7 +6,7 @@
 /*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/02/02 13:39:22 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/02 13:44:47 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,7 +154,7 @@ void readCgiHandler(Epoll& epoll, std::vector<Event>& events, Event& event) {
 
 void writeHandler(Epoll& epoll, std::vector<Event>& events, Socket& socket, const ConfigServer& config) {
   Http http;
-  std::pair<Epoll&, std::vector<Event>&> event(epoll, events);
+  std::pair<Epoll*, std::vector<Event>*> event(&epoll, &events);
 
   try {
     http.parseRequestMessage(socket);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/02/02 11:29:04 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/02 13:29:33 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -901,7 +901,7 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
   return (envs);
 }
 
-int cgiExecGet(const ConfigServer& config, int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri, std::pair<class Epoll&, std::vector<Event>&>& event) {
+int cgiExecGet(const ConfigServer& config, int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri, std::pair<class Epoll*, std::vector<Event>*> event) {
   int pipeFd[2];
   int status;
   std::string path_chdir = _uri;
@@ -965,8 +965,8 @@ int cgiExecGet(const ConfigServer& config, int &readFd, pid_t &pid, const std::v
       Event tmp(pipeFd[0], EPOLLIN, &config, cgiEvent, readCgiHandler);
 
       tmp.cgiFlag = true;
-      event.first.setEvent(pipeFd[0], EPOLLIN);
-      event.second.push_back(tmp);
+      event.first->setEvent(pipeFd[0], EPOLLIN);
+      event.second->push_back(tmp);
       return (1);
     }
     close(pipeFd[1]);
@@ -975,8 +975,7 @@ int cgiExecGet(const ConfigServer& config, int &readFd, pid_t &pid, const std::v
   return (0);
 }
 
-int cgiExecPost(const ConfigServer& config, int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri, std::string body, std::pair<class Epoll&, std::vector<Event>&> event) {
-  (void) event;
+int cgiExecPost(const ConfigServer& config, int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri, std::string body, std::pair<class Epoll*, std::vector<Event>*> event) {
   int pipeIn[2]; // parent -> child
   int pipeOut[2]; // child -> parent
   int status;
@@ -1065,8 +1064,8 @@ int cgiExecPost(const ConfigServer& config, int &readFd, pid_t &pid, const std::
       Event tmp(pipeIn[1], EPOLLOUT, &config, cgiEvent, writeCgiHandler);
 
       tmp.cgiFlag = true;
-      event.first.setEvent(pipeIn[1], EPOLLOUT);
-      event.second.push_back(tmp);
+      event.first->setEvent(pipeIn[1], EPOLLOUT);
+      event.second->push_back(tmp);
       return (1);
     }
     close(pipeIn[1]);
@@ -1086,8 +1085,8 @@ int cgiExecPost(const ConfigServer& config, int &readFd, pid_t &pid, const std::
       Event tmp(pipeOut[0], EPOLLIN, &config, cgiEvent, readCgiHandler);
 
       tmp.cgiFlag = true;
-      event.first.setEvent(pipeOut[0], EPOLLIN);
-      event.second.push_back(tmp);
+      event.first->setEvent(pipeOut[0], EPOLLIN);
+      event.second->push_back(tmp);
       return (1);
     }
     close(pipeOut[1]);
@@ -1097,7 +1096,7 @@ int cgiExecPost(const ConfigServer& config, int &readFd, pid_t &pid, const std::
 }
 
 
-std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request, std::pair<class Epoll&, std::vector<Event>&>& event) {
+std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request, std::pair<class Epoll*, std::vector<Event>*>& event) {
   std::string body;
   std::vector<std::string> envs = this->createEnvs(config, _uri, method, cgiPath, cgiExtension, _uri_old, version, request);
   std::vector<char*> env_cstrs;
@@ -1171,7 +1170,7 @@ std::string makeCgiHeader(std::string str) { // str: cgiの出力
   return (header);
 }
 
-int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, HttpRequest& request, std::pair<class Epoll&, std::vector<Event>&>& event) {
+int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, HttpRequest& request, std::pair<class Epoll*, std::vector<Event>*>& event) {
   int responseSize;
   std::string body;
   std::string header;

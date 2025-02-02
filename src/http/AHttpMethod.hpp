@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AHttpMethod.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/25 20:25:20 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/01/29 01:16:15 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,8 +64,8 @@ public:
   const std::string& getVersion(void) const;
   void setUri(std::string& uri);
   HttpResponse* setResponseStatus(const ConfigServer& config);
-  virtual void execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response, std::pair<class Epoll&, std::vector<Event>&>& event) = 0;
-  virtual void setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response, std::pair<class Epoll&, std::vector<Event>&>& event) const = 0;
+  virtual void execute(const ConfigServer& config, HttpRequest& request, HttpResponse*& response, std::pair<class Epoll*, std::vector<Event>*>& event) = 0;
+  virtual void setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response, std::pair<class Epoll*, std::vector<Event>*>& event) const = 0;
 };
 
 #endif
