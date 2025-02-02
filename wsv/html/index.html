@@ -73,5 +73,45 @@
             <li><a href="/redirect/index.html">redirect/index.html</a></li>
         </ul>
     </div>
+
+    <h1>Upload file as raw (application/octet-stream)</h1>
+
+    <!-- ファイル選択ボタン -->
+    <input type="file" id="fileInput" />
+  
+    <!-- 送信ボタン -->
+    <button onclick="uploadFile()">Send as raw</button>
+  
+    <script>
+      function uploadFile() {
+        var input = document.getElementById("fileInput");
+        if (!input.files || !input.files[0]) {
+          alert("Please select a file first.");
+          return;
+        }
+  
+        var file = input.files[0];
+  
+        // Fetch APIを用いて、POSTでファイルをそのまま送る
+        fetch("/", {
+          method: "POST",
+          headers: {
+            // 好きなContent-Typeを指定
+            "Content-Type": "application/octet-stream"
+          },
+          body: file
+        })
+        .then(response => {
+          if (response.ok) {
+            alert("File uploaded successfully!");
+          } else {
+            alert("Upload failed. HTTP status = " + response.status);
+          }
+        })
+        .catch(err => {
+          alert("Error: " + err);
+        });
+      }
+    </script>
 </body>
 </html>
