@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Http.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/29 01:12:19 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/02/02 14:30:06 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ public:
   void setHttpResponse(unsigned int status);
   void recvRequestMessage(Socket& socket);
   void parseRequestMessage(Socket& socket);
-  void checkRequestMessage(const ConfigServer& config);
+  void checkRequestMessage(const ConfigServer config);
   void executeMethod(const ConfigServer& config, std::pair<Epoll*, std::vector<Event>*>& event);
   bool createMethod(void);
   void createResponseMessage(const ConfigServer& config);

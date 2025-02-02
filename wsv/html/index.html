@@ -53,6 +53,18 @@
     </div>
 
     <div class="section">
+        <h2>Upload File</h2>
+        <div class="form-container">
+            <form action="/data/upload.txt" method="post" enctype="multipart/form-data">
+                <label for="file">Choose file to upload:</label>
+                <input type="file" id="file" name="file" required>
+                <br><br>
+                <input type="submit" value="Upload">
+            </form>
+        </div>
+    </div>
+
+    <div class="section">
         <h2>Error Pages</h2>
         <ul>
             <li><a href="/404.html">404.html</a></li>

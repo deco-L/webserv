@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Http.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
+/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/02/02 13:23:03 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/02/02 14:37:50 by csakamot         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,12 +141,14 @@ void Http::parseRequestMessage(Socket& socket) {
     this->_httpRequest.setBody(it, end);
   }
   this->_httpRequest.setIp(socket.getCSockAddr().sin_addr);
-  if (this->_httpRequest.getBodySize() == -1)
-    Http::HttpError("stringstream error");
+  if (this->_httpRequest.getBodySize() == -1) {
+    this->setHttpResponse(HTTP_BAD_REQUEST);
+    throw Http::HttpError("HTTP_BAD_REQUEST");
+  }
   return ;
 }
 
-void Http::checkRequestMessage(const ConfigServer& config) {
+void Http::checkRequestMessage(const ConfigServer config) {
   std::map<std::string, std::string>::const_iterator it;
   std::string host;
   size_t colonPos = 0;
@@ -156,11 +158,15 @@ void Http::checkRequestMessage(const ConfigServer& config) {
     throw Http::HttpError("HTTP_REQUEST_ENTITY_TOO_LARGE");
   }
   it = this->_httpRequest.getHeader().find("Host");
-  colonPos = it->second.find(':');
-  if (colonPos != std::string::npos)
-    host = it->second.substr(0, colonPos);
-  else
-    host = it->second;
+  if (it == this->_httpRequest.getHeader().end()) {
+    host = config.listen.at(0).first;
+  } else {
+    colonPos = it->second.find(':');
+    if (colonPos != std::string::npos)
+      host = it->second.substr(0, colonPos);
+    else
+      host = it->second;
+  }
   if (host != config.server_name.at(0) && host != config.listen.at(0).first) {
     this->setHttpResponse(HTTP_BAD_REQUEST);
     throw Http::HttpError("HTTP_BAD_REQUEST");
