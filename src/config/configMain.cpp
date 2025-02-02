@@ -6,7 +6,7 @@
 /*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/28 16:56:36 by kmiyazaw         ###   ########.fr       */
+/*   Updated: 2025/02/02 15:05:28 by kmiyazaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ void configMain(Config& config, int argc, char **argv)
   // config.checkNbrArg();
   config.checkConfig();
   config.parseConfig();
+  config.checkConfigServer();
 
   #ifdef DEBUG
     const std::vector<ConfigServer>& servers = config.getServers();

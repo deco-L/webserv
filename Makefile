@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+         #
+#    By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#              #
-#    Updated: 2025/01/22 14:19:32 by csakamot         ###   ########.fr        #
+#    Updated: 2025/02/02 15:16:52 by kmiyazaw         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,7 +29,7 @@ OBJDIR	= objs/
 ##------------Srcs-------------##
 CORESRC	=	main.cpp socketMain.cpp Socket.cpp
 
-CONFSRC = configMain.cpp Config.cpp checkConfig.cpp isValidConfig.cpp isValidBracketFormat.cpp isValidDirectiveArguments.cpp isValidNest.cpp parseConfig.cpp
+CONFSRC = configMain.cpp Config.cpp checkConfig.cpp isValidConfig.cpp isValidBracketFormat.cpp isValidDirectiveArguments.cpp isValidNest.cpp parseConfig.cpp checkConfigServer.cpp
 
 EVENSRC = eventLoop.cpp Epoll.cpp eventHandler.cpp
 

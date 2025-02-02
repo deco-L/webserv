@@ -6,7 +6,7 @@
 /*   By: kmiyazaw <kmiyazaw@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2024/12/28 16:56:47 by kmiyazaw         ###   ########.fr       */
+/*   Updated: 2025/02/02 15:05:41 by kmiyazaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ public:
   void        checkConfig(void);
   bool        isValidConfig(std::string file_content);
   void        parseConfig(void);
+  void        checkConfigServer(void);
 
   Config&      operator=(const Config& obj);
 };
