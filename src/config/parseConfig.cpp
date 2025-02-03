@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/18 20:49:24 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2024/12/13 14:48:36 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/02/03 15:15:24 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,10 +170,7 @@ void Config::parseConfig(void)
 			}
 			else if (directive == "cgi_extension") // cgi_extention extension path_to_cgi_executable
 			{
-				if (this->_servers.back().locations.back().cgi_extension.empty())
-					this->_servers.back().locations.back().cgi_extension.push_back(std::make_pair(tokens[1], tokens[2]));
-				else
-					this->_servers.back().locations.back().cgi_extension.front() = std::make_pair(tokens[1], tokens[2]);
+				this->_servers.back().locations.back().cgi_extension.push_back(std::make_pair(tokens[1], tokens[2]));
 			}
 			else if (directive == "upload_enable") // upload_enable on | off
 			{

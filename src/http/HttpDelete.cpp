@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpDelete.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/02/02 16:18:08 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/03 14:30:03 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,6 @@ HttpDelete& HttpDelete::operator=(const HttpDelete& obj) {
     this->_uri_old = obj._uri_old;
     this->_autoindex = obj._autoindex;
     this->_cgi_extension = obj._cgi_extension;
-    this->_cgi_path = obj._cgi_path;
     this->_cgi_relative_path = obj._cgi_relative_path;
   } else {
     std::cout << "\e[1;31mError: "

@@ -11,7 +11,11 @@ import time
 # stdin
 
 time.sleep(6)
-input = sys.stdin.read()
+
+# CONTENT_LENGTHの長さだけ読み込む
+content_length = int(os.environ["CONTENT_LENGTH"])
+input = sys.stdin.read(content_length)
+#input = sys.stdin.read()
 
 data = input.split("&")
 username = data[0].split("=")[1]

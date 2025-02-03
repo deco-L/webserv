@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/29 01:18:01 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/02/03 14:30:08 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,8 +53,8 @@ bool HttpPost::_uploadFile(HttpRequest& request) {
 void HttpPost::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response, std::pair<class Epoll*, std::vector<Event>*>& event) const {
   int responseSize;
 
-  if ((!this->_cgi_extension.empty() && !this->_cgi_path.empty()) || this->_cgi_relative_path.size())
-    responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_path, this->_cgi_extension, this->_uri_old, request, event);
+  if (this->_cgi_extension.size() && this->_cgi_extension[0].first.size() && this->_cgi_extension[0].second.size())
+    responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_extension, this->_uri_old, request, event);
   responseSize = response.createResponseMessage(this->getMethod(), this->_uri, config, this->_version);
   if (responseSize < 0) {
     response.setStatus(HTTP_INTERNAL_SERVER_ERROR);
@@ -67,7 +67,8 @@ void HttpPost::execute(const ConfigServer& config, HttpRequest& request, HttpRes
   response = this->setResponseStatus(config);
   if (400 <= response->getStatus() && response->getStatus() <= 600)
     return ;
-  if ((this->_cgi_extension.empty() || this->_cgi_path.empty()) || !this->_uri_old.size())
+  if ((this->_cgi_extension.size() && this->_cgi_extension[0].first.size() && this->_cgi_extension[0].second.size())
+  || !this->_uri_old.size())
   {
     if (!this->_uploadFile(request)) {
       response->setStatus(HTTP_INTERNAL_SERVER_ERROR);
@@ -83,7 +84,6 @@ HttpPost& HttpPost::operator=(const HttpPost& obj) {
     this->_uri_old = obj._uri_old;
     this->_autoindex = obj._autoindex;
     this->_cgi_extension = obj._cgi_extension;
-    this->_cgi_path = obj._cgi_path;
     this->_cgi_relative_path = obj._cgi_relative_path;
   } else {
     std::cout << "\e[1;31mError: "
