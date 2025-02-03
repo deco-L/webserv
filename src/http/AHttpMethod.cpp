@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AHttpMethod.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/02/02 16:16:36 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/03 15:15:33 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,16 @@
 #include "Config.hpp"
 #include "HttpResponse.hpp"
 
-AHttpMethod::AHttpMethod(void) : _method("default"), _uri(""), _uri_old(""), _version(""), _autoindex(false), _cgi_extension(""), _cgi_path(""), _cgi_relative_path("") {
+AHttpMethod::AHttpMethod(void) : _method("default"), _uri(""), _uri_old(""), _version(""), _autoindex(false), _cgi_relative_path("") {
+  _cgi_extension.clear();
   return ;
 }
 
-AHttpMethod::AHttpMethod(std::string method, std::string uri, std::string version) : _method(method), _uri(uri), _uri_old(uri), _version(version), _autoindex(false), _cgi_extension(""), _cgi_path(""), _cgi_relative_path("") {
-  std::string::size_type pos = uri.find(".py");
+AHttpMethod::AHttpMethod(std::string method, std::string uri, std::string version) : _method(method), _uri(uri), _uri_old(uri), _version(version), _autoindex(false), _cgi_relative_path("") {
+  std::string::size_type pos = uri.find(".");
   std::string tmp = uri;
+  
+  _cgi_extension.clear();
 
   this->_cgi_relative_path.clear();
   if (pos != std::string::npos) {
@@ -190,8 +193,7 @@ HttpResponse* AHttpMethod::setResponseStatus(const ConfigServer& config) {
       location = *it;
       this->_autoindex = location.autoindex;
       if (location.cgi_extension.size()) {
-        this->_cgi_extension = location.cgi_extension[0].first;
-        this->_cgi_path = location.cgi_extension[0].second;
+        this->_cgi_extension = location.cgi_extension;
       }
     }
   }

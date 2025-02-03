@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: csakamot <csakamot@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/02/02 15:12:23 by csakamot         ###   ########.fr       */
+/*   Updated: 2025/02/03 15:11:30 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -798,14 +798,13 @@ std::string getDigestUser(const std::string &digestString)
     return params["username"];
 }
 
-std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, std::string _uri, std::string method, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request)
+std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, std::string _uri, std::string method, std::vector<std::pair<std::string, std::string> > _cgi_extension, std::string _uri_old, std::string version, HttpRequest &request)
 {
-  (void)cgiExtension;
+  std::string cgiExtension = _cgi_extension[0].first;
   (void)request;
   (void)version;
   (void)config;
   (void)method;
-  (void)cgiPath;
   std::vector<std::string> envs;
 
 
@@ -828,10 +827,17 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
   // PATH_INFO, PATH_TRANSLATED
   if (_uri != config.root + _uri_old) // /cgi/cgi.py/usr/ -> /usr
   {
-    std::string tmp = _uri_old.substr(_uri_old.find(cgiExtension) + cgiExtension.length());
-    tmp = tmp.substr(0, tmp.find('?'));
-    envs.push_back("PATH_INFO=" + tmp);
-    envs.push_back("PATH_TRANSLATED=" + config.root + tmp);
+    /*
+    _uri     : /usr/src/app/wsv/cgi/cgi.sh
+    _uri_old : /cgi/cgi.sh/usr/src/app/wsv
+    _uri_without_root : /cgi/cgi.sh
+    ->
+    PATH_INFO : /usr/src/app/wsv  (_uri_old - _uri_without_root)
+    PATH_TRANSLATED : config.root + /usr/src/app/wsv
+    */
+    std::string _uri_without_root = _uri.substr(config.root.length());
+    envs.push_back("PATH_INFO=" + _uri_old.substr(_uri_without_root.length()));
+    envs.push_back("PATH_TRANSLATED=" + config.root + _uri_old.substr(_uri_without_root.length()));
   }
   // QUERY_STRING
   if (_uri_old.find('?') != std::string::npos)
@@ -907,10 +913,25 @@ std::vector<std::string> HttpResponse::createEnvs(const ConfigServer& config, st
   return (envs);
 }
 
-int cgiExecGet(const ConfigServer& config, int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri, std::pair<class Epoll*, std::vector<Event>*> event) {
+int HttpResponse::cgiExecGet(const ConfigServer& config, int &readFd, pid_t &pid, const std::vector<char*>& envs, std::vector<std::pair<std::string, std::string> > _cgi_extension, std::string _uri, std::pair<class Epoll*, std::vector<Event>*> event) {
   int pipeFd[2];
   int status;
   std::string path_chdir = _uri;
+  
+  std::string cgiPath;
+  for (size_t i = 0; i < _cgi_extension.size(); i++)
+  {
+    if (_cgi_extension[i].first == _uri.substr(_uri.find_last_of('.')))
+    {
+      cgiPath = _cgi_extension[i].second;
+      break ;
+    }
+  }
+  if (cgiPath.empty())
+  {
+    this->setStatus(HTTP_NOT_FOUND);
+    return (-2);
+  }
 
   path_chdir = path_chdir.substr(0, path_chdir.find_last_of('/'));
   if (pipe(pipeFd) == -1) {
@@ -938,23 +959,14 @@ int cgiExecGet(const ConfigServer& config, int &readFd, pid_t &pid, const std::v
       perror("chdir");
       _exit(EXIT_FAILURE);
     }
-    if (cgiExtension == ".py") {
-      char* argv[] = {
-        const_cast<char*>("python3"),
-        const_cast<char*>(_uri.c_str()),
-        NULL};
-      if (execve(cgiPath.c_str(), argv, envs.data()) == -1) {
-        perror("execve");
-        _exit(EXIT_FAILURE);
-      }
-    } else {
-      char *argv[] = {
-        (char *)_uri.c_str(),
-        NULL};
-      if (execve(cgiPath.c_str(), argv, envs.data()) == -1) {
-        perror("execve");
-        _exit(EXIT_FAILURE);
-      }
+    
+    char* argv[] = {
+      const_cast<char*>(cgiPath.c_str()),
+      const_cast<char*>(_uri.c_str()),
+      NULL};
+    if (execve(cgiPath.c_str(), argv, envs.data()) == -1) {
+      perror("execve");
+      _exit(EXIT_FAILURE);
     }
   } else {
     pid_t result = waitpid(pid, &status, WNOHANG);
@@ -981,11 +993,27 @@ int cgiExecGet(const ConfigServer& config, int &readFd, pid_t &pid, const std::v
   return (0);
 }
 
-int cgiExecPost(const ConfigServer& config, int &readFd, pid_t &pid, const std::vector<char*>& envs, std::string cgiPath, std::string cgiExtension, std::string _uri, std::string body, std::pair<class Epoll*, std::vector<Event>*> event) {
+int HttpResponse::cgiExecPost(const ConfigServer& config, int &readFd, pid_t &pid, const std::vector<char*>& envs, std::vector<std::pair<std::string, std::string> > _cgi_extension, std::string _uri, std::string body, std::pair<class Epoll*, std::vector<Event>*> event) {
   int pipeIn[2]; // parent -> child
   int pipeOut[2]; // child -> parent
   int status;
   std::string path_chdir = _uri;
+  
+  std::string cgiPath;
+  for (size_t i = 0; i < _cgi_extension.size(); i++)
+  {
+    if (_cgi_extension[i].first == _uri.substr(_uri.find_last_of('.')))
+    {
+      cgiPath = _cgi_extension[i].second;
+      break ;
+    }
+  }
+  if (cgiPath.empty())
+  {
+    this->setStatus(HTTP_NOT_FOUND);
+    return (-2);
+  }
+  
   path_chdir = path_chdir.substr(0, path_chdir.find_last_of('/'));
 
   if (pipe(pipeIn) == -1) {
@@ -1035,21 +1063,13 @@ int cgiExecPost(const ConfigServer& config, int &readFd, pid_t &pid, const std::
       perror("chdir");
       _exit(EXIT_FAILURE);
     }
-    if (cgiExtension == ".py") {
-      char* argv[] = {
-        const_cast<char*>("python3"),
-        const_cast<char*>(_uri.c_str()),
-        NULL};
-      if (execve(cgiPath.c_str(), argv, envs.data()) == -1) {
-        perror("execve");
-        _exit(EXIT_FAILURE);
-      }
-    } else {
-      char *argv[] = {(char *)_uri.c_str(), NULL};
-      if (execve(cgiPath.c_str(), argv, envs.data()) == -1) {
-        perror("execve");
-        _exit(EXIT_FAILURE);
-      }
+    char *argv[] = {
+      const_cast<char*>(cgiPath.c_str()),
+      const_cast<char*>(_uri.c_str()),
+      NULL};
+    if (execve(cgiPath.c_str(), argv, envs.data()) == -1) {
+      perror("execve");
+      _exit(EXIT_FAILURE);
     }
   } else {
     close(pipeIn[0]);
@@ -1102,9 +1122,9 @@ int cgiExecPost(const ConfigServer& config, int &readFd, pid_t &pid, const std::
 }
 
 
-std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::string cgiPath, std::string cgiExtension, std::string _uri_old, std::string version, HttpRequest &request, std::pair<class Epoll*, std::vector<Event>*>& event) {
+std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, const ConfigServer& config, std::vector<std::pair<std::string, std::string> > _cgi_extension, std::string _uri_old, std::string version, HttpRequest &request, std::pair<class Epoll*, std::vector<Event>*>& event) {
   std::string body;
-  std::vector<std::string> envs = this->createEnvs(config, _uri, method, cgiPath, cgiExtension, _uri_old, version, request);
+  std::vector<std::string> envs = this->createEnvs(config, _uri, method, _cgi_extension, _uri_old, version, request);
   std::vector<char*> env_cstrs;
   int readFd = -1;
   pid_t pid;
@@ -1114,10 +1134,12 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
   }
   env_cstrs.push_back(NULL);
   if (!method.compare("GET")) {
-    int execResult = cgiExecGet(config, readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri, event);
+    int execResult = this->cgiExecGet(config, readFd, pid, env_cstrs, _cgi_extension, _uri, event);
 
     if (execResult == 1)
       throw HttpResponse::HttpResponseError("cgi unfinished");
+    if (execResult == -2)
+      throw HttpResponse::HttpResponseError("cgi extension error");
     if (execResult < 0) {
       if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1) {
@@ -1130,10 +1152,12 @@ std::string HttpResponse::_doCgi(const std::string& method, std::string _uri, co
     }
   } else if (!method.compare("POST")) {
     std::string _body = request.getBody();
-    int execResult = cgiExecPost(config, readFd, pid, env_cstrs, cgiPath, cgiExtension, _uri, _body, event);
+    int execResult = this->cgiExecPost(config, readFd, pid, env_cstrs, _cgi_extension, _uri, _body, event);
 
     if (execResult == 1)
       throw HttpResponse::HttpResponseError("cgi unfinished");
+    if (execResult == -2)
+      throw HttpResponse::HttpResponseError("cgi extension error");
     if (execResult < 0) {
       if (pid != 0 && kill(pid, 0) == 0) {
         if (kill(pid, SIGTERM) == -1) {
@@ -1176,13 +1200,16 @@ std::string makeCgiHeader(std::string str) { // str: cgiの出力
   return (header);
 }
 
-int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::string cgiPath, std::string cgiExtension, std::string _uri_old, HttpRequest& request, std::pair<class Epoll*, std::vector<Event>*>& event) {
+int HttpResponse::createCgiMessage(const std::string& method, std::string _uri, const ConfigServer& config, std::string version, std::vector<std::pair<std::string, std::string> > _cgi_extension, std::string _uri_old, HttpRequest& request, std::pair<class Epoll*, std::vector<Event>*>& event) {
   int responseSize;
   std::string body;
   std::string header;
   std::string tmp;
+  
+  std::cout << _uri << std::endl;
+  std::cout << _uri_old << std::endl;
 
-  tmp = this->_doCgi(method, _uri, config, cgiPath, cgiExtension, _uri_old, version, request, event);
+  tmp = this->_doCgi(method, _uri, config, _cgi_extension, _uri_old, version, request, event);
   header = makeCgiHeader(tmp);
   body = tmp.substr(tmp.find("\n\n") + 2);
   this->_createStatusLine(version);

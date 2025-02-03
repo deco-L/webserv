@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/18 13:14:30 by miyazawa.ka       #+#    #+#             */
-/*   Updated: 2025/01/03 18:39:46 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/02/03 15:15:06 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -478,9 +478,6 @@ static bool hasValidPaths(const std::vector<std::string>& lines)
 
 		if (directive == "cgi_extension")
 		{
-			if (tokens[1] != ".cgi" && tokens[1] != ".py" && tokens[1] != ".sh")
-				return false;
-
 			std::string path_to_cgi_executable(tokens[2]);
 			if (mylib::getPathType(path_to_cgi_executable) != IS_FILE)
 				return false;

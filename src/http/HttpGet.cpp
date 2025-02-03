@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/29 01:17:43 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/02/03 15:16:07 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,9 @@ HttpGet::~HttpGet() {
 void HttpGet::setResponseMessage(const ConfigServer& config, HttpRequest& request, HttpResponse& response, std::pair<class Epoll*, std::vector<Event>*>& event) const {
   int responseSize;
 
-  if (!this->_cgi_extension.empty() && !this->_cgi_path.empty()) {
-    responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_path, this->_cgi_extension, this->_uri_old, request, event);
+  if (this->_cgi_extension.size() && this->_cgi_extension[0].first.size() && this->_cgi_extension[0].second.size())
+  {
+    responseSize = response.createCgiMessage(this->getMethod(), this->_uri, config, this->_version, this->_cgi_extension, this->_uri_old, request, event);
   }
   if (this->_autoindex && mylib::isDirectory(this->_uri))
     responseSize = response.createAutoindexMessage(this->_uri, config, this->_version);
@@ -70,7 +71,6 @@ HttpGet& HttpGet::operator=(const HttpGet& obj) {
     this->_uri_old = obj._uri_old;
     this->_autoindex = obj._autoindex;
     this->_cgi_extension = obj._cgi_extension;
-    this->_cgi_path = obj._cgi_path;
     this->_cgi_relative_path = obj._cgi_relative_path;
   }
   else

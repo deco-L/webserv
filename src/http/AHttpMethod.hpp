@@ -6,7 +6,7 @@
 /*   By: miyazawa.kai.0823 <miyazawa.kai.0823@st    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/01 14:21:20 by csakamot          #+#    #+#             */
-/*   Updated: 2025/01/29 01:16:15 by miyazawa.ka      ###   ########.fr       */
+/*   Updated: 2025/02/03 15:15:50 by miyazawa.ka      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,7 @@ protected:
   const std::string _version;
 
   bool _autoindex;
-  std::string _cgi_extension;
-  std::string _cgi_path;
+  std::vector<std::pair<std::string, std::string> > _cgi_extension;
   std::string _cgi_relative_path;
 
   class MethodError : public std::exception {
